@@ -4,6 +4,6 @@ Clone repository med git clone git@github.uio.no:IN2000-V24/team-31.git på egen
 
 Emil
 
-Åsmund Vardenær Belsaas
+Åsmund
 
 
