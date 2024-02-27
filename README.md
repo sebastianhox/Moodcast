@@ -13,6 +13,8 @@ Avrin
 
 Sebastian
 
+Alexander
+
 # Instruks
 
 Ikke last opp til main uten at det er avtalt, med unntak av endring i README.
