@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "no.uio.ifi.in2000.team31.weatherapp"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "no.uio.ifi.in2000.team31.weatherapp"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
