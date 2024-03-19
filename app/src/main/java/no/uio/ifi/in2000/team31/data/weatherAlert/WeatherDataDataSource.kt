@@ -10,10 +10,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.gson.gson
-import no.uio.ifi.in2000.team31.model.WeatherAlert
-import no.uio.ifi.in2000.team31.model.WeatherAlertModel
+import no.uio.ifi.in2000.team31.model.WeatherData
 
-class WeatherAlertsDataSource {
+class WeatherDataDataSource {
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             gson()
@@ -24,10 +23,10 @@ class WeatherAlertsDataSource {
         }
     }
 
-    suspend fun fetchData(url: String) {
+    suspend fun fetchData(url: String): WeatherData {
         val response: HttpResponse = client.get(url)
         Log.d("apiReq", response.status.value.toString())
 
-        val alert:WeatherAlert = response.body()
+        return response.body<WeatherData>()
     }
 }
