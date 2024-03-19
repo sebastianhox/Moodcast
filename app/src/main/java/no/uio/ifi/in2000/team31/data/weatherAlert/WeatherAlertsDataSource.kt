@@ -11,6 +11,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team31.model.WeatherAlert
+import no.uio.ifi.in2000.team31.model.WeatherAlertModel
 
 class WeatherAlertsDataSource {
     private val client = HttpClient(CIO) {
@@ -20,14 +21,13 @@ class WeatherAlertsDataSource {
         defaultRequest {
             url("https://gw-uio.intark.uh-it.no/in2000/")
             header("X-Gravitee-API-Key", "0cdacead-89b3-408a-bcf5-bb6bd685a874")
-            Log.d("header", "Header is set")
         }
     }
-    suspend fun fetchData(url: String): WeatherAlert {
+
+    suspend fun fetchData(url: String) {
         val response: HttpResponse = client.get(url)
         Log.d("apiReq", response.status.value.toString())
 
-        return response.body()
-
+        val alert:WeatherAlert = response.body()
     }
 }
