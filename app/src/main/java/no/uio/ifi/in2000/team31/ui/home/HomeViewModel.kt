@@ -19,11 +19,11 @@ class HomeViewModel: ViewModel() {
     private val _weatherUIState = MutableStateFlow(WeatherUIState())
     val weatherUIState: StateFlow<WeatherUIState> = _weatherUIState.asStateFlow()
 
-    init {
+    /*init {
         Log.d("testing", "Før init")
         loadData("weatherapi/locationforecast/2.0/compact?lat=60.10&lon=9.58")
         Log.d("testing", "Etter init")
-    }
+    }*/
 
     private fun loadData(url: String) {
         viewModelScope.launch {
@@ -39,6 +39,17 @@ class HomeViewModel: ViewModel() {
             } catch (e: Exception) {
                 Log.d("testing", "Feil ved henting av værdata")
                 Log.d("testing", "Unntak: ${e.message}")
+            }
+        }
+    }
+
+    fun updateWeatherData(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            try {
+                val weatherData = repository.fetchWeatherData(lat, lon)
+                _weatherUIState.update { it.copy(weatherData = weatherData) }
+            } catch (e: Exception) {
+                Log.e("testing", "Error fetching weather data", e)
             }
         }
     }

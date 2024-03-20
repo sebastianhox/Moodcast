@@ -10,4 +10,10 @@ class LocationWeatherRepository {
         Log.d("testing", "fetchInfo - Repository")
         return weatherData.fetchData(url)
     }
+
+    suspend fun fetchWeatherData(lat: Double, lon: Double): WeatherData {
+        val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
+        Log.d("testing", "Fething data for $lat, $lon")
+        return weatherData.fetchData(url)
+    }
 }
