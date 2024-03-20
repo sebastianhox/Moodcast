@@ -17,6 +17,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
     Log.d("testing", "HomeScreen")
     val weatherUIState by homeViewModel.weatherUIState.collectAsState()
     val temperature = weatherUIState.weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.airTemperature
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
