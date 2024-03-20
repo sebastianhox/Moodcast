@@ -12,7 +12,9 @@ import no.uio.ifi.in2000.team31.data.LocationWeatherRepository
 import no.uio.ifi.in2000.team31.model.WeatherData
 
 data class WeatherUIState(
-    val weatherData: WeatherData? = null
+    val weatherData: WeatherData? = null,
+    val lat: Double? = null,
+    val lon: Double? = null
 )
 class HomeViewModel: ViewModel() {
     private val repository: LocationWeatherRepository = LocationWeatherRepository()
@@ -47,7 +49,7 @@ class HomeViewModel: ViewModel() {
         viewModelScope.launch {
             try {
                 val weatherData = repository.fetchWeatherData(lat, lon)
-                _weatherUIState.update { it.copy(weatherData = weatherData) }
+                _weatherUIState.update { it.copy(weatherData = weatherData, lat = lat, lon = lon) }
             } catch (e: Exception) {
                 Log.e("testing", "Error fetching weather data", e)
             }
