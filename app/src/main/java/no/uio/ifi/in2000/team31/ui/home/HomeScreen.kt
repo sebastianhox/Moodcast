@@ -18,8 +18,8 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
     val weatherUIState by homeViewModel.weatherUIState.collectAsState()
     val temperature = weatherUIState.weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.airTemperature
     val latLonText = if (weatherUIState.weatherData != null) {
-        "Lat: ${weatherUIState.lat}, Lon: ${weatherUIState.lon}"
-    } else "Location not available"
+        "Latitude: ${weatherUIState.lat}\nLongitude: ${weatherUIState.lon}"
+    } else "Not found"
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -32,7 +32,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
         )
         Text(
             //text = "${weatherData.weatherData?.instant?.last()?.airTemperature}",
-            text = temperature?.let { "$it°C" } ?: "Ingen værdata tilgjengelig",
+            text = temperature?.let { "$it°C" } ?: "Temperature unavailable",
             textAlign = TextAlign.Center,
             fontSize = 50.sp
         )
