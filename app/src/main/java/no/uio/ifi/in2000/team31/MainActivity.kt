@@ -11,9 +11,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -27,13 +31,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var homeViewModel: HomeViewModel
 
     // TEST
-
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallBack: LocationCallback
     private var currentLocation: Location? = null
-
     // TEST
-
 
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -62,26 +63,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (ContextCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        Log.d("testing", "Har tilgang")
-                        fetchLocationAndUpdateWeather()
-                        Log.d("testing", "Før HomeScreen()")
-                        HomeScreen(homeViewModel)
-                        Log.d("testing", "Etter HomeScreen()")
-                    } else {
-                        Log.d("testing", "Har ikke tilgang")
-                        locationPermissionRequest.launch(
-                            arrayOf(
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION
-                            )
-                        )
-                        HomeScreen(homeViewModel)
+                    val startDestination: String = "HomeScreen"
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "HomeScreen") {
+                        composable("HomeScreen") { runHomeScreen() }
+                        composable("LongTermForecast") { TODO() }
                     }
+
+
                 }
             }
         }
@@ -104,4 +93,36 @@ class MainActivity : ComponentActivity() {
             Log.d("testing", "Inne i else'en")
         }
     }
+
+    @Composable
+    fun runHomeScreen() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.d("testing", "Har tilgang")
+            fetchLocationAndUpdateWeather()
+            Log.d("testing", "Før HomeScreen()")
+            HomeScreen(homeViewModel)
+            Log.d("testing", "Etter HomeScreen()")
+        } else {
+            Log.d("testing", "Har ikke tilgang")
+            locationPermissionRequest.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+            HomeScreen(homeViewModel)
+        }
+    }
+}
+
+@Composable
+fun AppNavHostTest() {
+    val navController = rememberNavController()
+    //NavHost(navController, startDestination = "homeScreen")
+
+
 }
