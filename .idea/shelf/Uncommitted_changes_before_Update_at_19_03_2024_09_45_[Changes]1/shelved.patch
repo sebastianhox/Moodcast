@@ -1,0 +1,60 @@
+Index: app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package no.uio.ifi.in2000.team31.ui.home\r\n\r\nimport android.util.Log\r\nimport androidx.lifecycle.ViewModel\r\nimport androidx.lifecycle.viewModelScope\r\nimport kotlinx.coroutines.flow.MutableStateFlow\r\nimport kotlinx.coroutines.flow.StateFlow\r\nimport kotlinx.coroutines.flow.asStateFlow\r\nimport kotlinx.coroutines.flow.update\r\nimport kotlinx.coroutines.launch\r\nimport no.uio.ifi.in2000.team31.data.weatherAlert.WeatherAlertsRepository\r\nimport no.uio.ifi.in2000.team31.model.Geometry\r\nimport no.uio.ifi.in2000.team31.model.Properties\r\nimport no.uio.ifi.in2000.team31.model.WeatherAlert\r\n\r\ndata class AlertUIState(\r\n    val weatherAlerts: WeatherAlert? = null\r\n    )\r\nclass HomeViewModel: ViewModel() {\r\n    private val repository: WeatherAlertsRepository = WeatherAlertsRepository()\r\n    private val _alertUiState = MutableStateFlow(AlertUIState())\r\n    val alertUiState: StateFlow<AlertUIState> = _alertUiState.asStateFlow()\r\n\r\n    init {\r\n        Log.d(\"init\", \"initialize\")\r\n        loadData(\"weatherapi/locationforecast/2.0/classic?lat=59.93&lon=10.72&altitude=90\")\r\n    }\r\n\r\n    private fun loadData(url: String){\r\n\r\n        viewModelScope.launch {\r\n            _alertUiState.update { currentState ->\r\n                Log.d(\"fetch\",\"fetching\")\r\n                currentState.copy(\r\n                    weatherAlerts = repository.fetchInfo(url)\r\n                )\r\n            }\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt
+--- a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt	
++++ b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt	
+@@ -23,7 +23,8 @@
+ 
+     init {
+         Log.d("init", "initialize")
+-        loadData("weatherapi/locationforecast/2.0/classic?lat=59.93&lon=10.72&altitude=90")
++        loadData("weatherapi/locationforecast/2.0/compact?lat=60.10&lon=9.58")
++        //loadData("weatherapi/locationforecast/2.0/classic?lat=59.93&lon=10.72&altitude=90")
+     }
+ 
+     private fun loadData(url: String){
+Index: app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package no.uio.ifi.in2000.team31.ui.home\r\n\r\nimport androidx.compose.foundation.layout.Column\r\nimport androidx.compose.material3.Text\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.runtime.collectAsState\r\nimport androidx.compose.runtime.getValue\r\nimport androidx.compose.ui.input.pointer.PointerIcon.Companion.Text\r\nimport androidx.lifecycle.viewmodel.compose.viewModel\r\n\r\n@Composable\r\nfun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {\r\n    val alert by homeViewModel.alertUiState.collectAsState()\r\n    Column {\r\n        Text(\r\n                text = \"${alert.weatherAlerts?.type}\"\r\n        )\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt
+--- a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt	
++++ b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt	
+@@ -1,19 +1,26 @@
+ package no.uio.ifi.in2000.team31.ui.home
+ 
++import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.collectAsState
+ import androidx.compose.runtime.getValue
++import androidx.compose.ui.Alignment
+ import androidx.compose.ui.input.pointer.PointerIcon.Companion.Text
++import androidx.compose.ui.text.style.TextAlign
++import androidx.compose.ui.unit.sp
+ import androidx.lifecycle.viewmodel.compose.viewModel
+ 
+ @Composable
+ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
+     val alert by homeViewModel.alertUiState.collectAsState()
+-    Column {
++    Column (verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
+         Text(
+-                text = "${alert.weatherAlerts?.type}"
++            text = "${alert.weatherAlerts?.properties?.timeseries?.get(0)?.data?.instant?.details}",
++            "${alert.weatherAlerts?.properties?.meta?.units?.airTemperature}",
++            textAlign = TextAlign.Center,
++            fontSize = 50.sp
+         )
+     }
+ }
+\ No newline at end of file

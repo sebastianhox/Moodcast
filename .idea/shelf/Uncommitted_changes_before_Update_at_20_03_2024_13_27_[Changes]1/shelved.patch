@@ -1,0 +1,92 @@
+Index: app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package no.uio.ifi.in2000.team31.ui.home\r\n\r\nimport android.util.Log\r\nimport androidx.lifecycle.ViewModel\r\nimport androidx.lifecycle.viewModelScope\r\nimport kotlinx.coroutines.flow.MutableStateFlow\r\nimport kotlinx.coroutines.flow.StateFlow\r\nimport kotlinx.coroutines.flow.asStateFlow\r\nimport kotlinx.coroutines.flow.update\r\nimport kotlinx.coroutines.launch\r\nimport no.uio.ifi.in2000.team31.data.weatherAlert.WeatherAlertsRepository\r\nimport no.uio.ifi.in2000.team31.model.Geometry\r\nimport no.uio.ifi.in2000.team31.model.Properties\r\nimport no.uio.ifi.in2000.team31.model.WeatherAlert\r\n\r\ndata class AlertUIState(\r\n    val weatherAlerts: WeatherAlert? = null\r\n    )\r\nclass HomeViewModel: ViewModel() {\r\n    private val repository: WeatherAlertsRepository = WeatherAlertsRepository()\r\n    private val _alertUiState = MutableStateFlow(AlertUIState())\r\n    val alertUiState: StateFlow<AlertUIState> = _alertUiState.asStateFlow()\r\n\r\n    init {\r\n        loadData(\"weatherapi/locationforecast/2.0/compact?lat=60.10&lon=9.58\")\r\n    }\r\n\r\n    private fun loadData(url: String){\r\n\r\n        viewModelScope.launch {\r\n            _alertUiState.update { currentState ->\r\n                Log.d(\"fetch\",\"fetching\")\r\n                currentState.copy(\r\n                    weatherAlerts = repository.fetchInfo(url)\r\n                )\r\n            }\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt
+--- a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt	
++++ b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeViewModel.kt	
+@@ -1,6 +1,8 @@
+ package no.uio.ifi.in2000.team31.ui.home
+ 
++import android.os.Build
+ import android.util.Log
++import androidx.annotation.RequiresApi
+ import androidx.lifecycle.ViewModel
+ import androidx.lifecycle.viewModelScope
+ import kotlinx.coroutines.flow.MutableStateFlow
+@@ -9,12 +11,11 @@
+ import kotlinx.coroutines.flow.update
+ import kotlinx.coroutines.launch
+ import no.uio.ifi.in2000.team31.data.weatherAlert.WeatherAlertsRepository
+-import no.uio.ifi.in2000.team31.model.Geometry
+-import no.uio.ifi.in2000.team31.model.Properties
+-import no.uio.ifi.in2000.team31.model.WeatherAlert
++import no.uio.ifi.in2000.team31.model.Timeseries
++import java.time.LocalDate
+ 
+ data class AlertUIState(
+-    val weatherAlerts: WeatherAlert? = null
++    val weatherAlerts: Unit? = null
+     )
+ class HomeViewModel: ViewModel() {
+     private val repository: WeatherAlertsRepository = WeatherAlertsRepository()
+@@ -36,4 +37,27 @@
+             }
+         }
+     }
++
++
++    //Metode for aa hente vaer info de neste x dagene
++    @RequiresApi(Build.VERSION_CODES.O)
++    fun getFutureWeather(day: Int) {
++        val timeseries = alertUiState.value.weatherAlerts
++
++
++        val futureWeather = LocalDate.now().plusDays(day.toLong())
++        val futureDateString = futureWeather.toString()
++
++        var weatherDataForTomorrow: Timeseries? = null
++        timeseries?.forEach { ts ->
++            if (ts.time?.startsWith(futureDateString) == true) {
++                weatherDataForTomorrow = ts
++                return@forEach
++            }
++        }
++
++        weatherDataForTomorrow?.data?.instant?.details?.let { details ->
++            val temperatureTomorrow = details.airTemperature
++        }
++    }
+ }
+\ No newline at end of file
+Index: app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package no.uio.ifi.in2000.team31.ui.home\r\n\r\nimport androidx.compose.foundation.layout.Arrangement\r\nimport androidx.compose.foundation.layout.Column\r\nimport androidx.compose.material3.Text\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.runtime.collectAsState\r\nimport androidx.compose.runtime.getValue\r\nimport androidx.compose.ui.Alignment\r\nimport androidx.compose.ui.input.pointer.PointerIcon.Companion.Text\r\nimport androidx.compose.ui.text.style.TextAlign\r\nimport androidx.compose.ui.unit.sp\r\nimport androidx.lifecycle.viewmodel.compose.viewModel\r\n\r\n@Composable\r\nfun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {\r\n    val alert by homeViewModel.alertUiState.collectAsState()\r\n    Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {\r\n        Text(\r\n            text = \"${alert.weatherAlerts?.properties?.timeseries?.get(0)?.data?.instant?.details?.airTemperature} \" +\r\n                        \"${alert.weatherAlerts?.properties?.meta?.units?.airTemperature}\",\r\n            textAlign = TextAlign.Center,\r\n            fontSize = 50.sp\r\n        )\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt
+--- a/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt	
++++ b/app/src/main/java/no/uio/ifi/in2000/team31/ui/home/HomeScreen.kt	
+@@ -15,6 +15,7 @@
+ @Composable
+ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
+     val alert by homeViewModel.alertUiState.collectAsState()
++
+     Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+         Text(
+             text = "${alert.weatherAlerts?.properties?.timeseries?.get(0)?.data?.instant?.details?.airTemperature} " +
+@@ -22,5 +23,8 @@
+             textAlign = TextAlign.Center,
+             fontSize = 50.sp
+         )
++
++
+     }
++
+ }
+\ No newline at end of file
