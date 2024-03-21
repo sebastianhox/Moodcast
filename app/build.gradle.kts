@@ -77,4 +77,10 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.1.0")
     val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation("io.github.dellisd.spatialk:geojson:0.3.0")
+    implementation("io.github.dellisd.spatialk:turf:0.3.0")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-gson:$ktor_version")
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
 }

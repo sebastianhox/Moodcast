@@ -2,6 +2,7 @@ package no.uio.ifi.in2000.team31
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -14,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import no.uio.ifi.in2000.team31.ui.home.HomeScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
@@ -22,6 +25,14 @@ import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var homeViewModel: HomeViewModel
+
+    // TEST
+
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallBack: LocationCallback
+    private var currentLocation: Location? = null
+
+    // TEST
 
 
     private val locationPermissionRequest = registerForActivityResult(
@@ -34,12 +45,6 @@ class MainActivity : ComponentActivity() {
             }
             else -> Log.d("testing", "ACCESS_FINE_LOCATION denied")
         }
-        /*
-        if (permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)) {
-            Log.d("testing", "ACCESS_FINE_LOCATION yes")
-        } else {
-            Log.d("testing", "ACCESS_FINE_LOCATION no")
-        }*/
     }
 
 
@@ -49,12 +54,6 @@ class MainActivity : ComponentActivity() {
         Log.d("testing", "onCreate()")
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            locationPermissionRequest.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
-        } else {
-            fetchLocationAndUpdateWeather()
-        }
 
         setContent {
             Team31Theme {
@@ -68,22 +67,27 @@ class MainActivity : ComponentActivity() {
                             Manifest.permission.ACCESS_FINE_LOCATION
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
+                        Log.d("testing", "Har tilgang")
+                        fetchLocationAndUpdateWeather()
                         Log.d("testing", "Før HomeScreen()")
-                        HomeScreen()
+                        HomeScreen(homeViewModel)
                         Log.d("testing", "Etter HomeScreen()")
                     } else {
-                        Log.d("testing", "Mangler tilgang")
+                        Log.d("testing", "Har ikke tilgang")
                         locationPermissionRequest.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
                                 Manifest.permission.ACCESS_COARSE_LOCATION
                             )
                         )
+                        HomeScreen(homeViewModel)
                     }
                 }
             }
         }
     }
+
+
 
     private fun fetchLocationAndUpdateWeather() {
         Log.d("testing", "Inne i fetchLocationAndUpdateWeather")

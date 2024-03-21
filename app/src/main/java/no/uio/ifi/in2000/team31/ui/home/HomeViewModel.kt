@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.data.LocationWeatherRepository
+import no.uio.ifi.in2000.team31.data.WeatherAlertRepository
 import no.uio.ifi.in2000.team31.model.WeatherData
 
 data class WeatherUIState(
@@ -20,6 +21,23 @@ class HomeViewModel: ViewModel() {
     private val repository: LocationWeatherRepository = LocationWeatherRepository()
     private val _weatherUIState = MutableStateFlow(WeatherUIState())
     val weatherUIState: StateFlow<WeatherUIState> = _weatherUIState.asStateFlow()
+    //private val alertRepository: WeatherAlertRepository = WeatherAlertRepository()
+
+
+
+    fun updateWeatherData(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            try {
+                val weatherData = repository.fetchWeatherData(lat, lon)
+                _weatherUIState.update { it.copy(weatherData = weatherData, lat = lat, lon = lon) }
+            } catch (e: Exception) {
+                Log.e("testing", "Error fetching weather data", e)
+            }
+        }
+    }
+
+
+
 
     /*init {
         Log.d("testing", "Før init")
@@ -27,7 +45,7 @@ class HomeViewModel: ViewModel() {
         Log.d("testing", "Etter init")
     }*/
 
-    private fun loadData(url: String) {
+    /*private fun loadData(url: String) {
         viewModelScope.launch {
             try {
                 Log.d("testing", "Start loadData")
@@ -43,16 +61,5 @@ class HomeViewModel: ViewModel() {
                 Log.d("testing", "Unntak: ${e.message}")
             }
         }
-    }
-
-    fun updateWeatherData(lat: Double, lon: Double) {
-        viewModelScope.launch {
-            try {
-                val weatherData = repository.fetchWeatherData(lat, lon)
-                _weatherUIState.update { it.copy(weatherData = weatherData, lat = lat, lon = lon) }
-            } catch (e: Exception) {
-                Log.e("testing", "Error fetching weather data", e)
-            }
-        }
-    }
+    }*/
 }
