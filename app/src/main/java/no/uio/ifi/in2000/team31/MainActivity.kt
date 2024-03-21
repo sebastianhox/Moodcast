@@ -23,6 +23,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var homeViewModel: HomeViewModel
 
+
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Log.d("testing", "onCreate()")
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
@@ -55,26 +57,22 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-
             Team31Theme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     if (ContextCompat.checkSelfPermission(
                             this,
                             Manifest.permission.ACCESS_FINE_LOCATION
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        Log.d("testing", "Før DisplayLocation()")
-                        HomeScreen(homeViewModel)
-                        Log.d("testing", "Etter DisplayLocation()")
-
+                        Log.d("testing", "Før HomeScreen()")
+                        HomeScreen()
+                        Log.d("testing", "Etter HomeScreen()")
                     } else {
                         Log.d("testing", "Mangler tilgang")
-
                         locationPermissionRequest.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -88,12 +86,18 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun fetchLocationAndUpdateWeather() {
+        Log.d("testing", "Inne i fetchLocationAndUpdateWeather")
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.d("testing", "Inne i if'en")
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                Log.d("testing", "location er: $location")
                 location?.let {
+                    Log.d("testing", "Inne i let'en")
                     homeViewModel.updateWeatherData(it.latitude, it.longitude)
                 }
             }
+        } else {
+            Log.d("testing", "Inne i else'en")
         }
     }
 }
