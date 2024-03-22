@@ -1,0 +1,122 @@
+package no.uio.ifi.in2000.team31
+
+import android.Manifest
+import android.app.Application
+import android.content.Context
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import io.github.dellisd.spatialk.geojson.Point
+import io.github.dellisd.spatialk.geojson.dsl.point
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import no.uio.ifi.in2000.team31.data.LocationWeatherRepository
+import no.uio.ifi.in2000.team31.data.WeatherAlertRepository
+import no.uio.ifi.in2000.team31.model.WeatherData
+
+data class WeatherDataUIState(
+    val weatherData: WeatherData? = null
+)
+
+data class WeatherAlertUIState(
+    val features: List<io.github.dellisd.spatialk.geojson.Feature> = listOf()
+)
+
+class LocationViewModel(application: Application) : AndroidViewModel(application) {
+    private var fusedLocationClient: FusedLocationProviderClient =
+        LocationServices.getFusedLocationProviderClient(application)
+    private val repository = LocationWeatherRepository()
+
+    private val alertRepository: WeatherAlertRepository = WeatherAlertRepository()
+
+    private val _permissionGranted = MutableStateFlow(false)
+    val permissionGranted: StateFlow<Boolean> = _permissionGranted.asStateFlow()
+
+    private val _locationState = MutableStateFlow(Pair(0.0, 0.0))
+    val locationState: StateFlow<Pair<Double, Double>> = _locationState.asStateFlow()
+
+    private val _weatherData = MutableStateFlow<WeatherData?>(null)
+    val weatherData: StateFlow<WeatherData?> = _weatherData.asStateFlow()
+
+    private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
+    val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
+
+    fun updatePermissionStatus(isGranted: Boolean) {
+        _permissionGranted.value = isGranted
+        if (isGranted) startLocationUpdates()
+    }
+
+    fun checkPermissionsAndStartUpdates(context: Context) {
+        val permission =
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            _permissionGranted.value = true
+            startLocationUpdates()
+            startAlertUpdates()
+        } else {
+            Log.d("testing", "No permissions")
+        }
+    }
+
+    fun startAlertUpdates(point: Point = point(6.352810,59.650822) ) {
+        viewModelScope.launch {
+            _weatherAlertUIState.update { currentState ->
+                currentState.copy(
+                    features = alertRepository.getDangerZonesOf(point)
+                )
+            }
+        }
+    }
+
+    fun startLocationUpdates() {
+        val permission = ContextCompat.checkSelfPermission(
+            getApplication(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            val locationRequest = LocationRequest.create().apply {
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                interval = 10000
+                fastestInterval = 5000
+            }
+
+            val locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    locationResult.lastLocation?.let {
+                        _locationState.value = Pair(it.latitude, it.longitude)
+                        fetchWeatherData(it.latitude, it.longitude)
+                    }
+                }
+            }
+
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                null
+            )
+        }
+    }
+
+    private fun fetchWeatherData(latitude: Double, longitude: Double) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val weatherData = repository.fetchWeatherData(latitude, longitude)
+                _weatherData.value = weatherData
+            } catch (e: Exception) {
+                Log.e("testing", "Error fetching weather data", e)
+            }
+        }
+    }
+}
