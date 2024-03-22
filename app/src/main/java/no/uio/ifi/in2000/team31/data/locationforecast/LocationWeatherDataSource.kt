@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team31.data
+package no.uio.ifi.in2000.team31.data.locationforecast
 
 import android.util.Log
 import io.ktor.client.HttpClient

@@ -15,8 +15,6 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun DisplayLocation(locationViewModel: HomeViewModel) {
     val context = LocalContext.current
-    //val repository = LocationWeatherRepository()
-    //val locationViewModel: LocationViewModel = viewModel()
     val weatherData = locationViewModel.weatherData.collectAsState().value
     val weatherAlert by locationViewModel.weatherAlertUIState.collectAsState()
 
@@ -29,25 +27,16 @@ fun DisplayLocation(locationViewModel: HomeViewModel) {
     val cloudCover = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.cloudAreaFraction
 
     LaunchedEffect(key1 = true) {
-        //if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
         locationViewModel.startLocationUpdates()
-
-        /*
-        Her bør vi egentlig kalle startAlertUpdates() med lat og lon fra enheten, via locationViewModel
-        Men bruker default koordinater som er lagt inn i funksjonen
-        Som viser til et sted på vestlandet
-        Som passer bedre pga ofte dårlig vær borti der
-        */
         locationViewModel.startAlertUpdates()
-        //}
+
     }
 
     val permissionGranted = locationViewModel.permissionGranted.collectAsState().value
 
     LaunchedEffect(key1 = permissionGranted) {
-        if (permissionGranted/* && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED*/) {
+        if (permissionGranted) {
             locationViewModel.checkPermissionsAndStartUpdates(context)
-            //locationViewModel.startLocationUpdates()
         }
     }
 
@@ -61,7 +50,6 @@ fun DisplayLocation(locationViewModel: HomeViewModel) {
             for (feature in weatherAlert.features) {
                 Text(
                     text = "${feature.properties["instruction"]}\n",
-                    //color = Color.Red
                 )
             }
             Text(

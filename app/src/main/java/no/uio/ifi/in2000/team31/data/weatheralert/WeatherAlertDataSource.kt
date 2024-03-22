@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team31.data
+package no.uio.ifi.in2000.team31.data.weatheralert
 
 import io.github.dellisd.spatialk.geojson.FeatureCollection
 import io.ktor.client.HttpClient

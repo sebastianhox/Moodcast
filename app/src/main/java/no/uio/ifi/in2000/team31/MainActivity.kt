@@ -46,8 +46,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    //requestPermissions()
-                    //DisplayLocation()
                     val navController = rememberNavController()
                     NavHost(navController, "DisplayLocation") {
                         composable("DisplayLocation") { DisplayLocation(homeViewModel) }

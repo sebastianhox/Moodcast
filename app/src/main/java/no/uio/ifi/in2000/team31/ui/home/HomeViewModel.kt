@@ -7,13 +7,13 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import io.github.dellisd.spatialk.geojson.Point
 import io.github.dellisd.spatialk.geojson.dsl.point
 import kotlinx.coroutines.CoroutineScope
@@ -23,8 +23,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.data.LocationWeatherRepository
-import no.uio.ifi.in2000.team31.data.WeatherAlertRepository
+import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherRepository
+import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
 import no.uio.ifi.in2000.team31.model.WeatherData
 
 data class WeatherDataUIState(
@@ -87,11 +87,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             Manifest.permission.ACCESS_FINE_LOCATION
         )
         if (permission == PackageManager.PERMISSION_GRANTED) {
-            val locationRequest = LocationRequest.create().apply {
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-                interval = 10000
-                fastestInterval = 5000
-            }
+            val locationRequest = LocationRequest.Builder(1000)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .setMinUpdateIntervalMillis(5000)
+                .build()
 
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
