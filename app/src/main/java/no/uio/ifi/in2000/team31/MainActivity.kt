@@ -52,7 +52,6 @@ class MainActivity : ComponentActivity() {
                         composable("HomeScreen") { DisplayLocation(homeViewModel) }
                     }
                 }
-                //requestPermissions()
             }
         }
     }

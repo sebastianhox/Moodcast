@@ -10,6 +10,8 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.gson.gson
 import io.ktor.util.appendIfNameAbsent
 import no.uio.ifi.in2000.team31.model.WeatherData
+import no.uio.ifi.in2000.team31.model.WeatherDataModel
+import no.uio.ifi.in2000.team31.model.toModelInstant
 
 class LocationWeatherDataSource {
 
@@ -23,10 +25,10 @@ class LocationWeatherDataSource {
         }
     }
 
-    suspend fun fetchData(url: String): WeatherData {
+    suspend fun fetchData(url: String): WeatherDataModel {
         Log.d("testing", "Før client.get(url) - DataSource")
         val response: HttpResponse = client.get(url)
         Log.d("testing", "Etter client.get(url) - DataSource")
-        return response.body<WeatherData>()
+        return response.body<WeatherData>().toModelInstant()
     }
 }

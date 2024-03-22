@@ -1,46 +1,72 @@
 package no.uio.ifi.in2000.team31.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 
 @Composable
-fun DisplayLocation(locationViewModel: HomeViewModel) {
+fun DisplayLocation(homeViewModel: HomeViewModel) {
     val context = LocalContext.current
-    val weatherData = locationViewModel.weatherData.collectAsState().value
-    val weatherAlert by locationViewModel.weatherAlertUIState.collectAsState()
+    val weatherData by homeViewModel.weatherDataUIState.collectAsState()
+    val weatherAlert by homeViewModel.weatherAlertUIState.collectAsState()
 
+    val tempAndTimeList = weatherData.tempAndTimeData
+    val scrollState = rememberScrollState()
+/*
     val temperature = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.airTemperature
     val humidity = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.relativeHumidity
     val rainAmount = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.precipitationAmount
     val windSpeed = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.windSpeed
     val windDirection = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.windFromDirection
     val airPressure = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.airPressureAtSeaLevel
-    val cloudCover = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.cloudAreaFraction
+    val cloudCover = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.cloudAreaFraction*/
+    val temperature = weatherData?.weatherData?.instant?.get(0)?.airTemperature
+
 
     LaunchedEffect(key1 = true) {
-        locationViewModel.startLocationUpdates()
-        locationViewModel.startAlertUpdates()
+        homeViewModel.startLocationUpdates()
+        homeViewModel.startAlertUpdates()
 
     }
 
-    val permissionGranted = locationViewModel.permissionGranted.collectAsState().value
+    val permissionGranted by homeViewModel.permissionGranted.collectAsState()
 
     LaunchedEffect(key1 = permissionGranted) {
         if (permissionGranted) {
-            locationViewModel.checkPermissionsAndStartUpdates(context)
+            homeViewModel.checkPermissionsAndStartUpdates(context)
         }
     }
 
-    val locationState = locationViewModel.locationState.collectAsState()
+    val locationState = homeViewModel.locationState.collectAsState()
+    /*
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -60,7 +86,7 @@ fun DisplayLocation(locationViewModel: HomeViewModel) {
                 text = temperature?.let { "$it°C" } ?: "Temperature unavailable",
                 textAlign = TextAlign.Center,
                 fontSize = 36.sp
-            )
+            )/*
             Text(
                 text = humidity?.let { "$it%" } ?: "Humidity unavailable",
                 textAlign = TextAlign.Center,
@@ -75,9 +101,153 @@ fun DisplayLocation(locationViewModel: HomeViewModel) {
                 text = windSpeed?.let { "$it m/s" } ?: "Wind unavailable",
                 textAlign = TextAlign.Center,
                 fontSize = 24.sp
-            )
+            )*/
         } else {
             Text("No weather data yet...")
+        }
+    }*/
+    Column(
+        modifier = Modifier.verticalScroll(scrollState),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally)
+    {
+
+        //Været akkurat nå i celsius
+        Box(modifier = Modifier
+            .padding(18.dp)
+            .width(360.dp)
+            .height(149.dp)
+            .background(Color.Red, shape = RoundedCornerShape(size = 15.dp))) {
+
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+
+                    Text(
+                        text = "Min posisjon", // text = "Min posisjon\n\n${alert.weatherData?.instant?.last()?.airTemperature}" + "\u2103",
+                        fontSize = 25.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "${weatherData?.weatherData?.instant?.last()?.airTemperature}" + "\u00B0",
+                        fontSize = 50.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                }
+
+            }
+        }
+
+        //Farevarsel
+        Box(modifier = Modifier
+            .padding(18.dp)
+            .width(360.dp)
+            .height(71.dp)
+            .background(Color.Green, shape = RoundedCornerShape(size = 15.dp))) {
+            Text(
+                text = "Farevarsel:",
+                fontSize = 20.sp
+            )
+        }
+
+        //Vær i dag - time for time
+        Box(modifier = Modifier
+            .padding(18.dp)
+            .width(360.dp)
+            .height(149.dp)
+            .background(Color.Blue, shape = RoundedCornerShape(size = 15.dp))) {
+
+            Text(
+                text = "Vær i dag:",
+                fontSize = 20.sp
+            )
+
+            LazyRow(
+                modifier = Modifier.fillMaxHeight(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                tempAndTimeList?.size?.let {
+                    items(tempAndTimeList) { map ->
+                        TimeAndTempCards(map)
+                    }
+                }
+            }
+
+
+
+        }
+        //Langtidsvarsel
+        Box(modifier = Modifier
+            .padding(18.dp)
+            .width(360.dp)
+            .height(230.dp)
+            .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))) {
+            Text(
+                text = "Langtidsvarsel:",
+                fontSize = 20.sp
+            )
+        }
+        //Menu thingz
+        Box(modifier = Modifier
+            .width(412.dp)
+            .height(80.dp)
+            .background(color = Color(0xFFF3EDF7))
+            .padding(start = 8.dp, end = 8.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+                verticalAlignment = Alignment.Top,
+            ) {}
+        }
+
+    }
+}
+
+@Composable
+fun TimeAndTempCards(map: Map<String, Double>) {
+    Card(
+        modifier = Modifier.padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+        colors = CardDefaults.cardColors(Color.Green)
+    ) {
+
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            //Tid
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column {
+                    Text(
+                        text = map.keys.first()
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = "${map.values.first()}" + "\u00B0"
+                    )
+                }
+
+
+            }
+
         }
     }
 }

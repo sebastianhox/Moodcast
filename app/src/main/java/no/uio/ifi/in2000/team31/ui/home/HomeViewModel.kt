@@ -26,9 +26,11 @@ import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherRepository
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
 import no.uio.ifi.in2000.team31.model.WeatherData
+import no.uio.ifi.in2000.team31.model.WeatherDataModel
 
 data class WeatherDataUIState(
-    val weatherData: WeatherData? = null
+    val weatherData: WeatherDataModel? = null,
+    val tempAndTimeData: MutableList<Map<String, Double>>? = null
 )
 
 data class WeatherAlertUIState(
@@ -48,8 +50,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _locationState = MutableStateFlow(Pair(0.0, 0.0))
     val locationState: StateFlow<Pair<Double, Double>> = _locationState.asStateFlow()
 
-    private val _weatherData = MutableStateFlow<WeatherData?>(null)
-    val weatherData: StateFlow<WeatherData?> = _weatherData.asStateFlow()
+    private val _weatherDataUIState = MutableStateFlow(WeatherDataUIState())
+    val weatherDataUIState: StateFlow<WeatherDataUIState> = _weatherDataUIState.asStateFlow()
 
     private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
     val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
@@ -109,11 +111,20 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun fetchWeatherData(latitude: Double, longitude: Double) {
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun fetchWeatherData(lat: Double, lon: Double) {
+        viewModelScope.launch {
             try {
-                val weatherData = repository.fetchWeatherData(latitude, longitude)
-                _weatherData.value = weatherData
+                /*
+                val weatherData: WeatherDataModel = repository.fetchWeatherData(latitude, longitude)
+                _weatherDataUIState.value = weatherData*/
+                val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
+                _weatherDataUIState.update { currentState ->
+                    currentState.copy(
+                        weatherData = repository.fetchInfo(url),
+                        tempAndTimeData = repository.getTempAndTime(lat, lon)
+                    )
+                }
+
             } catch (e: Exception) {
                 Log.e("testing", "Error fetching weather data", e)
             }

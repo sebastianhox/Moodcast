@@ -119,3 +119,24 @@ data class Properties (
     @SerializedName("timeseries" ) var timeseries : ArrayList<Timeseries> = arrayListOf()
 
 )
+fun WeatherData.toModelInstant(): WeatherDataModel {
+    val instantList = mutableListOf<WeatherDataInstant>()
+    properties?.timeseries?.forEach {
+        instantList.add(
+            WeatherDataInstant(
+                time = it.time,
+                airPressureAtSeaLevel = it.data?.instant?.details?.airPressureAtSeaLevel,
+                airTemperature = it.data?.instant?.details?.airTemperature,
+                cloudAreaFraction = it.data?.instant?.details?.cloudAreaFraction,
+                relativeHumidity = it.data?.instant?.details?.relativeHumidity,
+                windFromDirection = it.data?.instant?.details?.windFromDirection,
+                windSpeed = it.data?.instant?.details?.windSpeed,
+                precipitationAmount = it.data?.instant?.details?.precipitationAmount
+            )
+        )
+    }
+
+    return WeatherDataModel(
+        instant = instantList
+    )
+}
