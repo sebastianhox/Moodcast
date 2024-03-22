@@ -16,8 +16,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import io.github.dellisd.spatialk.geojson.Point
 import io.github.dellisd.spatialk.geojson.dsl.point
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +23,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherRepository
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
-import no.uio.ifi.in2000.team31.model.WeatherData
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
 
 data class WeatherDataUIState(
@@ -38,7 +35,7 @@ data class WeatherAlertUIState(
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private var fusedLocationClient: FusedLocationProviderClient =
+    var fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
     private val repository = LocationWeatherRepository()
 
@@ -56,10 +53,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
     val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
 
-    fun updatePermissionStatus(isGranted: Boolean) {
+    /*fun updatePermissionStatus(isGranted: Boolean) {
         _permissionGranted.value = isGranted
         if (isGranted) startLocationUpdates()
-    }
+    }*/
 
     fun checkPermissionsAndStartUpdates(context: Context) {
         val permission =
@@ -91,7 +88,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         if (permission == PackageManager.PERMISSION_GRANTED) {
             val locationRequest = LocationRequest.Builder(1000)
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                .setMinUpdateIntervalMillis(5000)
+                .setMinUpdateIntervalMillis(1)
                 .build()
 
             val locationCallback = object : LocationCallback() {

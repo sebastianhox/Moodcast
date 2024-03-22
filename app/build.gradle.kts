@@ -83,4 +83,6 @@ dependencies {
     implementation("io.ktor:ktor-serialization-gson:$ktor_version")
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
+
+    implementation("androidx.compose.material:material:1.6.4")
 }

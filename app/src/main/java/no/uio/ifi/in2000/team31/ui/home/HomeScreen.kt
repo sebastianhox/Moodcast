@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team31.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,9 +32,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.navigation.NavController
 
 @Composable
-fun DisplayLocation(homeViewModel: HomeViewModel) {
+fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
     val context = LocalContext.current
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
     val weatherAlert by homeViewModel.weatherAlertUIState.collectAsState()
@@ -65,47 +67,7 @@ fun DisplayLocation(homeViewModel: HomeViewModel) {
         }
     }
 
-    val locationState = homeViewModel.locationState.collectAsState()
-    /*
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (weatherData != null) {
-
-            for (feature in weatherAlert.features) {
-                Text(
-                    text = "${feature.properties["instruction"]}\n",
-                )
-            }
-            Text(
-                text = "Latitude: ${locationState.value.first}\nLongitude: ${locationState.value.second}",
-                fontSize = 24.sp
-            )
-            Text(
-                text = temperature?.let { "$it°C" } ?: "Temperature unavailable",
-                textAlign = TextAlign.Center,
-                fontSize = 36.sp
-            )/*
-            Text(
-                text = humidity?.let { "$it%" } ?: "Humidity unavailable",
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp
-            )
-            Text(
-                text = rainAmount?.let { "$it" } ?: "No rain",
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp
-            )
-            Text(
-                text = windSpeed?.let { "$it m/s" } ?: "Wind unavailable",
-                textAlign = TextAlign.Center,
-                fontSize = 24.sp
-            )*/
-        } else {
-            Text("No weather data yet...")
-        }
-    }*/
+    //val locationState = homeViewModel.locationState.collectAsState()
     Column(
         modifier = Modifier.verticalScroll(scrollState),
         verticalArrangement = Arrangement.Top,
@@ -136,7 +98,8 @@ fun DisplayLocation(homeViewModel: HomeViewModel) {
                 }
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "${weatherData?.weatherData?.instant?.last()?.airTemperature}" + "\u00B0",
+                        //text = "${weatherData?.weatherData?.instant?.last()?.airTemperature}" + "\u00B0",
+                        text = temperature?.let { "$it°C" } ?: "Henter data...",
                         fontSize = 50.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.align(Alignment.Center)
@@ -152,11 +115,18 @@ fun DisplayLocation(homeViewModel: HomeViewModel) {
             .padding(18.dp)
             .width(360.dp)
             .height(71.dp)
-            .background(Color.Green, shape = RoundedCornerShape(size = 15.dp))) {
-            Text(
-                text = "Farevarsel:",
-                fontSize = 20.sp
-            )
+            .background(Color.Green, shape = RoundedCornerShape(size = 15.dp))
+            .clickable {
+                navController.navigate("AlertScreen")
+            }
+        ) {
+
+            for (feature in weatherAlert.features) {
+                Text(
+                    text = "Farevarsel:\n${feature.properties["title"]}\n",
+                    //color = Color.Red
+                )
+            }
         }
 
         //Vær i dag - time for time
@@ -166,10 +136,6 @@ fun DisplayLocation(homeViewModel: HomeViewModel) {
             .height(149.dp)
             .background(Color.Blue, shape = RoundedCornerShape(size = 15.dp))) {
 
-            Text(
-                text = "Vær i dag:",
-                fontSize = 20.sp
-            )
 
             LazyRow(
                 modifier = Modifier.fillMaxHeight(),
@@ -193,7 +159,7 @@ fun DisplayLocation(homeViewModel: HomeViewModel) {
             .height(230.dp)
             .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))) {
             Text(
-                text = "Langtidsvarsel:",
+                text = "Aktivitetsforslag:",
                 fontSize = 20.sp
             )
         }
