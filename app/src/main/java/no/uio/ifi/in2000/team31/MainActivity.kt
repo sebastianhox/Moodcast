@@ -52,8 +52,6 @@ class MainActivity : ComponentActivity() {
                         composable("HomeScreen") { HomeScreen(homeViewModel, navController) }
                         composable("AlertScreen") { AlertScreen(navController) }
                     }
-
-
                 }
             }
         }

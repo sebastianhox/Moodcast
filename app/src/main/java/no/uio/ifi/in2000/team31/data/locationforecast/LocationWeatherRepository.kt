@@ -1,7 +1,6 @@
 package no.uio.ifi.in2000.team31.data.locationforecast
 
 import android.util.Log
-import no.uio.ifi.in2000.team31.model.WeatherData
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
 
 class LocationWeatherRepository {

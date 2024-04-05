@@ -6,10 +6,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -24,14 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.navigation.NavController
 
 @Composable
@@ -56,7 +56,6 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
     LaunchedEffect(key1 = true) {
         homeViewModel.startLocationUpdates()
         homeViewModel.startAlertUpdates()
-
     }
 
     val permissionGranted by homeViewModel.permissionGranted.collectAsState()
@@ -79,7 +78,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             .padding(18.dp)
             .width(360.dp)
             .height(149.dp)
-            .background(Color.Red, shape = RoundedCornerShape(size = 15.dp))) {
+            .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))) {
 
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -115,7 +114,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             .padding(18.dp)
             .width(360.dp)
             .height(71.dp)
-            .background(Color.Green, shape = RoundedCornerShape(size = 15.dp))
+            //.background(Color.Green, shape = RoundedCornerShape(size = 15.dp))
             .clickable {
                 navController.navigate("AlertScreen")
             }
@@ -134,7 +133,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             .padding(18.dp)
             .width(360.dp)
             .height(149.dp)
-            .background(Color.Blue, shape = RoundedCornerShape(size = 15.dp))) {
+            .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))) {
 
 
             LazyRow(
@@ -167,7 +166,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
         Box(modifier = Modifier
             .width(412.dp)
             .height(80.dp)
-            .background(color = Color(0xFFF3EDF7))
+            //.background(color = Color(0xFFF3EDF7))
             .padding(start = 8.dp, end = 8.dp)
         ) {
             Row(
@@ -184,7 +183,7 @@ fun TimeAndTempCards(map: Map<String, Double>) {
     Card(
         modifier = Modifier.padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
-        colors = CardDefaults.cardColors(Color.Green)
+        //colors = CardDefaults.cardColors(Color.Green)
     ) {
 
         Column(

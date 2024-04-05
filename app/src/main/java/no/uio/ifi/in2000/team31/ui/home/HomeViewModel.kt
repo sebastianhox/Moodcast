@@ -14,6 +14,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import io.github.dellisd.spatialk.geojson.Feature
 import io.github.dellisd.spatialk.geojson.Point
 import io.github.dellisd.spatialk.geojson.dsl.point
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,7 @@ data class WeatherDataUIState(
 )
 
 data class WeatherAlertUIState(
-    val features: List<io.github.dellisd.spatialk.geojson.Feature> = listOf()
+    val features: List<Feature> = listOf()
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -52,11 +53,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
     val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
-
-    /*fun updatePermissionStatus(isGranted: Boolean) {
-        _permissionGranted.value = isGranted
-        if (isGranted) startLocationUpdates()
-    }*/
 
     fun checkPermissionsAndStartUpdates(context: Context) {
         val permission =
@@ -88,7 +84,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         if (permission == PackageManager.PERMISSION_GRANTED) {
             val locationRequest = LocationRequest.Builder(1000)
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                .setMinUpdateIntervalMillis(1)
+                .setMinUpdateIntervalMillis(1000)
                 .build()
 
             val locationCallback = object : LocationCallback() {
@@ -111,9 +107,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun fetchWeatherData(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
-                /*
-                val weatherData: WeatherDataModel = repository.fetchWeatherData(latitude, longitude)
-                _weatherDataUIState.value = weatherData*/
                 val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
                 _weatherDataUIState.update { currentState ->
                     currentState.copy(
