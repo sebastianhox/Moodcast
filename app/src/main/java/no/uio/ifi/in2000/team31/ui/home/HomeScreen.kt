@@ -114,7 +114,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             .padding(18.dp)
             .width(360.dp)
             .height(71.dp)
-            //.background(Color.Green, shape = RoundedCornerShape(size = 15.dp))
+            .background(Color.Green, shape = RoundedCornerShape(size = 15.dp))
             .clickable {
                 navController.navigate("AlertScreen")
             }
@@ -123,7 +123,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             for (feature in weatherAlert.features) {
                 Text(
                     text = "Farevarsel:\n${feature.properties["title"]}\n",
-                    //color = Color.Red
+                    color = Color.Red
                 )
             }
         }
