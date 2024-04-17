@@ -18,6 +18,8 @@ import no.uio.ifi.in2000.team31.ui.alert.AlertScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
+import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation // merk
+
 
 class MainActivity : ComponentActivity() {
     private val homeViewModel: HomeViewModel by viewModels()
@@ -47,11 +49,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val navController = rememberNavController()
-                    NavHost(navController, "HomeScreen") {
-                        composable("HomeScreen") { HomeScreen(homeViewModel, navController) }
-                        composable("AlertScreen") { AlertScreen(navController) }
-                    }
+                    AppNavigation() // fjernet dir navhost
                 }
             }
         }
