@@ -21,6 +21,7 @@ import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
+    //val homeViewModel: HomeViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = AppRoutes.HOME) {
         composable(
@@ -118,6 +119,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
 
                     else -> null
                 }
+
             }
 
         ) {
