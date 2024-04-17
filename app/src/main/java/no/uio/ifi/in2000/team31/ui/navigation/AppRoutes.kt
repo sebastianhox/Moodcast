@@ -4,4 +4,5 @@ object AppRoutes {
     // rutekonstanter
     const val HOME = "home"
     const val ALERT = "alert"
+    const val MOOD = "mood"
 }

@@ -62,6 +62,32 @@ fun BottomNavigationBar(navController: NavController) {
             }
         )
         // humør
+        NavigationBarItem(
+
+            icon = { Icon(Icons.Filled.Warning, contentDescription = "mood") },
+            label = { Text("Humør") },
+            selected = navController.currentDestination?.route == AppRoutes.MOOD,
+
+            onClick = {
+
+                // hvis vi ikke er på alert allerede
+                if (navController.currentDestination?.route != AppRoutes.MOOD) {
+
+                    // dra dit
+                    navController.navigate(AppRoutes.MOOD) {
+                        // fikser backstack
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+
+                        //unngår flere instanser
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
+        )
+
         // aktiviteter
     }
 }
