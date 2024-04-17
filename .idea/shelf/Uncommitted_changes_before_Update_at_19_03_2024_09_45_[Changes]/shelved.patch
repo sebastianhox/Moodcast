@@ -1,0 +1,55 @@
+Index: app/src/main/java/no/uio/ifi/in2000/team31/model/WeatherAlert.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package no.uio.ifi.in2000.team31.model\r\n\r\nimport com.google.gson.annotations.SerializedName\r\n\r\ndata class WeatherAlert(\r\n    @SerializedName(\"type\"       ) var type       : String?     = null,\r\n    @SerializedName(\"geometry\"   ) var geometry   : Geometry?   = Geometry(),\r\n    @SerializedName(\"properties\" ) var properties : Properties? = Properties()\r\n)\r\n\r\n\r\n\r\ndata class Geometry (\r\n\r\n    @SerializedName(\"type\"        ) var type        : String?        = null,\r\n    @SerializedName(\"coordinates\" ) var coordinates : ArrayList<Int> = arrayListOf()\r\n\r\n)\r\n\r\n\r\ndata class Units (\r\n\r\n    @SerializedName(\"air_pressure_at_sea_level\" ) var airPressureAtSeaLevel : String? = null,\r\n    @SerializedName(\"air_temperature\"           ) var airTemperature        : String? = null,\r\n    @SerializedName(\"cloud_area_fraction\"       ) var cloudAreaFraction     : String? = null,\r\n    @SerializedName(\"precipitation_amount\"      ) var precipitationAmount   : String? = null,\r\n    @SerializedName(\"relative_humidity\"         ) var relativeHumidity      : String? = null,\r\n    @SerializedName(\"wind_from_direction\"       ) var windFromDirection     : String? = null,\r\n    @SerializedName(\"wind_speed\"                ) var windSpeed             : String? = null\r\n\r\n)\r\ndata class Meta (\r\n\r\n    @SerializedName(\"updated_at\" ) var updatedAt : String? = null,\r\n    @SerializedName(\"units\"      ) var units     : Units?  = Units()\r\n\r\n)\r\n\r\n\r\ndata class Details (\r\n\r\n    @SerializedName(\"air_pressure_at_sea_level\" ) var airPressureAtSeaLevel : Int?    = null,\r\n    @SerializedName(\"air_temperature\"           ) var airTemperature        : Double? = null,\r\n    @SerializedName(\"cloud_area_fraction\"       ) var cloudAreaFraction     : Double? = null,\r\n    @SerializedName(\"relative_humidity\"         ) var relativeHumidity      : Double? = null,\r\n    @SerializedName(\"wind_from_direction\"       ) var windFromDirection     : Double? = null,\r\n    @SerializedName(\"wind_speed\"                ) var windSpeed             : Double? = null,\r\n    @SerializedName(\"precipitation_amount\"      ) var precipitationAmount : Int? = null\r\n\r\n)\r\n\r\n\r\ndata class Instant (\r\n\r\n    @SerializedName(\"details\" ) var details : Details? = Details()\r\n\r\n)\r\n\r\n\r\n\r\n\r\n\r\n\r\ndata class Next12Hours (\r\n\r\n    @SerializedName(\"summary\" ) var summary : Summary? = Summary(),\r\n    @SerializedName(\"details\" ) var details : Details? = Details()\r\n\r\n)\r\n\r\ndata class Summary (\r\n\r\n    @SerializedName(\"symbol_code\" ) var symbolCode : String? = null\r\n\r\n)\r\n\r\n\r\n\r\n\r\n\r\ndata class Next1Hours (\r\n\r\n    @SerializedName(\"summary\" ) var summary : Summary? = Summary(),\r\n    @SerializedName(\"details\" ) var details : Details? = Details()\r\n\r\n)\r\n\r\n\r\n\r\ndata class Next6Hours (\r\n\r\n    @SerializedName(\"summary\" ) var summary : Summary? = Summary(),\r\n    @SerializedName(\"details\" ) var details : Details? = Details()\r\n\r\n)\r\n\r\n\r\ndata class Data (\r\n\r\n    @SerializedName(\"instant\"       ) var instant     : Instant?     = Instant(),\r\n    @SerializedName(\"next_12_hours\" ) var next12Hours : Next12Hours? = Next12Hours(),\r\n    @SerializedName(\"next_1_hours\"  ) var next1Hours  : Next1Hours?  = Next1Hours(),\r\n    @SerializedName(\"next_6_hours\"  ) var next6Hours  : Next6Hours?  = Next6Hours()\r\n\r\n)\r\n\r\n\r\ndata class Timeseries (\r\n\r\n    @SerializedName(\"time\" ) var time : String? = null,\r\n    @SerializedName(\"data\" ) var data : Data?   = Data()\r\n\r\n)\r\n\r\n\r\n\r\n\r\ndata class Properties (\r\n\r\n    @SerializedName(\"meta\"       ) var meta       : Meta?                 = Meta(),\r\n    @SerializedName(\"timeseries\" ) var timeseries : ArrayList<Timeseries> = arrayListOf()\r\n\r\n)\r\n\r\n
+===================================================================
+diff --git a/app/src/main/java/no/uio/ifi/in2000/team31/model/WeatherAlert.kt b/app/src/main/java/no/uio/ifi/in2000/team31/model/WeatherAlert.kt
+--- a/app/src/main/java/no/uio/ifi/in2000/team31/model/WeatherAlert.kt	
++++ b/app/src/main/java/no/uio/ifi/in2000/team31/model/WeatherAlert.kt	
+@@ -13,7 +13,8 @@
+ data class Geometry (
+ 
+     @SerializedName("type"        ) var type        : String?        = null,
+-    @SerializedName("coordinates" ) var coordinates : ArrayList<Int> = arrayListOf()
++    @SerializedName("coordinates" ) var coordinates : ArrayList<Double> = arrayListOf()
++    //@SerializedName("coordinates" ) var coordinates : ArrayList<Int> = arrayListOf()
+ 
+ )
+ 
+@@ -38,7 +39,7 @@
+ 
+ 
+ data class Details (
+-
++    /*
+     @SerializedName("air_pressure_at_sea_level" ) var airPressureAtSeaLevel : Int?    = null,
+     @SerializedName("air_temperature"           ) var airTemperature        : Double? = null,
+     @SerializedName("cloud_area_fraction"       ) var cloudAreaFraction     : Double? = null,
+@@ -46,7 +47,16 @@
+     @SerializedName("wind_from_direction"       ) var windFromDirection     : Double? = null,
+     @SerializedName("wind_speed"                ) var windSpeed             : Double? = null,
+     @SerializedName("precipitation_amount"      ) var precipitationAmount : Int? = null
++     */
+ 
++    @SerializedName("air_pressure_at_sea_level" ) var airPressureAtSeaLevel : Double? = null,
++    @SerializedName("air_temperature"           ) var airTemperature        : Double? = null,
++    @SerializedName("cloud_area_fraction"       ) var cloudAreaFraction     : Int?    = null,
++    @SerializedName("relative_humidity"         ) var relativeHumidity      : Int?    = null,
++    @SerializedName("wind_from_direction"       ) var windFromDirection     : Double? = null,
++    @SerializedName("wind_speed"                ) var windSpeed             : Double? = null,
++
++    @SerializedName("precipitation_amount"      ) var precipitationAmount : Double? = null
+ )
+ 
+ 
+@@ -57,10 +67,6 @@
+ )
+ 
+ 
+-
+-
+-
+-
+ data class Next12Hours (
+ 
+     @SerializedName("summary" ) var summary : Summary? = Summary(),

@@ -1,0 +1,17 @@
+Index: app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsRepository.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package no.uio.ifi.in2000.team31.data.weatherAlert\r\n\r\nimport no.uio.ifi.in2000.team31.model.WeatherAlert\r\n\r\nclass WeatherAlertsRepository {\r\n    private val weatherAlert = WeatherAlertsDataSource()\r\n\r\n    suspend fun fetchInfo(url: String): WeatherAlert {\r\n\r\n        return weatherAlert.fetchData(url)\r\n    }\r\n\r\n}
+===================================================================
+diff --git a/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsRepository.kt b/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsRepository.kt
+--- a/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsRepository.kt	
++++ b/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsRepository.kt	
+@@ -5,7 +5,7 @@
+ class WeatherAlertsRepository {
+     private val weatherAlert = WeatherAlertsDataSource()
+ 
+-    suspend fun fetchInfo(url: String): WeatherAlert {
++    suspend fun fetchInfo(url: String) {
+ 
+         return weatherAlert.fetchData(url)
+     }
