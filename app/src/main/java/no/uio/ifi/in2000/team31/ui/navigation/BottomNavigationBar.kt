@@ -27,8 +27,14 @@ fun BottomNavigationBar(navController: NavController) {
             onClick = {
                 // hvis ikke vi er der allerede
                 if (navController.currentDestination?.route != AppRoutes.HOME) {
-                    // gaa til hjemskjerm
                     navController.navigate(AppRoutes.HOME) {
+                        // fikser backstack
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+
+                        //unngår flere instanser
+                        launchSingleTop = true
                         restoreState = true
                     }
                 }
