@@ -28,7 +28,9 @@ import no.uio.ifi.in2000.team31.model.WeatherDataModel
 
 data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
-    val tempAndTimeData: MutableList<Map<String, Double>>? = null
+    val tempAndTimeData: MutableList<Map<String, Double>>? = null,
+    val symbolData: MutableList<String?>? = null,
+    val longTermForecast: Map<String, Pair<Double, Double>>? = null
 )
 
 data class WeatherAlertUIState(
@@ -51,8 +53,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _weatherDataUIState = MutableStateFlow(WeatherDataUIState())
     val weatherDataUIState: StateFlow<WeatherDataUIState> = _weatherDataUIState.asStateFlow()
 
+    private val _symbolUIState = MutableStateFlow(WeatherDataUIState())
+    val symbolUIState: StateFlow<WeatherDataUIState> = _symbolUIState.asStateFlow()
+
     private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
     val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
+
+    private val _longTermForecastUIState = MutableStateFlow(WeatherDataUIState())
+    val longTermForecastUIState: StateFlow<WeatherDataUIState> = _longTermForecastUIState.asStateFlow()
 
     fun checkPermissionsAndStartUpdates(context: Context) {
         val permission =
@@ -111,7 +119,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 _weatherDataUIState.update { currentState ->
                     currentState.copy(
                         weatherData = repository.fetchInfo(url),
-                        tempAndTimeData = repository.getTempAndTime(lat, lon)
+                        tempAndTimeData = repository.getNext24Hours(lat, lon),
+                        longTermForecast = repository.getNext7Days(lat,lon)
                     )
                 }
 

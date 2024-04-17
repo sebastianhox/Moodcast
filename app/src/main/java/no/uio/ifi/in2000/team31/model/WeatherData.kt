@@ -131,7 +131,9 @@ fun WeatherData.toModelInstant(): WeatherDataModel {
                 relativeHumidity = it.data?.instant?.details?.relativeHumidity,
                 windFromDirection = it.data?.instant?.details?.windFromDirection,
                 windSpeed = it.data?.instant?.details?.windSpeed,
-                precipitationAmount = it.data?.instant?.details?.precipitationAmount
+                symbolCode = it.data?.next1Hours?.summary?.symbolCode,
+                precipitationAmount = it.data?.instant?.details?.precipitationAmount,
+                next12Hours = it.data?.next12Hours?.details?.airTemperature
             )
         )
     }
