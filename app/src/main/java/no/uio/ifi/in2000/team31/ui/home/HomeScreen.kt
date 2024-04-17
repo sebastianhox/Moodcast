@@ -1,11 +1,9 @@
 package no.uio.ifi.in2000.team31.ui.home
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,16 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.capitalize
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.time.LocalDate
 import kotlin.math.roundToInt
-import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -122,25 +116,6 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
                 }
             }
         }
-        /*
-        //Farevarsel
-        Box(modifier = Modifier
-            .padding(18.dp)
-            .width(360.dp)
-            .height(71.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))
-            .clickable {
-                navController.navigate("AlertScreen")
-            }
-        ) {
-
-            for (feature in weatherAlert.features) {
-                Text(
-                    text = "Farevarsel:\n${feature.properties["title"]}\n",
-                    color = Color.Red
-                )
-            }
-        }*/
 
         //Vær i dag - time for time
         Box(modifier = Modifier
@@ -197,19 +172,6 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
                     )
                 }
             }
-        }
-
-        //Menu thingz
-        Box(modifier = Modifier
-            .width(412.dp)
-            .height(80.dp)
-            .background(color = Color(0xFFF3EDF7))
-            .padding(start = 8.dp, end = 8.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
-                verticalAlignment = Alignment.Top,
-            ) {}
         }
     }
 }
