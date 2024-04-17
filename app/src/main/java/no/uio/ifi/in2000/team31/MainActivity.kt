@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team31.ui.alert.AlertScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
+import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 class MainActivity : ComponentActivity() {
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController, "HomeScreen") {
                         composable("HomeScreen") { HomeScreen(homeViewModel, navController) }
                         composable("AlertScreen") { AlertScreen(navController) }
+                        composable("MoodScreen") { MoodScreen(navController) }
                     }
                 }
             }

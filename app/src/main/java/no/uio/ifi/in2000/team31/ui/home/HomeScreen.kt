@@ -114,7 +114,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             .padding(18.dp)
             .width(360.dp)
             .height(71.dp)
-            //.background(Color.Green, shape = RoundedCornerShape(size = 15.dp))
+            .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))
             .clickable {
                 navController.navigate("AlertScreen")
             }
@@ -149,7 +149,24 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             }
 
 
+        }
+        //a TEMPORRAY box to nagivate to the next screen
+        Box(modifier = Modifier
+            .padding(18.dp)
+            .width(360.dp)
+            .height(71.dp)
+            .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))
+            .clickable {
+                navController.navigate("MoodScreen")
+            }
+        ) {
 
+            for (feature in weatherAlert.features) {
+                Text(
+                    text = "Legg til humør:\n${feature.properties["title"]}\n",
+                    //color = Color.Red
+                )
+            }
         }
         //Langtidsvarsel
         Box(modifier = Modifier
@@ -158,7 +175,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             .height(230.dp)
             .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))) {
             Text(
-                text = "Aktivitetsforslag:",
+                text = "Langtidsvarsel",
                 fontSize = 20.sp
             )
         }
