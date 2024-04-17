@@ -50,7 +50,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
     val windDirection = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.windFromDirection
     val airPressure = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.airPressureAtSeaLevel
     val cloudCover = weatherData?.properties?.timeseries?.get(0)?.data?.instant?.details?.cloudAreaFraction*/
-    val temperature = weatherData?.weatherData?.instant?.get(0)?.airTemperature
+    val temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
 
 
     LaunchedEffect(key1 = true) {
@@ -103,9 +103,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
                         textAlign = TextAlign.Center,
                         modifier = Modifier.align(Alignment.Center)
                     )
-
                 }
-
             }
         }
 
@@ -114,7 +112,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             .padding(18.dp)
             .width(360.dp)
             .height(71.dp)
-            .background(Color.Green, shape = RoundedCornerShape(size = 15.dp))
+            .background(Color.LightGray, shape = RoundedCornerShape(size = 15.dp))
             .clickable {
                 navController.navigate("AlertScreen")
             }
@@ -147,9 +145,6 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
                     }
                 }
             }
-
-
-
         }
         //Langtidsvarsel
         Box(modifier = Modifier
@@ -174,7 +169,6 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
                 verticalAlignment = Alignment.Top,
             ) {}
         }
-
     }
 }
 
@@ -209,10 +203,7 @@ fun TimeAndTempCards(map: Map<String, Double>) {
                         text = "${map.values.first()}" + "\u00B0"
                     )
                 }
-
-
             }
-
         }
     }
 }
