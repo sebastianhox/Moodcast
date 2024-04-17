@@ -1,0 +1,22 @@
+Index: app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsDataSource.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package no.uio.ifi.in2000.team31.data.weatherAlert\n\nimport android.util.Log\nimport io.ktor.client.HttpClient\nimport io.ktor.client.call.body\nimport io.ktor.client.engine.cio.CIO\nimport io.ktor.client.plugins.contentnegotiation.ContentNegotiation\nimport io.ktor.client.plugins.defaultRequest\nimport io.ktor.client.request.get\nimport io.ktor.client.request.header\nimport io.ktor.client.statement.HttpResponse\nimport io.ktor.serialization.gson.gson\nimport no.uio.ifi.in2000.team31.model.WeatherAlert\nimport no.uio.ifi.in2000.team31.model.WeatherAlertModel\n\nclass WeatherAlertsDataSource {\n    private val client = HttpClient(CIO) {\n        install(ContentNegotiation) {\n            gson()\n        }\n        defaultRequest {\n            url(\"https://gw-uio.intark.uh-it.no/in2000/\")\n            header(\"X-Gravitee-API-Key\", \"0cdacead-89b3-408a-bcf5-bb6bd685a874\")\n        }\n    }\n\n    suspend fun fetchData(url: String) {\n        val response: HttpResponse = client.get(url)\n        Log.d(\"apiReq\", response.status.value.toString())\n\n        val alert:WeatherAlert = response.body()\n    }\n}
+===================================================================
+diff --git a/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsDataSource.kt b/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsDataSource.kt
+--- a/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsDataSource.kt	
++++ b/app/src/main/java/no/uio/ifi/in2000/team31/data/weatherAlert/WeatherAlertsDataSource.kt	
+@@ -24,10 +24,10 @@
+         }
+     }
+ 
+-    suspend fun fetchData(url: String) {
++    suspend fun fetchData(url: String): WeatherAlert {
+         val response: HttpResponse = client.get(url)
+         Log.d("apiReq", response.status.value.toString())
+ 
+-        val alert:WeatherAlert = response.body()
++        return response.body()
+     }
+ }
+\ No newline at end of file
