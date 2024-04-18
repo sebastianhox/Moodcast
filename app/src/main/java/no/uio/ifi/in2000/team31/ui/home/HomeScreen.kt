@@ -208,6 +208,7 @@ fun TimeAndTempCards(map: Map<String, Double>, homeViewModel: HomeViewModel) {
         modifier = Modifier.padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
         //colors = CardDefaults.cardColors(Color.Green)
+
     ) {
 
         Column(
