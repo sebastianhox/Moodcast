@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.uio.ifi.in2000.team31.MyApplication
 import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherRepository
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
@@ -32,17 +33,17 @@ data class WeatherDataUIState(
     val symbolData: MutableList<String?>? = null,
     val longTermForecast: Map<String, Pair<Double, Double>>? = null
 )
-
 data class WeatherAlertUIState(
     val features: List<Feature> = listOf()
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    var fusedLocationClient: FusedLocationProviderClient =
+    private var fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(application)
-    private val repository = LocationWeatherRepository()
 
-    private val alertRepository: WeatherAlertRepository = WeatherAlertRepository()
+    private val appContainer = (application as MyApplication).appContainer
+    private val repository = appContainer.locWeatherRepository
+    private val alertRepository = appContainer.alertRepository
 
     private val _permissionGranted = MutableStateFlow(false)
     val permissionGranted: StateFlow<Boolean> = _permissionGranted.asStateFlow()

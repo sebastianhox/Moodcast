@@ -4,13 +4,14 @@ import android.util.Log
 import no.uio.ifi.in2000.team31.model.WeatherDataInstant
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
 
-class LocationWeatherRepository {
+class LocationWeatherRepository(private val weatherData : LocationWeatherDataSource) {
 
-    private val weatherData = LocationWeatherDataSource()
-
+    private lateinit var cachedData: WeatherDataModel
     suspend fun fetchInfo(url: String): WeatherDataModel {
         Log.d("testing", "fetchInfo - Repository")
-        return weatherData.fetchData(url)
+        val fetchedData = weatherData.fetchData(url)
+        cachedData = fetchedData
+        return fetchedData
     }
 
     /*suspend fun fetchWeatherData(lat: Double, lon: Double): WeatherDataModel {
@@ -114,5 +115,13 @@ class LocationWeatherRepository {
         Log.d("Langtidsvarsel:", "$longTermForecast")
 
         return longTermForecast
+    }
+
+    fun getCachedData(): WeatherDataModel? {
+        return if (::cachedData.isInitialized) {
+            cachedData
+        } else {
+            null
+        }
     }
 }

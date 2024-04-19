@@ -7,8 +7,7 @@ import io.github.dellisd.spatialk.geojson.Point
 import io.github.dellisd.spatialk.geojson.Polygon
 import io.github.dellisd.spatialk.turf.booleanPointInPolygon
 
-class WeatherAlertRepository {
-    private val alert = WeatherAlertDataSource()
+class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
 
     suspend fun getDangerZonesOf(point: Point): List<Feature> {
         val data = alert.fetchData()
