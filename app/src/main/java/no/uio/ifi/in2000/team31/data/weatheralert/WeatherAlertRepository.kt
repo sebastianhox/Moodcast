@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team31.data.weatheralert
 
+import android.util.Log
 import io.github.dellisd.spatialk.geojson.Feature
 import io.github.dellisd.spatialk.geojson.Geometry
 import io.github.dellisd.spatialk.geojson.MultiPolygon
@@ -10,6 +11,7 @@ import io.github.dellisd.spatialk.turf.booleanPointInPolygon
 class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
 
     suspend fun getDangerZonesOf(point: Point): List<Feature> {
+        Log.d("testing", "fetch alert data - Alert Repository")
         val data = alert.fetchData()
         val features = mutableListOf<Feature>()
         for (feature in data) {

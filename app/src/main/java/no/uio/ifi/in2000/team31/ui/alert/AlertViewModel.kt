@@ -10,15 +10,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MyApplication
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
-import no.uio.ifi.in2000.team31.ui.home.WeatherAlertUIState
+import no.uio.ifi.in2000.team31.model.WeatherData
+import no.uio.ifi.in2000.team31.ui.home.WeatherDataUIState
 
 class AlertViewModel(application: Application) : AndroidViewModel(application) {
 
     private val appContainer = (application as MyApplication).appContainer
     private val alertRepository = appContainer.alertRepository
 
-    private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
-    val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
+    private val _weatherAlertUIState = MutableStateFlow(WeatherDataUIState())
+    val weatherAlertUIState: StateFlow<WeatherDataUIState> = _weatherAlertUIState.asStateFlow()
 
     init {
         startAlertUpdates()

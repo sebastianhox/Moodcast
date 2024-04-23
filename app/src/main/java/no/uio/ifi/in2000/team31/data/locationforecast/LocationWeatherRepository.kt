@@ -4,27 +4,25 @@ import android.util.Log
 import no.uio.ifi.in2000.team31.model.WeatherDataInstant
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
 
-class LocationWeatherRepository(private val weatherData : LocationWeatherDataSource) {
+class LocationWeatherRepository(private val weatherDataSource : LocationWeatherDataSource) {
 
     private lateinit var cachedData: WeatherDataModel
     suspend fun fetchInfo(url: String): WeatherDataModel {
-        Log.d("testing", "fetchInfo - Repository")
-        val fetchedData = weatherData.fetchData(url)
+        Log.d("testing", "fetchInfo - LocWeather Repository")
+        val fetchedData = weatherDataSource.fetchData(url)
         cachedData = fetchedData
         return fetchedData
     }
 
-    /*suspend fun fetchWeatherData(lat: Double, lon: Double): WeatherDataModel {
-        val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
-        Log.d("testing", "Fething data for $lat, $lon")
-        return weatherData.fetchData(url)
-    }*/
-
 
     suspend fun getNext24Hours(lat: Double?, lon: Double?): MutableList<Map<String, Double>> {
         val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
-        val weatherData = fetchInfo(url) //Lagde objekt for aa faa liste
-        Log.d("fetching weatherobjects", "${weatherData}")
+
+        val weatherData = if (::cachedData.isInitialized) {
+            cachedData
+        } else {
+            fetchInfo(url)
+        }
 
         val temperaturesForNextHours = mutableListOf<Map<String, Double>>() // hourly forecast
 
@@ -48,21 +46,22 @@ class LocationWeatherRepository(private val weatherData : LocationWeatherDataSou
             temperaturesForNextHours.add(temperatureMap) // Legg til temperatureMap i listen
         }
 
-        Log.d("Temperatures for next hours:", "$temperaturesForNextHours")
-
         return temperaturesForNextHours
     }
 
     suspend fun getNext7Days(lat: Double?, lon: Double?): Map<String, Pair<Double, Double>> {
         val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
-        val weatherData = fetchInfo(url) // api call to retrieve weather objects
+
+        val weatherData = if (::cachedData.isInitialized) {
+            cachedData
+        } else {
+            fetchInfo(url)
+        }
         val weatherInstant = weatherData.instant
 
         val longTermForecast = mutableMapOf<String, Pair<Double, Double>>() // long term forecast
 
         val numberOfDaysToFetch = weatherInstant.size
-
-        Log.d("size:", "$numberOfDaysToFetch") //gir 88/87
 
         val startIndeks = 1 // Startindeks for neste dag
         val endIndeks = minOf(
@@ -112,13 +111,12 @@ class LocationWeatherRepository(private val weatherData : LocationWeatherDataSou
             currentDateIndex += 1
         }
 
-        Log.d("Langtidsvarsel:", "$longTermForecast")
-
         return longTermForecast
     }
 
     fun getCachedData(): WeatherDataModel? {
         return if (::cachedData.isInitialized) {
+            Log.d("testing", "fetch cached info - LocWeather Repository ")
             cachedData
         } else {
             null

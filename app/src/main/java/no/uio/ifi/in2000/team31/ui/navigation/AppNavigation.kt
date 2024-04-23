@@ -17,7 +17,7 @@ import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AppNavigation() {
+fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
 
@@ -27,14 +27,13 @@ fun AppNavigation() {
 
         NavHost(navController = navController, startDestination = AppRoutes.HOME) {
             composable(AppRoutes.HOME) {
-                val homeViewModel: HomeViewModel = viewModel()
-                HomeScreen(homeViewModel, navController)
+                HomeScreen(navController, homeViewModel)
             }
 
             composable(AppRoutes.ALERT) {
                 AlertScreen(navController)
             }
-            
+
             composable(AppRoutes.MOOD) {
                 MoodScreen(navController = navController)
             }

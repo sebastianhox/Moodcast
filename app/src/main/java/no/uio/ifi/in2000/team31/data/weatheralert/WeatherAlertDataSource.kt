@@ -22,7 +22,6 @@ class WeatherAlertDataSource {
     }
     suspend fun fetchData(): FeatureCollection {
         val response: HttpResponse = client.get("weatherapi/metalerts/2.0/current.json")
-        // Log.d("apiReq", "Weather Alert Req: " + response.status.value.toString())
         return FeatureCollection.fromJson(response.bodyAsText())
     }
 }

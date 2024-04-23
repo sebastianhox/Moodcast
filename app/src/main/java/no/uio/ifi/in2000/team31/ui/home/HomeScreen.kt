@@ -34,21 +34,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
-    val context = LocalContext.current
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
-    val weatherAlert by homeViewModel.weatherAlertUIState.collectAsState()
-    val symbolData by homeViewModel.symbolUIState.collectAsState()
-
-    val symbolList = symbolData.symbolData
-
-    Log.d("symbols:", "$symbolList")
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()
@@ -63,18 +58,6 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
     val temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
 
 
-    LaunchedEffect(key1 = true) {
-        homeViewModel.startLocationUpdates()
-        homeViewModel.startAlertUpdates()
-    }
-
-    val permissionGranted by homeViewModel.permissionGranted.collectAsState()
-
-    LaunchedEffect(key1 = permissionGranted) {
-        if (permissionGranted) {
-            homeViewModel.checkPermissionsAndStartUpdates(context)
-        }
-    }
 
     //val locationState = homeViewModel.locationState.collectAsState()
     Column(
@@ -132,7 +115,7 @@ fun HomeScreen(homeViewModel: HomeViewModel, navController: NavController) {
             ) {
                 tempAndTimeList?.size?.let {
                     items(tempAndTimeList) { map ->
-                        TimeAndTempCards(map, homeViewModel)
+                        TimeAndTempCards(map)
                     }
                 }
             }
@@ -203,7 +186,7 @@ fun LongTermForecastRow(day: String, minTemp: Double, maxTemp: Double) {
 }
 
 @Composable
-fun TimeAndTempCards(map: Map<String, Double>, homeViewModel: HomeViewModel) {
+fun TimeAndTempCards(map: Map<String, Double>) {
     Card(
         modifier = Modifier.padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),

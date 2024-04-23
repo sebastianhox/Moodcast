@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,90 +31,20 @@ import no.uio.ifi.in2000.team31.model.WeatherDataModel
 data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
     val tempAndTimeData: MutableList<Map<String, Double>>? = null,
-    val symbolData: MutableList<String?>? = null,
-    val longTermForecast: Map<String, Pair<Double, Double>>? = null
-)
-data class WeatherAlertUIState(
+    val longTermForecast: Map<String, Pair<Double, Double>>? = null,
     val features: List<Feature> = listOf()
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private var fusedLocationClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(application)
 
     private val appContainer = (application as MyApplication).appContainer
     private val repository = appContainer.locWeatherRepository
     private val alertRepository = appContainer.alertRepository
 
-    private val _permissionGranted = MutableStateFlow(false)
-    val permissionGranted: StateFlow<Boolean> = _permissionGranted.asStateFlow()
-
-    private val _locationState = MutableStateFlow(Pair(0.0, 0.0))
-    val locationState: StateFlow<Pair<Double, Double>> = _locationState.asStateFlow()
-
     private val _weatherDataUIState = MutableStateFlow(WeatherDataUIState())
     val weatherDataUIState: StateFlow<WeatherDataUIState> = _weatherDataUIState.asStateFlow()
 
-    private val _symbolUIState = MutableStateFlow(WeatherDataUIState())
-    val symbolUIState: StateFlow<WeatherDataUIState> = _symbolUIState.asStateFlow()
-
-    private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
-    val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
-
-    private val _longTermForecastUIState = MutableStateFlow(WeatherDataUIState())
-    val longTermForecastUIState: StateFlow<WeatherDataUIState> = _longTermForecastUIState.asStateFlow()
-
-    fun checkPermissionsAndStartUpdates(context: Context) {
-        val permission =
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-        if (permission == PackageManager.PERMISSION_GRANTED) {
-            _permissionGranted.value = true
-            startLocationUpdates()
-            startAlertUpdates()
-        } else {
-            Log.d("testing", "No permissions")
-        }
-    }
-
-    fun startAlertUpdates(point: Point = point(6.352810,59.650822) ) {
-        viewModelScope.launch {
-            _weatherAlertUIState.update { currentState ->
-                currentState.copy(
-                    features = alertRepository.getDangerZonesOf(point)
-                )
-            }
-        }
-    }
-
-    fun startLocationUpdates() {
-        val permission = ContextCompat.checkSelfPermission(
-            getApplication(),
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-        if (permission == PackageManager.PERMISSION_GRANTED) {
-            val locationRequest = LocationRequest.Builder(1000)
-                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                .setMinUpdateIntervalMillis(1000)
-                .build()
-
-            val locationCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-                    locationResult.lastLocation?.let {
-                        _locationState.value = Pair(it.latitude, it.longitude)
-                        fetchWeatherData(it.latitude, it.longitude)
-                    }
-                }
-            }
-
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                null
-            )
-        }
-    }
-
-    private fun fetchWeatherData(lat: Double, lon: Double) {
+    fun fetchWeatherData(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
                 val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
@@ -121,7 +52,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     currentState.copy(
                         weatherData = repository.fetchInfo(url),
                         tempAndTimeData = repository.getNext24Hours(lat, lon),
-                        longTermForecast = repository.getNext7Days(lat,lon)
+                        longTermForecast = repository.getNext7Days(lat,lon),
+                        features = alertRepository.getDangerZonesOf(point(lat,lon))
                     )
                 }
 

@@ -26,9 +26,7 @@ class LocationWeatherDataSource {
     }
 
     suspend fun fetchData(url: String): WeatherDataModel {
-        Log.d("testing", "Før client.get(url) - DataSource")
         val response: HttpResponse = client.get(url)
-        Log.d("testing", "Etter client.get(url) - DataSource")
         return response.body<WeatherData>().toModelInstant()
     }
 }
