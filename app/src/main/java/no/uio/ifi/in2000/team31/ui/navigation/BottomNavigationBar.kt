@@ -94,6 +94,30 @@ fun BottomNavigationBar(navController: NavController) {
             }
         )
 
+        NavigationBarItem(
+
+            // m3 default ikon og tekst
+            icon = { Icon(Icons.Filled.Home, contentDescription = "Hjem") },
+            label = { Text("Aktiviteter") },
+
+            selected = navController.currentDestination?.route == AppRoutes.ACTIVITY,
+            onClick = {
+                // hvis ikke vi er der allerede
+                if (navController.currentDestination?.route != AppRoutes.ACTIVITY) {
+                    navController.navigate(AppRoutes.ACTIVITY) {
+                        // fikser backstack
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+
+                        //unngår flere instanser
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
+        )
+
         // aktiviteter
     }
 }

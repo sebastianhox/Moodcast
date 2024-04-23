@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     AppNavigation() // fjernet dir navhost
+
                 }
             }
         }
@@ -67,4 +68,5 @@ class MainActivity : ComponentActivity() {
 
         )
     }
+
 }
