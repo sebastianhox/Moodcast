@@ -12,4 +12,5 @@ class AppContainer {
 
     val locWeatherRepository = LocationWeatherRepository(locWeatherDataSource)
     val alertRepository = WeatherAlertRepository(alertDataSource)
+
 }

@@ -1,6 +1,5 @@
 package no.uio.ifi.in2000.team31.data.locationforecast
 
-import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -15,7 +14,7 @@ import no.uio.ifi.in2000.team31.model.toModelInstant
 
 class LocationWeatherDataSource {
 
-    private val client = HttpClient() {
+    private val client = HttpClient {
         install(ContentNegotiation) {
             gson()
         }

@@ -2,7 +2,6 @@ package no.uio.ifi.in2000.team31.data.locationforecast
 
 import android.util.Log
 import no.uio.ifi.in2000.team31.cache.CachePolicy
-import no.uio.ifi.in2000.team31.model.WeatherDataInstant
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
@@ -19,13 +18,12 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         }
     }
 
-    suspend fun fetch(lat:Double?, lon:Double?): WeatherDataModel {
+    private suspend fun fetch(lat: Double?, lon: Double?): WeatherDataModel {
         Log.d("testing", "fetchInfo - LocWeather Repository")
-        val fetchedData = weatherDataSource.fetchData(lat, lon)
-        return fetchedData
+        return weatherDataSource.fetchData(lat, lon)
     }
 
-    suspend fun fetchAndCache(lat:Double?, lon:Double?): WeatherDataModel {
+    private suspend fun fetchAndCache(lat:Double?, lon:Double?): WeatherDataModel {
         cachedData = fetch(lat, lon)
         return cachedData
     }
@@ -121,14 +119,5 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         }
 
         return longTermForecast
-    }
-
-    fun getCachedData(): WeatherDataModel? {
-        return if (::cachedData.isInitialized) {
-            Log.d("testing", "fetch cached info - LocWeather Repository ")
-            cachedData
-        } else {
-            null
-        }
     }
 }

@@ -25,8 +25,8 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
         }
     }
 
-    suspend fun fetch(point: Point): List<Feature> {
-        Log.d("testing", "fetch alert data - Alert Repository")
+    private suspend fun fetch(point: Point): List<Feature> {
+        Log.d("API Request", "fetch alert data remotely - Alert Repository")
         val data = alert.fetchData()
         val features = mutableListOf<Feature>()
         for (feature in data) {
@@ -37,7 +37,7 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
         return features
     }
 
-    suspend fun fetchAndCache(point: Point): List<Feature> {
+    private suspend fun fetchAndCache(point: Point): List<Feature> {
         featuresCached = fetch(point)
         return featuresCached
     }
