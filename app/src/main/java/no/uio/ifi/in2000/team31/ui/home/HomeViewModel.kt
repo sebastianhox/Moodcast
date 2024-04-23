@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MyApplication
+import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherRepository
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
@@ -32,7 +33,7 @@ data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
     val tempAndTimeData: MutableList<Map<String, Double>>? = null,
     val longTermForecast: Map<String, Pair<Double, Double>>? = null,
-    val features: List<Feature> = listOf()
+    val features: List<Feature>? = listOf()
 )
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -47,13 +48,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun fetchWeatherData(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
-                val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
                 _weatherDataUIState.update { currentState ->
                     currentState.copy(
-                        weatherData = repository.fetchInfo(url),
+                        weatherData = repository.fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.REFRESH)),
                         tempAndTimeData = repository.getNext24Hours(lat, lon),
                         longTermForecast = repository.getNext7Days(lat,lon),
-                        features = alertRepository.getDangerZonesOf(point(lat,lon))
+                        features = alertRepository.getDangerZonesOf(point(lat,lon), CachePolicy(CachePolicy.Type.REFRESH))
                     )
                 }
 

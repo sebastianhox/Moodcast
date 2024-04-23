@@ -7,10 +7,25 @@ import io.github.dellisd.spatialk.geojson.MultiPolygon
 import io.github.dellisd.spatialk.geojson.Point
 import io.github.dellisd.spatialk.geojson.Polygon
 import io.github.dellisd.spatialk.turf.booleanPointInPolygon
+import no.uio.ifi.in2000.team31.cache.CachePolicy
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
+
 
 class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
+    private lateinit var featuresCached: List<Feature>
 
-    suspend fun getDangerZonesOf(point: Point): List<Feature> {
+    suspend fun getDangerZonesOf(point: Point, cachePolicy: CachePolicy): List<Feature>? {
+        return when (cachePolicy.type) {
+            NEVER -> fetch(point)
+            ALWAYS -> featuresCached
+            REFRESH -> fetchAndCache(point)
+            else -> null
+        }
+    }
+
+    suspend fun fetch(point: Point): List<Feature> {
         Log.d("testing", "fetch alert data - Alert Repository")
         val data = alert.fetchData()
         val features = mutableListOf<Feature>()
@@ -20,6 +35,11 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
             }
         }
         return features
+    }
+
+    suspend fun fetchAndCache(point: Point): List<Feature> {
+        featuresCached = fetch(point)
+        return featuresCached
     }
 
     /*

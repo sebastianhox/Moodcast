@@ -1,6 +1,5 @@
 package no.uio.ifi.in2000.team31.ui.alert
 
-import AlertViewModel
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -26,7 +25,7 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
         ) {
             Text(text = "FAREVARSEL")
-            Text(text = "Antall farevarsler for ditt område er: ${weatherAlertUIState.features.size}")
+            Text(text = "Antall farevarsler for ditt område er: ${weatherAlertUIState.features?.size}")
         }
     }
 }

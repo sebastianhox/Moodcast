@@ -25,7 +25,8 @@ class LocationWeatherDataSource {
         }
     }
 
-    suspend fun fetchData(url: String): WeatherDataModel {
+    suspend fun fetchData(lat: Double?, lon: Double?): WeatherDataModel {
+        val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
         val response: HttpResponse = client.get(url)
         return response.body<WeatherData>().toModelInstant()
     }

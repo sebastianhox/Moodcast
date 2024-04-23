@@ -1,3 +1,5 @@
+package no.uio.ifi.in2000.team31.ui.alert
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,8 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MyApplication
-import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
-import no.uio.ifi.in2000.team31.model.WeatherData
+import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.ui.home.WeatherDataUIState
 
 class AlertViewModel(application: Application) : AndroidViewModel(application) {
@@ -21,14 +22,16 @@ class AlertViewModel(application: Application) : AndroidViewModel(application) {
     private val _weatherAlertUIState = MutableStateFlow(WeatherDataUIState())
     val weatherAlertUIState: StateFlow<WeatherDataUIState> = _weatherAlertUIState.asStateFlow()
 
+
+
     init {
-        startAlertUpdates()
+    startAlertUpdates()
     }
     private fun startAlertUpdates(point: Point = point(6.352810, 59.650822)) {
         viewModelScope.launch {
             _weatherAlertUIState.update { currentState ->
                 currentState.copy(
-                    features = alertRepository.getDangerZonesOf(point)
+                    features = alertRepository.getDangerZonesOf(point, CachePolicy(CachePolicy.Type.ALWAYS))
                 )
             }
         }
