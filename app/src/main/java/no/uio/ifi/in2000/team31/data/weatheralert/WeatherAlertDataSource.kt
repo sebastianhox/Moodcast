@@ -11,7 +11,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.gson.gson
 
 class WeatherAlertDataSource {
-    private val client = HttpClient() {
+    private val client = HttpClient {
         install(ContentNegotiation) {
             gson()
         }
@@ -22,7 +22,6 @@ class WeatherAlertDataSource {
     }
     suspend fun fetchData(): FeatureCollection {
         val response: HttpResponse = client.get("weatherapi/metalerts/2.0/current.json")
-        // Log.d("apiReq", "Weather Alert Req: " + response.status.value.toString())
         return FeatureCollection.fromJson(response.bodyAsText())
     }
 }

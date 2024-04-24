@@ -19,5 +19,5 @@ data class WeatherDataInstant (
     val windSpeed             : Double? = null,
     val symbolCode            : String? = null,
     val precipitationAmount   : Double? = null,
-    val next12Hours: Double? = null
+    val next12Hours           : Double? = null
 )
