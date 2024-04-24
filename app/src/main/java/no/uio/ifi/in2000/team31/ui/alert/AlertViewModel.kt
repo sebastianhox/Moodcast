@@ -17,7 +17,6 @@ data class WeatherAlertUIState(
     val features: List<Feature>? = listOf()
 )
 class AlertViewModel(application: Application) : AndroidViewModel(application) {
-
     private val appContainer = (application as MyApplication).appContainer
     private val alertRepository = appContainer.alertRepository
 

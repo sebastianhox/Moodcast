@@ -20,22 +20,17 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
 
-    Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
-    ) {
+    NavHost(navController = navController, startDestination = AppRoutes.HOME) {
+        composable(AppRoutes.HOME) {
+            HomeScreen(navController, homeViewModel)
+        }
 
-        NavHost(navController = navController, startDestination = AppRoutes.HOME) {
-            composable(AppRoutes.HOME) {
-                HomeScreen(navController, homeViewModel)
-            }
+        composable(AppRoutes.ALERT) {
+            AlertScreen(navController)
+        }
 
-            composable(AppRoutes.ALERT) {
-                AlertScreen(navController)
-            }
-
-            composable(AppRoutes.MOOD) {
-                MoodScreen(navController = navController)
-            }
+        composable(AppRoutes.MOOD) {
+            MoodScreen(navController = navController)
         }
     }
 }
