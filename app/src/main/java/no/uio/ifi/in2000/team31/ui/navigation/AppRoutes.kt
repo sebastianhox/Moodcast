@@ -5,4 +5,5 @@ object AppRoutes {
     const val HOME = "home"
     const val ALERT = "alert"
     const val MOOD = "mood"
+    const val ACTIVITY = "activity"
 }

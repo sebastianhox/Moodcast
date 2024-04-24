@@ -12,6 +12,7 @@ import no.uio.ifi.in2000.team31.ui.alert.AlertScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
+import no.uio.ifi.in2000.team31.ui.activity.ActivityScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -27,6 +28,10 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
 
         composable(AppRoutes.ALERT) {
             AlertScreen(navController)
+        }
+
+        composable(AppRoutes.ACTIVITY) {
+            ActivityScreen()
         }
 
         composable(AppRoutes.MOOD) {
