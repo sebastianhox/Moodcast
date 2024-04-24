@@ -5,7 +5,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,27 +16,21 @@ import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AppNavigation() {
+fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
 
-    Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
-    ) {
+    NavHost(navController = navController, startDestination = AppRoutes.HOME) {
+        composable(AppRoutes.HOME) {
+            HomeScreen(navController, homeViewModel)
+        }
 
-        NavHost(navController = navController, startDestination = AppRoutes.HOME) {
-            composable(AppRoutes.HOME) {
-                val homeViewModel: HomeViewModel = viewModel()
-                HomeScreen(homeViewModel, navController)
-            }
+        composable(AppRoutes.ALERT) {
+            AlertScreen(navController)
+        }
 
-            composable(AppRoutes.ALERT) {
-                AlertScreen(navController)
-            }
-            
-            composable(AppRoutes.MOOD) {
-                MoodScreen(navController = navController)
-            }
+        composable(AppRoutes.MOOD) {
+            MoodScreen(navController = navController)
         }
     }
 }

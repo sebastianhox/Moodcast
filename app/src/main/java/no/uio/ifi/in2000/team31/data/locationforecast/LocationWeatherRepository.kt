@@ -1,29 +1,39 @@
 package no.uio.ifi.in2000.team31.data.locationforecast
 
 import android.util.Log
-import no.uio.ifi.in2000.team31.model.WeatherDataInstant
+import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
 
-class LocationWeatherRepository {
-
-    private val weatherData = LocationWeatherDataSource()
-
-    suspend fun fetchInfo(url: String): WeatherDataModel {
-        Log.d("testing", "fetchInfo - Repository")
-        return weatherData.fetchData(url)
+class LocationWeatherRepository(private val weatherDataSource : LocationWeatherDataSource) {
+    private lateinit var cachedData: WeatherDataModel
+    suspend fun fetchInfo(lat: Double?, lon: Double?, cachePolicy: CachePolicy): WeatherDataModel {
+        return when (cachePolicy.type) {
+            NEVER -> fetch(lat, lon)
+            ALWAYS -> cachedData
+            REFRESH -> fetchAndCache(lat, lon)
+            else -> fetch(lat,lon)
+        }
     }
 
-    /*suspend fun fetchWeatherData(lat: Double, lon: Double): WeatherDataModel {
-        val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
-        Log.d("testing", "Fething data for $lat, $lon")
-        return weatherData.fetchData(url)
-    }*/
+    private suspend fun fetch(lat: Double?, lon: Double?): WeatherDataModel {
+        Log.d("testing", "fetchInfo - LocWeather Repository")
+        return weatherDataSource.fetchData(lat, lon)
+    }
+
+    private suspend fun fetchAndCache(lat:Double?, lon:Double?): WeatherDataModel {
+        cachedData = fetch(lat, lon)
+        return cachedData
+    }
 
 
-    suspend fun getNext24Hours(lat: Double?, lon: Double?): MutableList<Map<String, Double>> {
-        val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
-        val weatherData = fetchInfo(url) //Lagde objekt for aa faa liste
-        Log.d("fetching weatherobjects", "${weatherData}")
+    suspend fun getNext24Hours(lat: Double, lon: Double): MutableList<Map<String, Double>> {
+
+
+        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
+
 
         val temperaturesForNextHours = mutableListOf<Map<String, Double>>() // hourly forecast
 
@@ -47,21 +57,18 @@ class LocationWeatherRepository {
             temperaturesForNextHours.add(temperatureMap) // Legg til temperatureMap i listen
         }
 
-        Log.d("Temperatures for next hours:", "$temperaturesForNextHours")
-
         return temperaturesForNextHours
     }
 
-    suspend fun getNext7Days(lat: Double?, lon: Double?): Map<String, Pair<Double, Double>> {
-        val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
-        val weatherData = fetchInfo(url) // api call to retrieve weather objects
+    suspend fun getNext7Days(lat: Double, lon: Double): Map<String, Pair<Double, Double>> {
+
+        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
+
         val weatherInstant = weatherData.instant
 
         val longTermForecast = mutableMapOf<String, Pair<Double, Double>>() // long term forecast
 
         val numberOfDaysToFetch = weatherInstant.size
-
-        Log.d("size:", "$numberOfDaysToFetch") //gir 88/87
 
         val startIndeks = 1 // Startindeks for neste dag
         val endIndeks = minOf(
@@ -110,8 +117,6 @@ class LocationWeatherRepository {
             // Hopp til neste tid i listen
             currentDateIndex += 1
         }
-
-        Log.d("Langtidsvarsel:", "$longTermForecast")
 
         return longTermForecast
     }

@@ -1,6 +1,5 @@
 package no.uio.ifi.in2000.team31.data.locationforecast
 
-import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -15,7 +14,7 @@ import no.uio.ifi.in2000.team31.model.toModelInstant
 
 class LocationWeatherDataSource {
 
-    private val client = HttpClient() {
+    private val client = HttpClient {
         install(ContentNegotiation) {
             gson()
         }
@@ -25,10 +24,9 @@ class LocationWeatherDataSource {
         }
     }
 
-    suspend fun fetchData(url: String): WeatherDataModel {
-        Log.d("testing", "Før client.get(url) - DataSource")
+    suspend fun fetchData(lat: Double?, lon: Double?): WeatherDataModel {
+        val url = "weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
         val response: HttpResponse = client.get(url)
-        Log.d("testing", "Etter client.get(url) - DataSource")
         return response.body<WeatherData>().toModelInstant()
     }
 }
