@@ -19,7 +19,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
     }
 
     private suspend fun fetch(lat: Double?, lon: Double?): WeatherDataModel {
-        Log.d("testing", "fetchInfo - LocWeather Repository")
+        Log.d("API Request", "fetchInfo - LocWeather Repository")
         return weatherDataSource.fetchData(lat, lon)
     }
 

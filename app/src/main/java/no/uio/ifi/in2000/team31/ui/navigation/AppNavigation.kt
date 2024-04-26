@@ -125,7 +125,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
         }
 
         composable(AppRoutes.ACTIVITY) {
-            ActivityScreen()
+            ActivityScreen(navController)
         }
 
         composable(AppRoutes.MOOD) {
