@@ -34,7 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
 enum class WeatherStatus {
     SUNNY,
@@ -50,10 +52,15 @@ data class Activity(
 )
 
 @Composable
-fun ActivityScreen(){
-    Scaffold (topBar = {
-        ActivityTopScreen()
-    }){ innerpadding ->
+fun ActivityScreen(navController: NavController){
+    Scaffold (
+        topBar = {
+            ActivityTopScreen()
+        },
+        bottomBar = {
+            BottomNavigationBar(navController)
+        }
+    ) { innerpadding ->
         Column (modifier = Modifier.padding(innerpadding)){
             Spacer(modifier = Modifier.height(15.dp))
             HeroText(status = WeatherStatus.SUNNY,

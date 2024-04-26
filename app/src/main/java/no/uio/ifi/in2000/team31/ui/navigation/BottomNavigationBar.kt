@@ -2,8 +2,10 @@ package no.uio.ifi.in2000.team31.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
+import androidx.compose.material.icons.filled.Hiking
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.AddReaction
+import androidx.compose.material.icons.outlined.Hiking
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -77,14 +79,18 @@ fun BottomNavigationBar(navController: NavController) {
                 }
             }
         )
-
+        val activitySelected = navController.currentDestination?.route == AppRoutes.ACTIVITY
         NavigationBarItem(
 
             // m3 default ikon og tekst
-            icon = { Icon(Icons.Filled.Home, contentDescription = "Hjem") },
+            icon = {
+                Icon(
+                    if (activitySelected) Icons.Filled.Hiking else Icons.Outlined.Hiking,
+                    contentDescription = "Aktiviteter"
+                )
+            },
             label = { Text("Aktiviteter") },
-
-            selected = navController.currentDestination?.route == AppRoutes.ACTIVITY,
+            selected = activitySelected,
             onClick = {
                 // hvis ikke vi er der allerede
                 if (navController.currentDestination?.route != AppRoutes.ACTIVITY) {
@@ -101,8 +107,6 @@ fun BottomNavigationBar(navController: NavController) {
                 }
             }
         )
-
-        // aktiviteter
     }
 }
 
