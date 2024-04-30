@@ -23,17 +23,19 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
-import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
+import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 
 class MainActivity : ComponentActivity() {
     val homeViewModel: HomeViewModel by viewModels()
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestLocationAndStartUpdates()
-
         setContent {
             Team31Theme {
                 // A surface container using the 'background' color from the theme
@@ -45,42 +47,67 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        locationCallback = object: LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                val location = locationResult.locations.first()
+                Log.d("location", "Fetched location: ${location.latitude}, ${location.longitude}")
+                if (location != null) {
+                    homeViewModel.fetchWeatherData(location.latitude,location.longitude)
+                } else {
+                    Log.w("location","Could not access the user's location")
+                }
+            }
+        }
+
+        requestLocationAndStartUpdates()
     }
 
     private fun requestLocationAndStartUpdates() {
-        val permission = Manifest.permission.ACCESS_FINE_LOCATION
+        Log.d("location","Start location permission request / updates")
+
+        val permission = Manifest.permission.ACCESS_COARSE_LOCATION
+        val locationRequest =
+            LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                36000000
+            ).build()
+
         if (ContextCompat.checkSelfPermission(
                 this,
                 permission
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.d("test","Requesting permissions")
-            ActivityCompat.requestPermissions(this, arrayOf(permission), 1)
+            Log.d("location","Requesting permissions")
+            ActivityCompat.requestPermissions(this, arrayOf(permission), 200)
+        } else {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
         }
 
-        val fusedLocationClient: FusedLocationProviderClient =
-            LocationServices.getFusedLocationProviderClient(this)
 
-        fusedLocationClient.requestLocationUpdates(
-            LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                36000000
-            ).build(),
+        Log.d("location","End location updates")
+    }
 
-            object: LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-                    val location = locationResult.locations.first()
-                    Log.d("location", "Fetched location: ${location.latitude}, ${location.longitude}")
-                    if (location != null) {
-                        homeViewModel.fetchWeatherData(location.latitude,location.longitude)
-                    } else {
-                        Log.w("location","Could not access the user's location")
-                    }
-                }
-
-            },
-            Looper.getMainLooper()
-        )
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 200) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                requestLocationAndStartUpdates()
+            } else {
+                Log.d("location","Location Permission denied")
+            }
+        }
     }
 
 }
