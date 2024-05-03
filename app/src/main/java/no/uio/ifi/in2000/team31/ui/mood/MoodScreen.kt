@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import kotlin.math.roundToInt
@@ -42,6 +43,9 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
     val context = LocalContext.current
     val weatherData by moodViewModel.weatherDataUIState.collectAsState()
     Scaffold(
+        topBar = {
+            MoodCastTopBar()
+        },
         bottomBar = {
             if (navController.currentDestination?.route != AppRoutes.ALERT) {
                 BottomNavigationBar(navController)

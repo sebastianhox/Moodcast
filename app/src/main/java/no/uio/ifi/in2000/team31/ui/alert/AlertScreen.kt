@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 
 data class Alert(
     val title: String?,
@@ -48,19 +49,16 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
     val weatherAlertUIState by alertViewModel.weatherAlertUIState.collectAsState()
     val features = weatherAlertUIState.features
 
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        Scaffold (topBar = {
-            AlertTopAppBar(navController)
-        }) { innerpadding ->
-            Column(modifier = Modifier.padding(innerpadding)) {
-                Spacer(modifier = Modifier.height(15.dp))
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+    Scaffold(
+        topBar = {
+            MoodCastTopBar()  // Bruk MoodCast top-baren her
+        }
+    ) { innerpadding ->
+        Column(modifier = Modifier.padding(innerpadding)) {
+            Spacer(modifier = Modifier.height(15.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                     if (features != null) {
                         items(features) { feature ->
                             val dataMap = mutableMapOf<String, String?>()
@@ -86,7 +84,7 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
             }
         }
     }
-}
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
