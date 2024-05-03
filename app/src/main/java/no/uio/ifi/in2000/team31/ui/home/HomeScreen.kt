@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team31.model.AlertIconModel
+import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import java.time.LocalDate
@@ -53,7 +54,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
     Scaffold(
         bottomBar = {
-                BottomNavigationBar(navController)
+            BottomNavigationBar(navController)
         }
     ){ innerPadding ->
 

@@ -55,7 +55,7 @@ data class Activity(
 fun ActivityScreen(navController: NavController){
     Scaffold (
         topBar = {
-            ActivityTopScreen()
+            MoodCastTopBar()
         },
         bottomBar = {
             BottomNavigationBar(navController)
@@ -109,7 +109,7 @@ fun HeroText(status: WeatherStatus, modifier: Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivityTopScreen() {
+fun MoodCastTopBar() {
     TopAppBar(
         title = { Text(
             "MoodCast",
