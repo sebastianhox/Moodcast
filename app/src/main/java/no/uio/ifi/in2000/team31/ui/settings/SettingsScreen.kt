@@ -17,18 +17,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
 @Composable
-fun SettingsScreen(navController: NavController) {
+fun SettingsScreen(navController: NavController, settingsViewModel: SettingsViewModel) {
+
     Scaffold(
+        topBar = { MoodCastTopBar() },
         bottomBar = { BottomNavigationBar(navController) }
     ) {padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            SettingItem(title = "Dark theme", description = "Bruk dark theme") {
-
+            SettingItem(title = "Dark theme", description = "Bruk dark theme") {it ->
+                settingsViewModel.toggleDarkTheme()
             }
             SettingItem(title = "Fahrenheit", description = "Bruk fahrenheit") {
 

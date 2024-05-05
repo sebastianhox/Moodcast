@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -24,11 +25,13 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
+import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 
 class MainActivity : ComponentActivity() {
     val homeViewModel: HomeViewModel by viewModels()
+    val settingsViewModel: SettingsViewModel = SettingsViewModel()
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
@@ -37,13 +40,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Team31Theme {
+            Team31Theme(settingsViewModel.isDarkTheme.collectAsState().value) {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(homeViewModel)
+                    AppNavigation(homeViewModel, settingsViewModel)
                 }
             }
         }

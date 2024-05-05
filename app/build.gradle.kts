@@ -82,4 +82,10 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.androidx.material)
     implementation(libs.androidx.material.icons.extended)
+
+    // For Preferences DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // For Proto DataStore
+    implementation("androidx.datastore:datastore-core:1.1.1")
 }

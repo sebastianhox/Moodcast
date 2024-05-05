@@ -15,11 +15,12 @@ import no.uio.ifi.in2000.team31.ui.home.HomeScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 import no.uio.ifi.in2000.team31.ui.settings.SettingsScreen
+import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AppNavigation(homeViewModel: HomeViewModel) {
+fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
 
     val navController = rememberNavController()
     //val homeViewModel: HomeViewModel = viewModel()
@@ -136,7 +137,7 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
         }
 
         composable(AppRoutes.SETTINGS) {
-            SettingsScreen(navController)
+            SettingsScreen(navController, settingsViewModel)
         }
     }
 }
