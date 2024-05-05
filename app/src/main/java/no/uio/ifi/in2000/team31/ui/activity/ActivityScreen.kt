@@ -49,6 +49,8 @@ data class Activity(
     val time: String,
     val suitableLocations: List<Pair<Double, Double>>,
     val image: String,
+    val suitableWeather: List<String>,
+    val suitableMoods: List<String>
 )
 
 @Composable
@@ -134,49 +136,65 @@ fun ActivityCardList () {
             name = "Morgenjogg",
             time = "30 min",
             suitableLocations = listOf(Pair(59.911491, 10.757933)), //Example coordinates
-            image = "https://images.unsplash.com/photo-1649134296132-56606326c566?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://images.unsplash.com/photo-1649134296132-56606326c566?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         ),
         Activity(
             name = "Sykling",
             time = "45 min",
             suitableLocations = listOf(Pair(59.913233, 10.738970)),
-            image = "https://images.unsplash.com/photo-1545575439-3261931f52f1?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://images.unsplash.com/photo-1545575439-3261931f52f1?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         ),
         Activity(
             name = "Strandtur",
             time = "30 min",
             suitableLocations = listOf(Pair(59.911491, 10.757933)),
-            image = "https://images.unsplash.com/photo-1509233725247-49e657c54213?q=80&w=1949&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://images.unsplash.com/photo-1509233725247-49e657c54213?q=80&w=1949&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         ),
         Activity(
             name = "Iskrem spising",
             time = "20 min",
             suitableLocations = listOf(Pair(59.913233, 10.738970)),
-            image = "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         ),
         Activity(
             name = "Shopping",
             time = "20 min",
             suitableLocations = listOf(Pair(59.913233, 10.738970)),
-            image = "https://images.unsplash.com/photo-1483181994834-aba9fd1e251a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://images.unsplash.com/photo-1483181994834-aba9fd1e251a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         ),
         Activity(
             name = "Cafe",
             time = "20 min",
             suitableLocations = listOf(Pair(59.913233, 10.738970)),
-            image = "https://plus.unsplash.com/premium_photo-1664970900025-1e3099ca757a?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://plus.unsplash.com/premium_photo-1664970900025-1e3099ca757a?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         ),
         Activity(
             name = "Annen aktivitet",
             time = "20 min",
             suitableLocations = listOf(Pair(59.913233, 10.738970)),
-            image = "https://images.unsplash.com/photo-1588534724418-73b75d412ce5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://images.unsplash.com/photo-1588534724418-73b75d412ce5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         ),
         Activity(
             name = "Annen aktivitet",
             time = "20 min",
             suitableLocations = listOf(Pair(59.913233, 10.738970)),
-            image = "https://images.unsplash.com/photo-1665686374006-b8f04cf62d57?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            image = "https://images.unsplash.com/photo-1665686374006-b8f04cf62d57?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            suitableWeather = listOf(),
+            suitableMoods = listOf()
         )
     )
     Column(modifier = Modifier

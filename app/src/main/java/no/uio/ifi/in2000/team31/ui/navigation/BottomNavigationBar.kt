@@ -4,9 +4,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material.icons.filled.Hiking
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.AddReaction
 import androidx.compose.material.icons.outlined.Hiking
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -107,9 +109,26 @@ fun BottomNavigationBar(navController: NavController) {
                 }
             }
         )
+        val settingsSelected = navController.currentDestination?.route == AppRoutes.SETTINGS
+        NavigationBarItem(
+            selected = settingsSelected,
+            onClick = {
+                if (navController.currentDestination?.route != AppRoutes.SETTINGS) {
+                    navController.navigate(AppRoutes.SETTINGS) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                } },
+            label = { Text("Innstillinger") },
+            icon = {
+                Icon(
+                    if (moodSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
+                    contentDescription = "Settings"
+                )
+            }
+        )
     }
 }
-
-
-
-
