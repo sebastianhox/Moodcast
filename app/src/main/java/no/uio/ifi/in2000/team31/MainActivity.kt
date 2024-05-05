@@ -8,13 +8,13 @@ import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -81,7 +81,8 @@ class MainActivity : ComponentActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Log.d("location","Requesting permissions")
-            ActivityCompat.requestPermissions(this, arrayOf(permission), 200)
+            requestPermissionLauncher.launch(
+                permission)
         } else {
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,
@@ -94,20 +95,14 @@ class MainActivity : ComponentActivity() {
         Log.d("location","End location updates")
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 200) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
                 requestLocationAndStartUpdates()
             } else {
-                Log.d("location","Location Permission denied")
+                Log.d("location", "Location Permission denied")
             }
         }
-    }
-
 }
