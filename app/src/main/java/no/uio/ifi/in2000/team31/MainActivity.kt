@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
     private fun requestLocationAndStartUpdates() {
         Log.d("location","Start location permission request / updates")
 
-        val permission = Manifest.permission.ACCESS_COARSE_LOCATION
+        val permission = Manifest.permission.ACCESS_FINE_LOCATION
         val locationRequest =
             LocationRequest.Builder(
                 Priority.PRIORITY_HIGH_ACCURACY,
