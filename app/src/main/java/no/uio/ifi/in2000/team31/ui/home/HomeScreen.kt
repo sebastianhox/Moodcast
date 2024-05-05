@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -44,8 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.model.AlertIconModel
+import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import java.time.LocalDate
@@ -66,12 +64,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
     // Background image (PLACEHOLDER ENN SÅ LENGE]
     val backgroundImageUrl ="https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
-
-    // Weather icon (sun for now)
-    val sunnyWeather = painterResource(R.drawable.sun_icon)
-    val rainyWeather = painterResource(R.drawable.rain_icon)
-
-
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
@@ -179,7 +171,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         .padding(18.dp)
                         .width(400.dp)
                         .height(200.dp)
-                        .background(Color.LightGray.copy(alpha = 0.95f), shape = RoundedCornerShape(size = 15.dp))
+                        .background(
+                            Color.LightGray.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(size = 15.dp)
+                        )
                 ) {
                     Box(
                         modifier = Modifier
@@ -203,10 +198,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        tempAndTimeList?.size?.let {
-                            items(tempAndTimeList) { map ->
-                                TimeAndTempCards(map, temperature, sunnyWeather, rainyWeather)
-                            }
+                        items(tempAndTimeList) { hourlyData ->
+                            TimeAndTempCards(hourlyData.first, hourlyData.second, hourlyData.third)
                         }
                     }
                 }
@@ -218,7 +211,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         .shadow(50.dp)
                         .fillMaxWidth()
                         .height(300.dp)
-                        .background(Color.LightGray.copy(alpha = 0.95f), shape = RoundedCornerShape(size = 15.dp))
+                        .background(
+                            Color.LightGray.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(size = 15.dp)
+                        )
 
                 ) {
                     Column(
@@ -321,26 +317,26 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeAndTempCards(
-    map: Map<String, Double>,
+    hour: String?,
     temperature: Double?,
-    sunnyWeatherPainter: Painter,
-    rainyWeatherPainter: Painter
+    symbolCode: String?
 ) {
 
-
     // OBS OBS DENNE LOGIKKEN ER FUCKED OG FUNKER IKKE -Å
-    val weatherIcon = when {
-        temperature != null -> {
-            when {
-                temperature >= 20 -> sunnyWeatherPainter
-                temperature <= 10 -> rainyWeatherPainter
-                else -> sunnyWeatherPainter
-            }
-        }
-        else -> sunnyWeatherPainter // Bruk solikon som standardikon hvis temperaturen er ukjent
-    }
+//    val weatherIcon = when {
+//        temperature != null -> {
+//            when {
+//                temperature >= 20 -> sunnyWeatherPainter
+//                temperature <= 10 -> rainyWeatherPainter
+//                else -> sunnyWeatherPainter
+//            }
+//        }
+//        else -> sunnyWeatherPainter // Bruk solikon som standardikon hvis temperaturen er ukjent
+//    }
+
 
     Spacer(modifier = Modifier.height(10.dp))
 
@@ -361,7 +357,7 @@ fun TimeAndTempCards(
         ) {
             Column {
                 Text(
-                    text = map.keys.first()
+                    text = "$hour"
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -369,7 +365,7 @@ fun TimeAndTempCards(
 
                 // Weathericon
                 Image(
-                    painter = weatherIcon,
+                    painter = painterResource(id = WeatherIconMapper.symbolCodeMap[symbolCode]!!),
                     contentDescription = "Weather Icon",
                     modifier = Modifier.size(30.dp)
                 )
@@ -378,7 +374,7 @@ fun TimeAndTempCards(
 
                 // Temperature
                 Text(
-                    text = "${map.values.first().roundToInt()}°",
+                    text = "${temperature?.roundToInt()}°",
                     fontSize = 22.sp
                 )
             }
