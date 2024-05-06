@@ -1,11 +1,15 @@
 package no.uio.ifi.in2000.team31.data.locationforecast
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class LocationWeatherRepository(private val weatherDataSource : LocationWeatherDataSource) {
     private lateinit var cachedData: WeatherDataModel
@@ -29,32 +33,23 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
     }
 
 
-    suspend fun getNext24Hours(lat: Double, lon: Double): MutableList<Map<String, Double>> {
-
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun get24HoursForecast(lat: Double, lon: Double): List<Triple<String?, Double?, String?>> {
 
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
+        val temperaturesForNextHours = mutableListOf<Triple<String?,Double?,String?>>() // hourly forecast
 
+        weatherData.instant.subList(1,26).forEach{hourlyData ->
 
-        val temperaturesForNextHours = mutableListOf<Map<String, Double>>() // hourly forecast
+            val utcHour = hourlyData.time?.substring(11,16)
+            val utcTime = LocalTime.parse(utcHour)
+            val targetOffsetTime = utcTime.plusHours(2)
+            val localHour = targetOffsetTime.format(DateTimeFormatter.ofPattern("HH:mm"))
 
-        val numbersOfHoursToFetch = 25 //Hours in a day + 1
-        val startIndex = 3 //Summertime hours
-        val endIndex = minOf(startIndex + numbersOfHoursToFetch, weatherData.instant.size)
+            val temperature = hourlyData.airTemperature
+            val symbolCode = hourlyData.symbolCode
 
-        for (i in startIndex until endIndex) {
-            val instant = weatherData.instant[i]
-
-            val temperatureMap = mutableMapOf<String, Double>()
-
-            instant.time?.let { time ->
-                val timeParts = time.split("T")[1].split(":")
-                val hour = timeParts[0]
-                instant.airTemperature?.let { temperature ->
-                    temperatureMap[hour] = temperature // Legg til tid og temperatur i mappe
-                }
-            }
-
-            temperaturesForNextHours.add(temperatureMap) // Legg til temperatureMap i listen
+            temperaturesForNextHours.add(Triple(localHour.substring(0,2),temperature,symbolCode))
         }
 
         return temperaturesForNextHours

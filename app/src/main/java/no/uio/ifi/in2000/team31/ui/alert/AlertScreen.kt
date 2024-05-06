@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,7 +52,7 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
 
     Scaffold(
         topBar = {
-            MoodCastTopBar()  // Bruk MoodCast top-baren her
+            AlertTopAppBar(navController)
         }
     ) { innerpadding ->
         Column(modifier = Modifier.padding(innerpadding)) {
@@ -100,15 +101,10 @@ fun AlertTopAppBar(navController: NavController) {
                 .padding(end = 33.dp)
                 .fillMaxWidth(),
         )},
-        navigationIcon = {
-            IconButton(onClick = {
-                navController.popBackStack()
-            }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Localized description"
-                )
-            }
+        actions = {
+                  IconButton(onClick ={ navController.popBackStack() }) {
+                      Icon(Icons.Filled.Close,"close")
+                  }
         },
         modifier = Modifier
             .fillMaxWidth()

@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
@@ -47,8 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.model.AlertIconModel
+import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import java.time.LocalDate
@@ -69,14 +68,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val scrollState = rememberScrollState()
     val temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
 
-    // Background image (PLACEHOLDER ENN SÅ LENGE]
+    // Background image (placeholder)
     val backgroundImageUrl ="https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
-
-    // Weather icon (sun for now)
-    val sunnyWeather = painterResource(R.drawable.sun_icon)
-    val rainyWeather = painterResource(R.drawable.rain_icon)
-
-
 
     Scaffold(
         topBar = {
@@ -99,7 +92,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                              )
                          }
                      }
-                     
+
                  }
         },
         bottomBar = { BottomNavigationBar(navController) }
@@ -109,7 +102,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Tegner bakgrunnsbildet først
+            // draws background image first
             AsyncImage(
                 model = backgroundImageUrl,
                 contentDescription = "Background Image",
@@ -143,11 +136,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
                             Text(
                                 text = "Min posisjon",
-                                fontSize = 25.sp,
+                                fontSize = 30.sp,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.align(Alignment.Center)
+                                modifier = Modifier.align(Alignment.Center),
+                                fontWeight = FontWeight.Bold
                             )
-
 
                             var dynamicBotPadding = 0
                             var dynamicLPadding = 0
@@ -156,12 +149,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 modifier = Modifier
                                     .clickable {
                                         navController.navigate(AppRoutes.ALERT) {
-                                            // fikser backstack
                                             popUpTo(navController.graph.startDestinationId) {
                                                 saveState = true
                                             }
 
-                                            //unngår flere instanser
+                                            // prohibits multiple instances
                                             launchSingleTop = true
                                             restoreState = true
                                         }
@@ -190,8 +182,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         }
                         Box(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                //text = "${weatherData?.weatherData?.instant?.last()?.airTemperature}" + "\u00B0",
-                                text = temperature?.let { "${it.roundToInt()}°" }
+                                text = temperature?.let { "  ${it.roundToInt()}°" }
                                     ?: "Henter data...",
                                 fontSize = 50.sp,
                                 textAlign = TextAlign.Center,
@@ -201,7 +192,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     }
                 }
 
-                //Vær i dag - time for time
+                // forecast for the next 24 hours
                 Box(
                     modifier = Modifier
                         .padding(18.dp)
@@ -221,9 +212,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
+                        Spacer(modifier = Modifier.height(40.dp))
+
                         Text(
-                            text = "I dag",
-                            fontSize = 20.sp,
+                            text = "Neste 24 timer",
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
@@ -234,14 +227,23 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        tempAndTimeList?.size?.let {
-                            items(tempAndTimeList) { map ->
-                                TimeAndTempCards(map, temperature, sunnyWeather, rainyWeather)
+                        itemsIndexed(tempAndTimeList) { index, hourlyData ->
+                            TimeAndTempCards(hourlyData.first, hourlyData.second, hourlyData.third)
+
+                            // Adds a border between each element (bar the absolute last one)
+                            if (index != tempAndTimeList.size - 1) {
+                                Box(
+                                    modifier = Modifier
+                                        .height(80.dp)
+                                        .padding(vertical = 10.dp)
+                                        .width(2.dp)
+                                        .background(Color.Gray.copy(alpha = 0.4f))
+                                )
                             }
                         }
                     }
                 }
-                //Langtidsvarsel
+                // Long term forecast
                 Box(
                     modifier = Modifier
                         .padding(48.dp)
@@ -260,8 +262,9 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     ) {
                         Text(
                                 text = "Langtidsvarsel",
-                                fontSize = 20.sp,
+                                fontSize = 22.sp,
                                 textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
                                 modifier = Modifier.fillMaxWidth()
 
                         )
@@ -355,65 +358,62 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeAndTempCards(
-    map: Map<String, Double>,
+    hour: String?,
     temperature: Double?,
-    sunnyWeatherPainter: Painter,
-    rainyWeatherPainter: Painter
+    symbolCode: String?
 ) {
-
-
-    // OBS OBS DENNE LOGIKKEN ER FUCKED OG FUNKER IKKE -Å
-    val weatherIcon = when {
-        temperature != null -> {
-            when {
-                temperature >= 20 -> sunnyWeatherPainter
-                temperature <= 10 -> rainyWeatherPainter
-                else -> sunnyWeatherPainter
-            }
-        }
-        else -> sunnyWeatherPainter // Bruk solikon som standardikon hvis temperaturen er ukjent
-    }
 
     Spacer(modifier = Modifier.height(10.dp))
 
 
     Column(
         modifier = Modifier
-            .padding(4.dp)
-            .height(120.dp),
+            .padding(2.dp)
+            .height(200.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Tid og værikon
+        // Time and weather icon
         Box(
             modifier = Modifier
-                .size(100.dp)
+                .height(150.dp)
+                .width(100.dp)
                 .padding(2.dp),
             contentAlignment = Alignment.Center
         ) {
-            Column {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Spacer(modifier = Modifier.height(25.dp))
+
                 Text(
-                    text = map.keys.first()
+                    text = "$hour",
+                    textAlign = TextAlign.Center,
+                    fontSize = 18.sp
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-
-                // Weathericon
+                // Weather icon
                 Image(
-                    painter = weatherIcon,
+                    painter = painterResource(id = WeatherIconMapper.symbolCodeMap[symbolCode]!!),
                     contentDescription = "Weather Icon",
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(40.dp)
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // Temperature
                 Text(
-                    text = "${map.values.first().roundToInt()}°",
-                    fontSize = 22.sp
+                    text = " ${temperature?.roundToInt()}°",
+                    textAlign = TextAlign.Center,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+
                 )
             }
         }

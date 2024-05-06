@@ -1,6 +1,8 @@
 package no.uio.ifi.in2000.team31.ui.mood
 
-import android.content.Context
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Scaffold
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -25,14 +26,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CoroutineScope
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
@@ -42,6 +47,9 @@ import kotlin.math.roundToInt
 fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = viewModel()) {
     val context = LocalContext.current
     val weatherData by moodViewModel.weatherDataUIState.collectAsState()
+    val scaffoldState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             MoodCastTopBar()
@@ -50,27 +58,34 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
             if (navController.currentDestination?.route != AppRoutes.ALERT) {
                 BottomNavigationBar(navController)
             }
-        }
-    ) { innerPadding ->
+        },
+        // adds snackbarhost (toast outlawed)
+            snackbarHost = {SnackbarHost(hostState = scaffoldState) }
+    )
+    { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxWidth()
-                .padding(top = 32.dp, start = 18.dp, end = 18.dp, bottom = 18.dp)
+                .background(Color(0xFFF5F5F5))
+                .padding(top = 42.dp, start = 10.dp, end = 10.dp, bottom = 0.dp)
         ) {
             Text(
                 text = "Været nå",
                 fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(bottom = 8.dp)
+                    .padding(top = 8.dp)
             )
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White, shape = RoundedCornerShape(12.dp))
-                    .padding(12.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.White)
+                    .padding(5.dp)
 
             ) {
                 Row(
@@ -79,19 +94,19 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.WbSunny, // placeholder ikon, hardkodet
+                        imageVector = Icons.Filled.WbSunny, // placeholder icon, hard coded
                         contentDescription = "Værikon",
-                        modifier = Modifier.size(34.dp),
+                        modifier = Modifier.size(44.dp),
                         tint = Color.Yellow
+
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "${weatherData.weatherData?.instant?.get(0)?.airTemperature?.roundToInt()}°C Solrikt",
-                        fontSize = 25.sp
+                        fontSize = 25.sp,
                     )
                 }
             }
-
 
             Column(
                 modifier = Modifier
@@ -99,39 +114,50 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                     .padding(26.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
+
             ) {
                 Text(
-                    text = "Hvordan føler du deg?",
-                    fontSize = 30.sp,
+                    text = "Hvordan føler du deg i dag?",
+                    fontSize = 24.sp,
                     modifier = Modifier
-                        .padding(bottom = 16.dp)
+                        .padding(top = 10.dp)
+                        .padding(bottom = 5.dp)
                         .align(Alignment.CenterHorizontally)
+
                 )
 
                 // Humørknapper
-                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, context)
-                MoodButton("😢 Trist", Color(0xFF007AFF), Color.White, context)
-                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, context)
-                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, context)
+                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, scaffoldState)
+                MoodButton("😢 Trist", Color(0xFF007AFF), Color.White, scope, scaffoldState)
+                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, scaffoldState)
+                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, scaffoldState)
             }
         }
     }
 }
 
 @Composable
-fun MoodButton(text: String, backgroundColor: Color, textColor: Color, context: Context) {
+fun MoodButton(
+    text: String,
+    backgroundColor: Color,
+    textColor: Color,
+    scope: CoroutineScope,
+    scaffoldState: SnackbarHostState
+) {
     Button(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 20.dp)
+            .padding(horizontal = 62.dp, vertical = 20.dp)
             .clip(RoundedCornerShape(20.dp))
             .shadow(5.dp, RoundedCornerShape(25.dp)),
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
         onClick = {
-            Toast.makeText(context, "Valgt $text humør", Toast.LENGTH_SHORT).show()
+            scope.launch {
+                scaffoldState.showSnackbar("Valgt humør: $text ")
+            }
         }
     ) {
-        Text(text, fontSize = 35.sp, color = textColor)
+        Text(text, fontSize = 25.sp, color = textColor)
     }
 }
 

@@ -3,7 +3,7 @@ package no.uio.ifi.in2000.team31.model
 import no.uio.ifi.in2000.team31.R
 
 object AlertIconModel {
-    val eventIconMap: MutableMap<String, Int> = mutableMapOf(
+    val eventIconMap: Map<String, Int> = mutableMapOf(
         Pair("avalanchesYellow", AlertIcons.avalanchesYellow),
         Pair("avalanchesRed", AlertIcons.avalanchesRed),
         Pair("avalanchesOrange", AlertIcons.avalanchesOrange),
