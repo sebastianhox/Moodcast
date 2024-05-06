@@ -31,7 +31,7 @@ import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 class MainActivity : ComponentActivity() {
     val homeViewModel: HomeViewModel by viewModels()
-    val settingsViewModel: SettingsViewModel = SettingsViewModel()
+    private val settingsViewModel: SettingsViewModel = SettingsViewModel()
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
@@ -71,10 +71,10 @@ class MainActivity : ComponentActivity() {
     private fun requestLocationAndStartUpdates() {
         Log.d("location","Start location permission request / updates")
 
-        val permission = Manifest.permission.ACCESS_COARSE_LOCATION
+        val permission = Manifest.permission.ACCESS_FINE_LOCATION
         val locationRequest =
             LocationRequest.Builder(
-                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                Priority.PRIORITY_HIGH_ACCURACY,
                 3600000
             ).build()
 

@@ -92,9 +92,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onToogleSearch() {
         _isSearching.value = !_isSearching.value
-        if (!_isSearching.value)
+        if (!_isSearching.value) {
             _searchText.value = ""
             clearSearch()
+        }
     }
     fun onPlaceNameSearch(currentQuery: String) {
         _searchText.value = currentQuery
@@ -106,6 +107,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun clearSearch() {
+        _places.value = emptyList()
+        _selectedPlace.value = null
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     fun fetchWeatherData(lat: Double, lon: Double) {
         viewModelScope.launch {
@@ -125,12 +130,32 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun clearSearch() {
-        _places.value = emptyList()
-        _selectedPlace.value = null
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getSearchedPlace(query: String) {
+        onToogleSearch()
+        viewModelScope.launch(Dispatchers.IO) {
+            val place = geonameRepository.getPlaceRecommendations(query).geonames[0]
+            _selectedPlace.value = place
+
+            try {
+                _weatherDataUIState.update { currentState ->
+                    currentState.copy(
+                        weatherData = repository.fetchInfo(place.lat, place.lon, CachePolicy(CachePolicy.Type.REFRESH)),
+                        tempAndTimeData = repository.get24HoursForecast(place.lat!!, place.lon!!),
+                        longTermForecast = repository.getNext7Days(place.lat,place.lon),
+                        features = alertRepository.getDangerZonesOf(point(place.lat, place.lon), CachePolicy(CachePolicy.Type.REFRESH))
+                    )
+                }
+
+            } catch (e: Exception) {
+                Log.e("API Request", "Error fetching weather data", e)
+            }
+        }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onPlaceSelected(place: GeonameData) {
+        onToogleSearch()
         viewModelScope.launch(Dispatchers.IO) {
             _selectedPlace.value = place
 
@@ -138,14 +163,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 _weatherDataUIState.update { currentState ->
                     currentState.copy(
                         weatherData = repository.fetchInfo(place.lat, place.lon, CachePolicy(CachePolicy.Type.REFRESH)),
-                        tempAndTimeData = repository.getNext24Hours(place.lat!!, place.lon!!),
+                        tempAndTimeData = repository.get24HoursForecast(place.lat!!, place.lon!!),
                         longTermForecast = repository.getNext7Days(place.lat,place.lon),
                         features = alertRepository.getDangerZonesOf(point(place.lat, place.lon), CachePolicy(CachePolicy.Type.REFRESH))
                     )
                 }
 
             } catch (e: Exception) {
-                Log.e("testing", "Error fetching weather data", e)
+                Log.e("API Request", "Error fetching weather data", e)
             }
 
         }

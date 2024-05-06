@@ -19,7 +19,7 @@ class GeonameDataSource {
     }
 
     suspend fun fetchPlaces(query: String): GeonamesModel {
-        val response = client.get("http://api.geonames.org/searchJSON?name=$query&countryBias=NO&maxRows=5&username=sebastian_uio")
+        val response = client.get("http://api.geonames.org/searchJSON?name=$query&name_startsWith=${query.first()}&featureClass=A&featureClass=P&countryBias=NO&lang=NO&maxRows=5&username=sebastian_uio")
         return response.body<GeonameDTO>().toModel()
     }
 }

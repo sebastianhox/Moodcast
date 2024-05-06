@@ -98,7 +98,7 @@ fun AlertTopAppBar(navController: NavController) {
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             modifier = Modifier
-                .padding(end = 33.dp)
+                .padding(start = 48.dp)
                 .fillMaxWidth(),
         )},
         actions = {
