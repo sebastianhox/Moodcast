@@ -17,13 +17,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -55,10 +58,12 @@ import kotlin.math.roundToInt
 // har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
+    val searchUiState by homeViewModel.searchUiState.collectAsState()
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()
@@ -74,6 +79,29 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
 
     Scaffold(
+        topBar = {
+                 SearchBar(
+                     query = searchUiState.currentQuery,
+                     onQueryChange = homeViewModel::onPlaceNameSearch,
+                     onSearch = homeViewModel::onPlaceNameSearch,
+                     active = searchUiState.isSearching,
+                     onActiveChange = { homeViewModel.onToogleSearch() }
+                 ) {
+                     LazyColumn {
+                         items(searchUiState.places) { place ->
+                             Text(
+                                 text = "${place.placeName} ${place.adminName},  ${place.country}",
+                                 modifier = Modifier.padding(
+                                     start = 8.dp,
+                                     top = 4.dp,
+                                     end = 8.dp,
+                                     bottom = 4.dp)
+                             )
+                         }
+                     }
+                     
+                 }
+        },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         Box(
@@ -179,7 +207,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         .padding(18.dp)
                         .width(400.dp)
                         .height(200.dp)
-                        .background(Color.LightGray.copy(alpha = 0.95f), shape = RoundedCornerShape(size = 15.dp))
+                        .background(
+                            Color.LightGray.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(size = 15.dp)
+                        )
                 ) {
                     Box(
                         modifier = Modifier
@@ -218,7 +249,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         .shadow(50.dp)
                         .fillMaxWidth()
                         .height(300.dp)
-                        .background(Color.LightGray.copy(alpha = 0.95f), shape = RoundedCornerShape(size = 15.dp))
+                        .background(
+                            Color.LightGray.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(size = 15.dp)
+                        )
 
                 ) {
                     Column(

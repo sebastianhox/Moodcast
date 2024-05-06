@@ -6,14 +6,27 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.dellisd.spatialk.geojson.Feature
 import io.github.dellisd.spatialk.geojson.dsl.point
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MyApplication
 import no.uio.ifi.in2000.team31.cache.CachePolicy
+import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
+import java.net.URLEncoder
 
 data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
@@ -22,14 +35,74 @@ data class WeatherDataUIState(
     val features: List<Feature>? = listOf()
 )
 
+data class SearchUiState(
+    val currentQuery: String = "",
+    val places: List<GeonameData> = emptyList(),
+    val selectedPlace: GeonameData? = null,
+    val isSearching: Boolean = false
+)
+
+@OptIn(FlowPreview::class)
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val appContainer = (application as MyApplication).appContainer
     private val repository = appContainer.locWeatherRepository
     private val alertRepository = appContainer.alertRepository
+    private val geonameRepository = appContainer.geonameRepository
 
     private val _weatherDataUIState = MutableStateFlow(WeatherDataUIState())
     val weatherDataUIState: StateFlow<WeatherDataUIState> = _weatherDataUIState.asStateFlow()
+
+    private val _searchText = MutableStateFlow("")
+    private val _places = MutableStateFlow<List<GeonameData>>(emptyList())
+    private val _selectedPlace = MutableStateFlow<GeonameData?>(null)
+    private val _isSearching = MutableStateFlow(false)
+
+    val searchUiState = combine(_searchText, _places, _selectedPlace, _isSearching) { searchText, places, selectedPlace, isSearching ->
+
+        if (searchText.isBlank())
+            clearSearch()
+
+        SearchUiState(
+            searchText,
+            places,
+            selectedPlace,
+            isSearching
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = SearchUiState()
+    )
+
+    init {
+        _searchText
+            .debounce(300) // gets the latest; no need for delays!
+            .filter { currentQuery -> (currentQuery.length > 1) } // make sure there's enough initial text to search for
+            .distinctUntilChanged() // to avoid duplicate network calls
+            .onEach { currentQuery -> // just gets the prefix: 'ph', 'pho', 'phoe'
+                val encQuery = URLEncoder.encode(currentQuery,"UTF-8")
+                getCityNames(encQuery)
+            }
+            .flowOn(Dispatchers.IO)
+            .launchIn(viewModelScope)
+    }
+
+    fun onToogleSearch() {
+        _isSearching.value = !_isSearching.value
+        if (!_isSearching.value)
+            _searchText.value = ""
+            clearSearch()
+    }
+    fun onPlaceNameSearch(currentQuery: String) {
+        _searchText.value = currentQuery
+    }
+
+    private fun getCityNames(query: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _places.value = geonameRepository.getPlaceRecommendations(query).geonames
+        }
+    }
 
     fun fetchWeatherData(lat: Double, lon: Double) {
         viewModelScope.launch {
@@ -46,6 +119,32 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: Exception) {
                 Log.e("testing", "Error fetching weather data", e)
             }
+        }
+    }
+
+    private fun clearSearch() {
+        _places.value = emptyList()
+        _selectedPlace.value = null
+    }
+
+    fun onPlaceSelected(place: GeonameData) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _selectedPlace.value = place
+
+            try {
+                _weatherDataUIState.update { currentState ->
+                    currentState.copy(
+                        weatherData = repository.fetchInfo(place.lat, place.lon, CachePolicy(CachePolicy.Type.REFRESH)),
+                        tempAndTimeData = repository.getNext24Hours(place.lat!!, place.lon!!),
+                        longTermForecast = repository.getNext7Days(place.lat,place.lon),
+                        features = alertRepository.getDangerZonesOf(point(place.lat, place.lon), CachePolicy(CachePolicy.Type.REFRESH))
+                    )
+                }
+
+            } catch (e: Exception) {
+                Log.e("testing", "Error fetching weather data", e)
+            }
+
         }
     }
 }
