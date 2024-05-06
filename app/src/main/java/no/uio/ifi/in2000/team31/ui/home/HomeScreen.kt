@@ -18,12 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,7 +58,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val scrollState = rememberScrollState()
     val temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
 
-    // Background image (PLACEHOLDER ENN SÅ LENGE]
+    // Background image (placeholder)
     val backgroundImageUrl ="https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
 
     Scaffold(
@@ -71,7 +69,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Tegner bakgrunnsbildet først
+            // draws background image first
             AsyncImage(
                 model = backgroundImageUrl,
                 contentDescription = "Background Image",
@@ -109,10 +107,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.align(Alignment.Center),
                                 fontWeight = FontWeight.Bold
-
-
                             )
-
 
                             var dynamicBotPadding = 0
                             var dynamicLPadding = 0
@@ -121,12 +116,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 modifier = Modifier
                                     .clickable {
                                         navController.navigate(AppRoutes.ALERT) {
-                                            // fikser backstack
                                             popUpTo(navController.graph.startDestinationId) {
                                                 saveState = true
                                             }
 
-                                            //unngår flere instanser
+                                            // prohibits multiple instances
                                             launchSingleTop = true
                                             restoreState = true
                                         }
@@ -155,7 +149,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         }
                         Box(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                //text = "${weatherData?.weatherData?.instant?.last()?.airTemperature}" + "\u00B0",
                                 text = temperature?.let { "  ${it.roundToInt()}°" }
                                     ?: "Henter data...",
                                 fontSize = 50.sp,
@@ -166,7 +159,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     }
                 }
 
-                //Vær i dag - time for time
+                // forecast for the next 24 hours
                 Box(
                     modifier = Modifier
                         .padding(18.dp)
@@ -204,12 +197,12 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         itemsIndexed(tempAndTimeList) { index, hourlyData ->
                             TimeAndTempCards(hourlyData.first, hourlyData.second, hourlyData.third)
 
-                            // Legg til Divider unntatt for det siste elementet
+                            // Adds a border between each element (bar the absolute last one)
                             if (index != tempAndTimeList.size - 1) {
                                 Box(
                                     modifier = Modifier
-                                        .height(80.dp) // Juster høyden her
-                                        .padding(vertical = 10.dp) // Bestem avstanden til toppen/bunnen
+                                        .height(80.dp)
+                                        .padding(vertical = 10.dp)
                                         .width(2.dp)
                                         .background(Color.Gray.copy(alpha = 0.4f))
                                 )
@@ -217,7 +210,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         }
                     }
                 }
-                //Langtidsvarsel
+                // Long term forecast
                 Box(
                     modifier = Modifier
                         .padding(48.dp)
@@ -290,7 +283,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     fun LongTermForecastRow(day: String, minTemp: Double, maxTemp: Double) {
-        val locale = java.util.Locale("no", "NO") // Norwegian locale
+        val locale = java.util.Locale("no", "NO") // Norwegian local
         val currentDate = LocalDate.now()
         val localDate = LocalDate.parse(day)
 
@@ -350,7 +343,7 @@ fun TimeAndTempCards(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Tid og værikon
+        // Time and weather icon
         Box(
             modifier = Modifier
                 .height(150.dp)
@@ -362,16 +355,17 @@ fun TimeAndTempCards(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(25.dp))
 
                 Text(
                     text = "$hour",
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    fontSize = 18.sp
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Weathericon
+                // Weather icon
                 Image(
                     painter = painterResource(id = WeatherIconMapper.symbolCodeMap[symbolCode]!!),
                     contentDescription = "Weather Icon",
