@@ -196,7 +196,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 Box(
                                     modifier = Modifier
                                         .clickable {
-                                            if (weatherData.features?.isNotEmpty() == true) {
+                                            if (weatherData.alertIconData.isNotEmpty()) {
                                                 navController.navigate(AppRoutes.ALERT) {
                                                     // fikser backstack
                                                     popUpTo(navController.graph.startDestinationId) {
@@ -210,13 +210,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                             }
                                         }
                                 ) {
-                                    weatherData.features?.forEach { feature ->
-                                        val event = feature.getStringProperty("event")
-                                        val color = feature.getStringProperty("riskMatrixColor")
+                                    weatherData.alertIconData.forEach { alertIconData ->
 
                                         Image(
-                                            painter = painterResource(id = AlertIconModel.eventIconMap[event + color]!!),
-                                            contentDescription = event + color,
+                                            painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
+                                            contentDescription = alertIconData.first + alertIconData.second,
                                             modifier = Modifier
                                                 .align(Alignment.Center)
                                                 .padding(

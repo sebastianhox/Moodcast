@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
         val locationRequest =
             LocationRequest.Builder(
                 Priority.PRIORITY_HIGH_ACCURACY,
-                3600000
+                360000
             ).build()
 
         if (ContextCompat.checkSelfPermission(

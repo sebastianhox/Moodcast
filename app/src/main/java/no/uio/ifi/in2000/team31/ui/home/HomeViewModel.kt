@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.dellisd.spatialk.geojson.Feature
 import io.github.dellisd.spatialk.geojson.dsl.point
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -34,7 +33,7 @@ data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
     val tempAndTimeData: List<Triple<String?, Double?, String?>> = listOf(),
     val longTermForecast: Map<String, Pair<Double, Double>>? = null,
-    val features: List<Feature>? = listOf()
+    val alertIconData: List<Pair<String?,String?>> = listOf()
 )
 
 data class SearchUiState(
@@ -115,12 +114,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun fetchWeatherData(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
+                val features = alertRepository.getDangerZonesOf(point(lon,lat), CachePolicy(CachePolicy.Type.REFRESH))
+                val alertIcons = mutableListOf<Pair<String?,String?>>()
+                features?.forEach {feature ->
+                    val event = feature.getStringProperty("event")
+                    val color = feature.getStringProperty("riskMatrixColor")
+                    alertIcons.add(Pair(event,color))
+                }
                 _weatherDataUIState.update { currentState ->
                     currentState.copy(
                         weatherData = repository.fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.REFRESH)),
                         tempAndTimeData = repository.get24HoursForecast(lat, lon),
                         longTermForecast = repository.getNext7Days(lat,lon),
-                        features = alertRepository.getDangerZonesOf(point(lon,lat), CachePolicy(CachePolicy.Type.REFRESH))
+                        alertIconData = alertIcons
                     )
                 }
 
@@ -136,43 +142,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             val place = geonameRepository.getPlaceRecommendations(query).geonames[0]
             _selectedPlace.value = place
-
-            try {
-                _weatherDataUIState.update { currentState ->
-                    currentState.copy(
-                        weatherData = repository.fetchInfo(place.lat, place.lon, CachePolicy(CachePolicy.Type.REFRESH)),
-                        tempAndTimeData = repository.get24HoursForecast(place.lat!!, place.lon!!),
-                        longTermForecast = repository.getNext7Days(place.lat,place.lon),
-                        features = alertRepository.getDangerZonesOf(point(place.lat, place.lon), CachePolicy(CachePolicy.Type.REFRESH))
-                    )
-                }
-
-            } catch (e: Exception) {
-                Log.e("API Request", "Error fetching weather data", e)
-            }
         }
+        fetchWeatherData(_selectedPlace.value?.lat!!,_selectedPlace.value?.lon!!)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun onPlaceSelected(place: GeonameData) {
         onToogleSearch()
         viewModelScope.launch(Dispatchers.IO) {
+            Log.d("test","${place.placeName}, ${place.lat} ${place.lon}")
             _selectedPlace.value = place
-
-            try {
-                _weatherDataUIState.update { currentState ->
-                    currentState.copy(
-                        weatherData = repository.fetchInfo(place.lat, place.lon, CachePolicy(CachePolicy.Type.REFRESH)),
-                        tempAndTimeData = repository.get24HoursForecast(place.lat!!, place.lon!!),
-                        longTermForecast = repository.getNext7Days(place.lat,place.lon),
-                        features = alertRepository.getDangerZonesOf(point(place.lat, place.lon), CachePolicy(CachePolicy.Type.REFRESH))
-                    )
-                }
-
-            } catch (e: Exception) {
-                Log.e("API Request", "Error fetching weather data", e)
-            }
-
         }
+        fetchWeatherData(place.lat!!,place.lon!!)
     }
 }
