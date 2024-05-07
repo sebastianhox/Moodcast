@@ -17,16 +17,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Hiking
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.outlined.Hiking
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -34,7 +40,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
@@ -45,9 +53,8 @@ import kotlin.math.roundToInt
 
 @Composable
 fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = viewModel()) {
-    val context = LocalContext.current
     val weatherData by moodViewModel.weatherDataUIState.collectAsState()
-    val scaffoldState = remember { SnackbarHostState() }
+    val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -60,7 +67,17 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
             }
         },
         // adds snackbarhost (toast outlawed)
-            snackbarHost = {SnackbarHost(hostState = scaffoldState) }
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarState
+                ) {snackBarData ->
+                    CustomSnackBar(
+                        snackBarData.visuals.message,
+                        navController = navController
+                    )
+
+                }
+            }
     )
     { innerPadding ->
         Column(
@@ -127,10 +144,10 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 )
 
                 // Humørknapper
-                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, scaffoldState)
-                MoodButton("😢 Trist", Color(0xFF007AFF), Color.White, scope, scaffoldState)
-                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, scaffoldState)
-                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, scaffoldState)
+                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState)
+                MoodButton("😢 Trist", Color(0xFF007AFF), Color.White, scope, snackbarState)
+                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState)
+                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState)
             }
         }
     }
@@ -142,7 +159,7 @@ fun MoodButton(
     backgroundColor: Color,
     textColor: Color,
     scope: CoroutineScope,
-    scaffoldState: SnackbarHostState
+    snackbarState: SnackbarHostState
 ) {
     Button(
         modifier = Modifier
@@ -153,11 +170,55 @@ fun MoodButton(
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
         onClick = {
             scope.launch {
-                scaffoldState.showSnackbar("Valgt humør: $text ")
+                snackbarState.showSnackbar("Valgt humør: $text ")
             }
         }
     ) {
         Text(text, fontSize = 25.sp, color = textColor)
+    }
+}
+
+@Composable
+fun CustomSnackBar(
+    message: String,
+    isRtl: Boolean = false,
+    containerColor: Color = Color.White,
+    contentColor: Color = Color.Black,
+    navController: NavController
+) {
+    Snackbar(
+        containerColor = containerColor,
+        contentColor = contentColor) {
+        CompositionLocalProvider(
+            LocalLayoutDirection provides
+                    if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+        ) {
+            Row {
+                Text(message)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    modifier = Modifier.clickable {
+                        navController.navigate(AppRoutes.ACTIVITY) {
+                                    if (navController.currentDestination?.route != AppRoutes.ACTIVITY) {
+                                        navController.navigate(AppRoutes.ACTIVITY) {
+                                            // fikser backstack
+                                            popUpTo(navController.graph.startDestinationId) {
+                                                saveState = true
+                                            }
+
+                                            //unngår flere instanser
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                }
+                        },
+                    text = "Til aktiviteter"
+                )
+            }
+
+        }
+            
     }
 }
 
