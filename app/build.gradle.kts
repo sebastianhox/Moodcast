@@ -90,4 +90,6 @@ dependencies {
 
     // For Proto DataStore
     implementation("androidx.datastore:datastore-core:1.1.1")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
 }

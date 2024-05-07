@@ -23,6 +23,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import no.uio.ifi.in2000.team31.data.settings.SettingsRepository
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
 import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
@@ -30,8 +31,6 @@ import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 
 class MainActivity : ComponentActivity() {
-    val homeViewModel: HomeViewModel by viewModels()
-    val settingsViewModel: SettingsViewModel = SettingsViewModel()
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
@@ -39,6 +38,11 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val settingsRepository: SettingsRepository = SettingsRepository(applicationContext)
+        Log.d("settings", "Created SettingsRepository")
+        val homeViewModel: HomeViewModel by viewModels()
+        val settingsViewModel: SettingsViewModel = SettingsViewModel(settingsRepository)
+        Log.d("settings", "Created SettingsViewModel")
         setContent {
             Team31Theme(settingsViewModel.isDarkTheme.collectAsState().value) {
                 // A surface container using the 'background' color from the theme
@@ -65,6 +69,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        requestLocationAndStartUpdates()
+    }
+
+    override fun onResume() { // For å oppdatere værdata når vi åpner appen igjen, uten at den har vært avsluttet riktig
+        super.onResume()
         requestLocationAndStartUpdates()
     }
 
