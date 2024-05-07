@@ -50,7 +50,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -78,9 +77,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.geojson)
     implementation(libs.turf)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.gson)
-    implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
     implementation(libs.androidx.material)
     implementation(libs.androidx.material.icons.extended)
@@ -90,4 +86,6 @@ dependencies {
 
     // For Proto DataStore
     implementation("androidx.datastore:datastore-core:1.1.1")
+
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
