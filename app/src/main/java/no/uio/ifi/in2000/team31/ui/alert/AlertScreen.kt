@@ -117,6 +117,8 @@ fun AlertTopAppBar(navController: NavController) {
 fun AlertCard(alert: Alert) {
     Column {
 
+        Spacer(modifier = Modifier.height(10.dp))
+
         Card(
             modifier = Modifier.padding(horizontal = 10.dp),
             colors = CardDefaults.cardColors(
@@ -129,6 +131,9 @@ fun AlertCard(alert: Alert) {
                 }
             )
         ) {
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Column(
                 Modifier.padding(8.dp)
             ) {
