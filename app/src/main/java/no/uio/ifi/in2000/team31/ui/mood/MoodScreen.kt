@@ -51,6 +51,15 @@ import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import kotlin.math.roundToInt
 
+enum class Mood {
+    HAPPY,
+    SAD,
+    ENERGETIC,
+    CALM,
+    ANGRY,
+    TIRED
+}
+
 @Composable
 fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = viewModel()) {
     val weatherData by moodViewModel.weatherDataUIState.collectAsState()
