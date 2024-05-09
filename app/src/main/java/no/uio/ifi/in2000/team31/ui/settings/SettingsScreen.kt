@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team31.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,12 +20,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.first
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
 @Composable
 fun SettingsScreen(navController: NavController, settingsViewModel: SettingsViewModel) {
-
+    val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+    LaunchedEffect(key1 = settingsViewModel) {
+        val darkThemeOn = settingsViewModel.isDarkTheme.first()
+        settingsViewModel.onDarkThemeSwitchChange(darkThemeOn)
+    }
     Scaffold(
         topBar = { MoodCastTopBar() },
         bottomBar = { BottomNavigationBar(navController) }
@@ -32,22 +40,27 @@ fun SettingsScreen(navController: NavController, settingsViewModel: SettingsView
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            SettingItem(title = "Dark theme", description = "Bruk dark theme") {it ->
-                settingsViewModel.toggleDarkTheme()
+            SettingItem(title = "Dark theme", description = "Bruk dark theme", isDarkTheme) {it ->
+                //settingsViewModel.toggleDarkTheme()
+                settingsViewModel.onDarkThemeSwitchChange(it)
+                Log.d("settings", "Passing $isDarkTheme to switch")
             }
-            SettingItem(title = "Fahrenheit", description = "Bruk fahrenheit") {
+            SettingItem(title = "Fahrenheit", description = "Bruk fahrenheit", false) {
 
             }
-            SettingItem(title = "Push varsler", description = "Tillat push varsler") {
+
+
+            // Ikke lagt til noe funksjonalitet på disse enda, kun for å se noenlunde bra ut
+            SettingItem(title = "Push varsler", description = "Tillat push varsler", false) {
 
             }
-            SettingItem(title = "Lokasjon", description = "Tillat lokasjon") {
+            SettingItem(title = "Lokasjon", description = "Tillat lokasjon", false) {
 
             }
-            SettingItem(title = "Automatisk lokasjon", description = "Last lokasjon automatisk") {
+            SettingItem(title = "Automatisk lokasjon", description = "Last lokasjon automatisk", false) {
 
             }
-            SettingItem(title = "Eget design", description = "Bruk egendefinert design") {
+            SettingItem(title = "Eget design", description = "Bruk egendefinert design", false) {
 
             }
         }
@@ -55,8 +68,8 @@ fun SettingsScreen(navController: NavController, settingsViewModel: SettingsView
 }
 
 @Composable
-fun SettingItem(title: String, description: String, onCheckedChange: (Boolean) -> Unit) {
-    var isChecked by remember { mutableStateOf(false) }
+fun SettingItem(title: String, description: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    var isCheckedVal by remember { mutableStateOf(isChecked) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -68,9 +81,10 @@ fun SettingItem(title: String, description: String, onCheckedChange: (Boolean) -
             Text(title)
             Text(description)
         }
-        Switch(checked = isChecked, onCheckedChange = {
-            isChecked = it
+        Switch(checked = isCheckedVal, onCheckedChange = {
+            isCheckedVal = it
             onCheckedChange(it)
+            Log.d("settings", "Switch: setting value to $it")
         })
     }
 }

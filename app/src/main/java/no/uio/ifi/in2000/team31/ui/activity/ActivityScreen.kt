@@ -59,7 +59,7 @@ fun ActivityScreen(navController: NavController){
         }
     ) { innerpadding ->
         Column (modifier = Modifier.padding(innerpadding)){
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             HeroText(status = WeatherStatus.SUNNY,
                 Modifier
                     .fillMaxWidth()
@@ -196,8 +196,10 @@ fun ActivityCardList () {
         .padding(8.dp)) {
         Text(
             "Anbefalte aktivtiteter",
-            style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp))
-        Spacer(modifier = Modifier.height(10.dp))
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp))
+        Spacer(modifier = Modifier.height(15.dp))
         LazyVerticalGrid(columns = GridCells.Fixed(2)) {
             items(exampleActivities) { activity ->
                 ActivityCard(activity)
