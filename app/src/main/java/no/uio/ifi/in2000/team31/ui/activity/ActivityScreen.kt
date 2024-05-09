@@ -54,6 +54,7 @@ import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.flow.firstOrNull
 import no.uio.ifi.in2000.team31.AppViewModelProvider
 import no.uio.ifi.in2000.team31.data.activity.Activity
+import no.uio.ifi.in2000.team31.ui.mood.Mood
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import java.io.File
 import java.io.IOException
@@ -91,7 +92,8 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
         val activityDetails = ActivityDetails(
             name = "Running",
             info = "Go for a run!",
-            imagePath = imagePath.toString()
+            imagePath = imagePath.toString(),
+            suitableMoods = listOf(Mood.ENERGETIC, Mood.HAPPY, Mood.ANGRY)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
@@ -103,7 +105,8 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
         val activityDetails = ActivityDetails(
             name = "Cycling",
             info = "Enjoy a trip on your bike!",
-            imagePath = imagePath.toString()
+            imagePath = imagePath.toString(),
+            suitableMoods = listOf(Mood.HAPPY, Mood.ANGRY, Mood.ENERGETIC)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
@@ -117,6 +120,7 @@ fun ActivityScreen(
     navigateToAddActivity: () -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier,
+    userMood: Mood? = null,
     viewModel: ActivityScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val activityScreenUiState by viewModel.activityScreenUiState.collectAsState()
@@ -139,7 +143,8 @@ fun ActivityScreen(
             activityList = activityScreenUiState.activitiesList,
             modifier = modifier.fillMaxSize(),
             contentPadding = innerPadding,
-            viewModel = viewModel
+            viewModel = viewModel,
+            userMood = userMood
         )
     }
 }
@@ -149,7 +154,8 @@ fun ActivityScreenBody(
     activityList: List<Activity>,
     modifier: Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    viewModel: ActivityScreenViewModel
+    viewModel: ActivityScreenViewModel,
+    userMood: Mood?
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -167,6 +173,11 @@ fun ActivityScreenBody(
     }
     Column {
         Spacer(modifier = Modifier.height(128.dp))
+        if (userMood != null) {
+            Text("Activities for when you're feeiling ${userMood.name}")
+        } else {
+            Text("All Activities")
+        }
         ActivityCardList(activityList = activityList)
     }
     //ActivityList(activityList = activityList, contentPadding = contentPadding)

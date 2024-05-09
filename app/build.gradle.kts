@@ -112,4 +112,6 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.7.0")
 
     implementation("io.coil-kt:coil-compose:2.1.0")
+
+    implementation("com.google.code.gson:gson:2.10.1")
 }

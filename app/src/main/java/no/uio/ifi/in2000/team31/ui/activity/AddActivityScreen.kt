@@ -8,10 +8,16 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Chip
+import androidx.compose.material.ChipDefaults
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,7 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -31,6 +39,7 @@ import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.AppViewModelProvider
 import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.data.activity.Activity
+import no.uio.ifi.in2000.team31.ui.mood.Mood
 import no.uio.ifi.in2000.team31.ui.navigation.NavigationDestination
 import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 import java.io.File
@@ -80,12 +89,50 @@ fun AddActivityBody(
             onValueChange = onActivityValueChange,
             modifier = Modifier.fillMaxWidth()
         )
+        SelectMoods(
+            selectedMoods = activityUiState.activityDetails.suitableMoods,
+            onMoodSelectionChange = { newSelectedMoods ->
+                onActivityValueChange(activityUiState.activityDetails.copy(suitableMoods = newSelectedMoods))
+            }
+        )
         Button(
             onClick = onSaveClick,
             enabled = activityUiState.isEntryValid,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Save")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun SelectMoods(
+    selectedMoods: List<Mood>,
+    onMoodSelectionChange: (List<Mood>) -> Unit
+) {
+    Column {
+        Text("Suitable moods:")
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Mood.entries.forEach { mood ->
+                Log.d("chip", "loading: $mood")
+                Chip(
+                    onClick = {
+                        Log.d("chip", "chip clicked on")
+                        val newSelectedMoods = if (mood in selectedMoods) {
+                            selectedMoods - mood
+                        } else {
+                            selectedMoods + mood
+                        }
+                        onMoodSelectionChange(newSelectedMoods)
+                    },
+                    colors = ChipDefaults.chipColors(
+                        contentColor = if (mood in selectedMoods) Color.Blue else Color.Red
+                    )
+                    ) {
+                        Text(mood.name, style = MaterialTheme.typography.bodySmall)
+                }
+            }
         }
     }
 }
@@ -122,9 +169,7 @@ fun ActivityInputForm(
                 onValueChange(newActivityDetails)
             }
         )
-        if (enabled) {
-            Text("Required fields")
-        }
+
     }
 }
 

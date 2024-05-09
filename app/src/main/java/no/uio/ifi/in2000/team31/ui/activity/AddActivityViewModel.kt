@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
+import no.uio.ifi.in2000.team31.ui.mood.Mood
 
 class AddActivityViewModel(private val activityRepository: ActivityRepository) : ViewModel() {
     var activityUiState by mutableStateOf(ActivityUiState())
@@ -40,14 +41,16 @@ data class ActivityDetails(
     val name: String = "",
     val info: String = "",
     val text: String = "",
-    val imagePath: String? = null
+    val imagePath: String? = null,
+    val suitableMoods: List<Mood> = listOf()
 )
 
 fun ActivityDetails.toActivity(): Activity = Activity(
     id = id,
     name = name,
     info = info,
-    imagePath = imagePath
+    imagePath = imagePath,
+    suitableMoods = suitableMoods
 )
 
 fun Activity.toActivityUiState(isEntryValid: Boolean = false): ActivityUiState = ActivityUiState(
@@ -59,5 +62,6 @@ fun Activity.toActivityDetails(): ActivityDetails = ActivityDetails(
     id = id,
     name = name, // .toString()?
     info = info, // .toString()?
-    imagePath = imagePath
+    imagePath = imagePath,
+    suitableMoods = suitableMoods
 )
