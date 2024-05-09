@@ -4,6 +4,7 @@ import android.app.Application
 
 class MoodApplication : Application() {
     lateinit var container: AppDataContainer
+    val sharedViewModel = SharedViewModel()
 
     override fun onCreate() {
         super.onCreate()

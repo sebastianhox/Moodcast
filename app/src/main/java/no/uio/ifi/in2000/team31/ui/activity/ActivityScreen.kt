@@ -53,6 +53,8 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.flow.firstOrNull
 import no.uio.ifi.in2000.team31.AppViewModelProvider
+import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.SharedViewModel
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.ui.mood.Mood
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
@@ -120,11 +122,13 @@ fun ActivityScreen(
     navigateToAddActivity: () -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier,
-    userMood: Mood? = null,
     viewModel: ActivityScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+    val sharedViewModel: SharedViewModel = (LocalContext.current.applicationContext as MoodApplication).sharedViewModel
+    val userMood by sharedViewModel.selectedMood.collectAsState()
     val activityScreenUiState by viewModel.activityScreenUiState.collectAsState()
     var scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Log.d("moodfix", "UserMood is $userMood")
     Scaffold(
         topBar = {
             MoodCastTopBar()
@@ -178,7 +182,12 @@ fun ActivityScreenBody(
         } else {
             Text("All Activities")
         }
-        ActivityCardList(activityList = activityList)
+        val filteredList = if (userMood != null) {
+            activityList.filter { it.suitableMoods.contains(userMood) }
+        } else {
+            activityList
+        }
+        ActivityCardList(activityList = filteredList)
     }
     //ActivityList(activityList = activityList, contentPadding = contentPadding)
 }
