@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import no.uio.ifi.in2000.team31.model.AlertIconModel
@@ -68,7 +69,7 @@ import kotlin.math.roundToInt
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
-    val searchUiState by homeViewModel.searchUiState.collectAsState()
+    val searchUiState = homeViewModel.searchUiState.collectAsStateWithLifecycle().value
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()
@@ -100,7 +101,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                 SearchBar(
                     query = searchUiState.currentQuery,
                     onQueryChange = homeViewModel::onPlaceNameSearch,
-                    onSearch = { homeViewModel.getSearchedPlace(searchUiState.currentQuery) },
+                    onSearch = {},
                     active = searchUiState.isSearching,
                     onActiveChange = { homeViewModel.onToogleSearch() },
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -184,7 +185,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             ) {
 
                                 Text(
-                                    text = "Min posisjon",
+                                    text = searchUiState.selectedPlace?.placeName ?: "Min posisjon",
                                     fontSize = 25.sp,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.align(Alignment.Center)

@@ -2,9 +2,9 @@ package no.uio.ifi.in2000.team31
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,15 +33,15 @@ import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 class MainActivity : ComponentActivity() {
 
+    private val settingsRepository: SettingsRepository = SettingsRepository(applicationContext)
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel = SettingsViewModel(settingsRepository)
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val settingsRepository: SettingsRepository = SettingsRepository(applicationContext)
-        val homeViewModel: HomeViewModel by viewModels()
-        val settingsViewModel: SettingsViewModel = SettingsViewModel(settingsRepository)
         setContent {
             Team31Theme(settingsViewModel.isDarkTheme.collectAsState().value) {
                 Surface(
@@ -53,39 +53,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                val location = locationResult.locations.firstOrNull()
-                Log.d("location", "Fetched location: ${location?.latitude}, ${location?.longitude}")
-                if (location != null) {
-                    homeViewModel.fetchWeatherData(location.latitude, location.longitude)
-                } else {
-                    Log.w("location", "Could not access the user's location")
-                }
-            }
-        }
-
         requestLocationAndStartUpdates()
     }
 
-    override fun onResume() {
-        super.onResume()
-        requestLocationAndStartUpdates()
-    }
-
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun requestLocationAndStartUpdates() {
         Log.d("location", "Start location permission request / updates")
 
         val permission = Manifest.permission.ACCESS_FINE_LOCATION
-        val locationRequest =
-            LocationRequest.Builder(
-                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-                3600000
-            ).build()
-
         if (ContextCompat.checkSelfPermission(
                 this,
                 permission
@@ -96,16 +72,19 @@ class MainActivity : ComponentActivity() {
                 permission
             )
         } else {
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location == null) {
+                    Log.d("location","No location provided")
+                } else {
+                    Log.d("location", "Fetched location: ${location.latitude}, ${location.longitude}")
+                    homeViewModel.fetchWeatherData(location.latitude,location.longitude)
+                }
+            }
         }
-
-        Log.d("location", "End location updates")
+        Log.d("location","End location updates")
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()

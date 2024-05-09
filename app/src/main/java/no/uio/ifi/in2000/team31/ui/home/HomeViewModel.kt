@@ -59,7 +59,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedPlace = MutableStateFlow<GeonameData?>(null)
     private val _isSearching = MutableStateFlow(false)
 
-    val searchUiState = combine(_searchText, _places, _selectedPlace, _isSearching) { searchText, places, selectedPlace, isSearching ->
+    val searchUiState = combine(
+        _searchText,
+        _places,
+        _selectedPlace,
+        _isSearching
+    ) { searchText, places, selectedPlace, isSearching ->
 
         if (searchText.isBlank())
             clearSearch()
@@ -79,7 +84,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     init {
         _searchText
             .debounce(300) // gets the latest; no need for delays!
-            .filter { currentQuery -> (currentQuery.length > 1) } // make sure there's enough initial text to search for
+            .filter { currentQuery -> (currentQuery.length > 1)} // make sure there's enough initial text to search for
             .distinctUntilChanged() // to avoid duplicate network calls
             .onEach { currentQuery -> // just gets the prefix: 'ph', 'pho', 'phoe'
                 val encQuery = URLEncoder.encode(currentQuery,"UTF-8")
@@ -93,7 +98,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _isSearching.value = !_isSearching.value
         if (!_isSearching.value) {
             _searchText.value = ""
-            clearSearch()
         }
     }
     fun onPlaceNameSearch(currentQuery: String) {
@@ -108,7 +112,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun clearSearch() {
         _places.value = emptyList()
-        _selectedPlace.value = null
     }
     @RequiresApi(Build.VERSION_CODES.O)
     fun fetchWeatherData(lat: Double, lon: Double) {
@@ -137,22 +140,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun getSearchedPlace(query: String) {
+    fun onPlaceSelected(place: GeonameData) {
         onToogleSearch()
-        viewModelScope.launch(Dispatchers.IO) {
-            val place = geonameRepository.getPlaceRecommendations(query).geonames[0]
+        viewModelScope.launch {
             _selectedPlace.value = place
         }
         fetchWeatherData(_selectedPlace.value?.lat!!,_selectedPlace.value?.lon!!)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun onPlaceSelected(place: GeonameData) {
-        onToogleSearch()
-        viewModelScope.launch(Dispatchers.IO) {
-            Log.d("test","${place.placeName}, ${place.lat} ${place.lon}")
-            _selectedPlace.value = place
-        }
-        fetchWeatherData(place.lat!!,place.lon!!)
     }
 }
