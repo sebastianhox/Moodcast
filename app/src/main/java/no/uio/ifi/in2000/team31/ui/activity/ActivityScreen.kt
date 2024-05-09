@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,11 +32,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,7 +49,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.flow.firstOrNull
 import no.uio.ifi.in2000.team31.AppViewModelProvider
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
@@ -56,23 +65,6 @@ enum class WeatherStatus {
     CLOUDY
 }
 
-
-fun copyImageFromAssetsToStorageOld(context: Context, imageName: String): String? { // Image name in your Assets folder
-    val filename = imageName // Optionally modify the filename if needed
-    val destinationFile = File(context.filesDir, filename)
-
-    try {
-        context.assets.open("images/$imageName").use { input -> // Assumes "images" folder in assets
-            destinationFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-        return destinationFile.absolutePath
-    } catch (e: IOException) {
-        Log.e("populus", "Error saving image: ${e.message}")
-        return null
-    }
-}
 
 fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
     Log.d("populus", "imageName: $imageName")
@@ -94,7 +86,7 @@ fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
     }
 }
 fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
-    val imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
+    var imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
     if (imagePath != null) {
         val activityDetails = ActivityDetails(
             name = "Running",
@@ -106,9 +98,18 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
     } else {
         Log.e("populus", "Failed to copy image for preloading")
     }
-    // Insert by repo here
-    Log.d("populus", "In populateDatabase()")
-
+    imagePath = copyImageFromAssetsToStorage(context, "cycling.jpg")
+    if (imagePath != null) {
+        val activityDetails = ActivityDetails(
+            name = "Cycling",
+            info = "Enjoy a trip on your bike!",
+            imagePath = imagePath.toString()
+        )
+        val activity = activityDetails.toActivity()
+        viewModel.preloadActivity(activity)
+    } else {
+        Log.e("populus", "Failed to copy image for preloading")
+    }
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,14 +152,24 @@ fun ActivityScreenBody(
     viewModel: ActivityScreenViewModel
 ) {
     val context = LocalContext.current
-    if (activityList.isEmpty()) {
-        populateDatabase(context, viewModel)
-    } else {
-        ActivityList(
-            activityList = activityList,
-            contentPadding = contentPadding
-        )
+    val coroutineScope = rememberCoroutineScope()
+    
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
+            if (existingActivity.isEmpty()) {
+                Log.d("populus", "IS EMPTY")
+                populateDatabase(context, viewModel)
+            } else {
+                Log.d("populus", "NOT EMPTY")
+            }
+        }
     }
+    Column {
+        Spacer(modifier = Modifier.height(128.dp))
+        ActivityCardList(activityList = activityList)
+    }
+    //ActivityList(activityList = activityList, contentPadding = contentPadding)
 }
 
 @Composable
@@ -201,15 +212,6 @@ fun ActivityItem(
     }
 }
 
-/*
-data class Activity(
-    val name: String,
-    val time: String,
-    val suitableLocations: List<Pair<Double, Double>>,
-    val image: String,
-    val suitableWeather: List<String>,
-    val suitableMoods: List<String>
-)*/
 /*
 @Composable
 fun ActivityScreen(navController: NavController){
@@ -300,7 +302,8 @@ fun MoodCastTopBar() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ActivityCardList () {
+fun ActivityCardList (activityList: List<Activity>) {
+
     //val exampleActivities = listOf(
         //Adding activities
         /*
@@ -377,10 +380,10 @@ fun ActivityCardList () {
             style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp))
         Spacer(modifier = Modifier.height(10.dp))
         LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-            /*items(exampleActivities) { activity ->
-                //ActivityCard(activity)
-                //ShowActivity(activity)
-            }*/
+            items(activityList,) { activity ->
+                ActivityCard(activity)
+                ShowActivity(activity.toActivityDetails())
+            }
         }
     }
 }
@@ -390,7 +393,7 @@ fun ShowActivity(activity: ActivityDetails) {
 
 }
 
-/*
+
 /* Når det gjelder typography, ligger dette i Type filen. Du kan også søke på Typography material design på google for å se hvor store de er! */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -400,7 +403,7 @@ fun ActivityCard(activity: Activity) {
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             AsyncImage(
-                model = activity.image,
+                model = activity.imagePath,
                 contentDescription = activity.name,
                 modifier = Modifier
                     .height(100.dp)
@@ -409,11 +412,11 @@ fun ActivityCard(activity: Activity) {
                 contentScale = ContentScale.Crop
             )
             Text(activity.name, style = MaterialTheme.typography.titleMedium)
-            Text(activity.time, style = MaterialTheme.typography.titleMedium)
+            Text(activity.info, style = MaterialTheme.typography.titleMedium)
         }
     }
 }
-*/
+
 /*
 @Preview
 @Preview(showBackground = true, uiMode = UI_MODE)
