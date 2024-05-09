@@ -8,5 +8,6 @@ data class Activity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
-    val info: String
+    val info: String,
+    val imagePath: String? = null
 )

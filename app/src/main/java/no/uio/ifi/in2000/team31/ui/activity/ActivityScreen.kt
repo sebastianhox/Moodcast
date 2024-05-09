@@ -1,42 +1,53 @@
 package no.uio.ifi.in2000.team31.ui.activity
 
 
+import android.content.Context
+import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AppBarDefaults
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import no.uio.ifi.in2000.team31.AppViewModelProvider
+import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
+import java.io.File
+import java.io.IOException
 
 enum class WeatherStatus {
     SUNNY,
@@ -44,6 +55,153 @@ enum class WeatherStatus {
     SNOWY,
     CLOUDY
 }
+
+
+fun copyImageFromAssetsToStorageOld(context: Context, imageName: String): String? { // Image name in your Assets folder
+    val filename = imageName // Optionally modify the filename if needed
+    val destinationFile = File(context.filesDir, filename)
+
+    try {
+        context.assets.open("images/$imageName").use { input -> // Assumes "images" folder in assets
+            destinationFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        return destinationFile.absolutePath
+    } catch (e: IOException) {
+        Log.e("populus", "Error saving image: ${e.message}")
+        return null
+    }
+}
+
+fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
+    Log.d("populus", "imageName: $imageName")
+    val filename = imageName
+    val destinationFile = File(context.filesDir, filename)
+
+    try {
+        context.assets.open(imageName).use { input ->
+            destinationFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+        Log.d("populus", "destination: ${destinationFile.toString()}")
+        Log.d("populus", "abs path: ${destinationFile.absolutePath.toString()}")
+        return destinationFile.absolutePath // Return the absolute path
+    } catch (e: IOException) {
+        Log.e("populus", "Error saving image: ${e.message}")
+        return null
+    }
+}
+fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
+    val imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
+    if (imagePath != null) {
+        val activityDetails = ActivityDetails(
+            name = "Running",
+            info = "Go for a run!",
+            imagePath = imagePath.toString()
+        )
+        val activity = activityDetails.toActivity()
+        viewModel.preloadActivity(activity)
+    } else {
+        Log.e("populus", "Failed to copy image for preloading")
+    }
+    // Insert by repo here
+    Log.d("populus", "In populateDatabase()")
+
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ActivityScreen(
+    navigateToAddActivity: () -> Unit,
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    viewModel: ActivityScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val activityScreenUiState by viewModel.activityScreenUiState.collectAsState()
+    var scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    Scaffold(
+        topBar = {
+            MoodCastTopBar()
+        },
+        bottomBar = {
+            BottomNavigationBar(navController)
+        },
+
+        floatingActionButton = {
+            FloatingActionButton(onClick = navigateToAddActivity) {
+                Icon(Icons.Filled.Add, "")
+            }
+        }
+    ) { innerPadding ->
+        ActivityScreenBody(
+            activityList = activityScreenUiState.activitiesList,
+            modifier = modifier.fillMaxSize(),
+            contentPadding = innerPadding,
+            viewModel = viewModel
+        )
+    }
+}
+
+@Composable
+fun ActivityScreenBody(
+    activityList: List<Activity>,
+    modifier: Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    viewModel: ActivityScreenViewModel
+) {
+    val context = LocalContext.current
+    if (activityList.isEmpty()) {
+        populateDatabase(context, viewModel)
+    } else {
+        ActivityList(
+            activityList = activityList,
+            contentPadding = contentPadding
+        )
+    }
+}
+
+@Composable
+fun ActivityList(
+    activityList: List<Activity>,
+    contentPadding: PaddingValues,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = contentPadding
+    ) {
+        items(items = activityList, key = { it.id }) { activity ->
+            ActivityItem(
+                activity = activity,
+                modifier = modifier
+            )
+        }
+    }
+}
+
+@Composable
+fun ActivityItem(
+    activity: Activity,
+    modifier: Modifier = Modifier
+) {
+    val painter = rememberAsyncImagePainter(File(activity.imagePath.toString()))
+    Card(
+        modifier = modifier
+    ) {
+        Column {
+            Text(activity.name)
+            Text(activity.info)
+            Image(
+                painter = painter,
+                contentDescription = "Activity Image",
+                modifier = Modifier.size(128.dp)
+            )
+        }
+    }
+}
+
+/*
 data class Activity(
     val name: String,
     val time: String,
@@ -51,8 +209,8 @@ data class Activity(
     val image: String,
     val suitableWeather: List<String>,
     val suitableMoods: List<String>
-)
-
+)*/
+/*
 @Composable
 fun ActivityScreen(navController: NavController){
     Scaffold (
@@ -61,6 +219,9 @@ fun ActivityScreen(navController: NavController){
         },
         bottomBar = {
             BottomNavigationBar(navController)
+        },
+        floatingActionButton = {
+            AddActivityButton { navController.navigate(AppRoutes.ADD_ACTIVITY) }
         }
     ) { innerpadding ->
         Column (modifier = Modifier.padding(innerpadding)){
@@ -74,6 +235,16 @@ fun ActivityScreen(navController: NavController){
         }
     }
 }
+*/
+@Composable
+fun AddActivityButton(onClick: () -> Unit) {
+    FloatingActionButton(
+        onClick = { onClick() },
+        ) {
+        Icon(Icons.Filled.Add, "Some button")
+    }
+}
+
 @Composable
 fun HeroText(status: WeatherStatus, modifier: Modifier) {
     val text = when (status) {
@@ -130,8 +301,9 @@ fun MoodCastTopBar() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityCardList () {
-    val exampleActivities = listOf(
+    //val exampleActivities = listOf(
         //Adding activities
+        /*
         Activity(
             name = "Morgenjogg",
             time = "30 min",
@@ -195,8 +367,8 @@ fun ActivityCardList () {
             image = "https://images.unsplash.com/photo-1665686374006-b8f04cf62d57?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             suitableWeather = listOf(),
             suitableMoods = listOf()
-        )
-    )
+        )*/
+    //)
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
@@ -205,14 +377,20 @@ fun ActivityCardList () {
             style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp))
         Spacer(modifier = Modifier.height(10.dp))
         LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-            items(exampleActivities) { activity ->
-                ActivityCard(activity)
-            }
+            /*items(exampleActivities) { activity ->
+                //ActivityCard(activity)
+                //ShowActivity(activity)
+            }*/
         }
     }
 }
 
+@Composable
+fun ShowActivity(activity: ActivityDetails) {
 
+}
+
+/*
 /* Når det gjelder typography, ligger dette i Type filen. Du kan også søke på Typography material design på google for å se hvor store de er! */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -235,7 +413,7 @@ fun ActivityCard(activity: Activity) {
         }
     }
 }
-
+*/
 /*
 @Preview
 @Preview(showBackground = true, uiMode = UI_MODE)
