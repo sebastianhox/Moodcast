@@ -25,14 +25,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.*
 import kotlinx.coroutines.delay
+import no.uio.ifi.in2000.team31.data.settings.SettingsRepository
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
 import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 class MainActivity : ComponentActivity() {
-    val homeViewModel: HomeViewModel by viewModels()
-    val settingsViewModel: SettingsViewModel = SettingsViewModel()
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
@@ -40,6 +39,9 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val settingsRepository: SettingsRepository = SettingsRepository(applicationContext)
+        val homeViewModel: HomeViewModel by viewModels()
+        val settingsViewModel: SettingsViewModel = SettingsViewModel(settingsRepository)
         setContent {
             Team31Theme(settingsViewModel.isDarkTheme.collectAsState().value) {
                 Surface(
@@ -66,6 +68,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        requestLocationAndStartUpdates()
+    }
+
+    override fun onResume() {
+        super.onResume()
         requestLocationAndStartUpdates()
     }
 
