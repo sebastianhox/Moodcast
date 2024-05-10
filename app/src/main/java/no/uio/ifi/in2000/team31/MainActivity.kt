@@ -128,7 +128,7 @@ fun SplashScreen(navController: NavHostController) {
 
         // todo: implement logic to await successful cache response
         // in the meantime: short delay
-        delay(2000)
+        delay(4000)
         navController.navigate("home") {
             popUpTo("splash") { inclusive = true }
         }
