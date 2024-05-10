@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team31.ui.home
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -53,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -170,7 +173,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         modifier = Modifier
                             .padding(18.dp)
                             .width(360.dp)
-                            .height(120.dp)
+                            .height(200.dp)
                             .align(Alignment.CenterHorizontally)
                     ) {
 
@@ -228,9 +231,15 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                     }
                                 }
                             }
+                            Log.d("test","${weatherData.symbolCodeNow}")
+                             Image(
+                                painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable._01d),
+                                contentDescription = "weather icon",
+                                modifier = Modifier.size(80.dp),
+                                alignment = Alignment.Center
+                             )
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 Text(
-                                    //text = "${weatherData?.weatherData?.instant?.last()?.airTemperature}" + "\u00B0",
                                     text = temperature?.let { "${it.roundToInt()}°" }
                                         ?: "Henter data...",
                                     fontSize = 50.sp,

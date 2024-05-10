@@ -31,6 +31,7 @@ import java.net.URLEncoder
 
 data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
+    val symbolCodeNow: String? = "",
     val tempAndTimeData: List<Triple<String?, Double?, String?>> = listOf(),
     val longTermForecast: Map<String, Pair<Double, Double>>? = null,
     val alertIconData: List<Pair<String?,String?>> = listOf()
@@ -127,6 +128,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 _weatherDataUIState.update { currentState ->
                     currentState.copy(
                         weatherData = repository.fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.REFRESH)),
+                        symbolCodeNow = repository.getSymbolCodeNow(lat, lon),
                         tempAndTimeData = repository.get24HoursForecast(lat, lon),
                         longTermForecast = repository.getNext7Days(lat,lon),
                         alertIconData = alertIcons

@@ -33,15 +33,19 @@ import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 
 class MainActivity : ComponentActivity() {
 
-    private val settingsRepository: SettingsRepository = SettingsRepository(applicationContext)
+
     private val homeViewModel: HomeViewModel by viewModels()
-    private val settingsViewModel: SettingsViewModel = SettingsViewModel(settingsRepository)
+
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val settingsRepository: SettingsRepository = SettingsRepository(applicationContext)
+        val settingsViewModel: SettingsViewModel = SettingsViewModel(settingsRepository)
+
         setContent {
             Team31Theme(settingsViewModel.isDarkTheme.collectAsState().value) {
                 Surface(
