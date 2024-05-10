@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
-import no.uio.ifi.in2000.team31.MyApplication
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 data class WeatherAlertUIState(
     val features: List<Feature>? = listOf()

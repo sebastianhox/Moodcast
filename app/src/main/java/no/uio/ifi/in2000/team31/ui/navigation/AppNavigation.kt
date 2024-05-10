@@ -75,7 +75,7 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
                 }
             }
         ) {
-            HomeScreen(navController, homeViewModel)
+            HomeScreen(navController, homeViewModel, settingsViewModel)
         }
 
         composable(

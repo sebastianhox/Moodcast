@@ -73,7 +73,6 @@ fun AddActivityScreen(
             modifier = Modifier.padding(innerPadding)
         )
     }
-
 }
 
 @Composable
@@ -145,7 +144,6 @@ fun ActivityInputForm(
     modifier: Modifier
 ) {
     Column {
-
         OutlinedTextField(
             value = activityDetails.name,
             onValueChange = { onValueChange(activityDetails.copy(name = it)) },
@@ -154,7 +152,6 @@ fun ActivityInputForm(
             enabled = enabled,
             singleLine = true
         )
-
         OutlinedTextField(
             value = activityDetails.info,
             onValueChange = { onValueChange(activityDetails.copy(info = it)) },
@@ -169,7 +166,6 @@ fun ActivityInputForm(
                 onValueChange(newActivityDetails)
             }
         )
-
     }
 }
 
@@ -182,9 +178,7 @@ fun SelectPhotoFromGallery(
     val context = LocalContext.current
     var imageUrl by remember { mutableStateOf<Uri?>(null) }
     var imageFileName by remember { mutableStateOf("No image selected") }
-
     var showPermissionsRationale by remember { mutableStateOf(false) }
-
     val storagePermission = rememberPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE)
 
     val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -198,7 +192,6 @@ fun SelectPhotoFromGallery(
         }
     }
 
-
     Column {
         Button(onClick = {
             val request = PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -209,6 +202,7 @@ fun SelectPhotoFromGallery(
         Text(text = "Image: $imageFileName")
     }
 }
+
 fun getFilenameFromUri(context: Context, uri: Uri): String {
     return context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
         val nameIndex = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)

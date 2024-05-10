@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team31.ui.home
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,17 +47,27 @@ import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
+import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
+import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
+    val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()
-    val temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
+    var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
+    var symbol = "°C"
+    if (isFahrenheit && temperature != null) { // Funker ikke enda
+        Log.d("temp", "Temp is $temperature before convertion")
+        temperature = celsiusToFahrenheit(temperature.toInt()).toDouble()
+        Log.d("temp", "Temp is $temperature after convertion")
+        symbol = "°F"
+    }
 
     // Background image (placeholder)
     val backgroundImageUrl ="https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
@@ -149,7 +160,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         }
                         Box(modifier = Modifier.fillMaxWidth()) {
                             Text(
-                                text = temperature?.let { "  ${it.roundToInt()}°" }
+                                text = temperature?.let { "  ${it.roundToInt()}$symbol" }
                                     ?: "Henter data...",
                                 fontSize = 50.sp,
                                 textAlign = TextAlign.Center,
