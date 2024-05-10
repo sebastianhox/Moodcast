@@ -1,19 +1,18 @@
 package no.uio.ifi.in2000.team31.ui.alert
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -51,7 +50,7 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (features != null) {
-                    itemsIndexed(features) { index, feature ->
+                    itemsIndexed(features) { _, feature ->
                         val dataMap = mutableMapOf<String, String?>()
                         feature.properties.forEach { entry ->
                             if (entry.value !is kotlinx.serialization.json.JsonArray) {
@@ -68,7 +67,6 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
                                 endDate = dataMap["eventEndingTime"],
                                 instruction = dataMap["instruction"]
                             ),
-                            index = index
                         )
                     }
                 }
@@ -103,10 +101,8 @@ fun AlertTopAppBar(navController: NavController) {
     )
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 fun formatDate(dateString: String?): String {
-
     return if (dateString != null) {
         try {
             val formatter = DateTimeFormatter.ofPattern("dd/MM-yyyy HH:mm")
@@ -118,43 +114,33 @@ fun formatDate(dateString: String?): String {
     } else {
         "Ukjent"
     }
- }
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AlertCard(alert: Alert, index: Int) {
-    Log.d("test", "${alert.area}")
-    Column {
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Card(
-            modifier = Modifier
-                .padding(horizontal = 30.dp)
-                .shadow(4.dp, RoundedCornerShape(8.dp)),
-            colors = CardDefaults.cardColors(
-                containerColor = when (alert.awarenessColor.toString()) {
-                    "Yellow" -> Color.Yellow.copy(alpha = 0.9f)
-                    "Orange" -> Color(0xFFFFA500).copy(alpha = 0.9f)
-                    "Red" -> Color.Red.copy(alpha = 0.9f)
-                    else -> Color.LightGray.copy(alpha = 0.9f)
-                }
-            )
+fun AlertCard(alert: Alert) {
+    Card(
+        modifier = Modifier
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = when (alert.awarenessColor.toString()) {
+                "Yellow" -> Color(0xFFFFF176).copy(alpha = 0.9f)
+                "Orange" -> Color(0xFFFFA726).copy(alpha = 0.9f)
+                "Red" -> Color(0xFFE57373).copy(alpha = 0.9f)
+                else -> Color.LightGray.copy(alpha = 0.9f)
+            }
+        )
         ) {
 
-            Spacer(modifier = Modifier.height(2.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start
 
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
             ) {
-//                Text(
-//                    text = "Farevarsel #${index + 1}",
-//                    style = MaterialTheme.typography.titleLarge,
-//                    color = Color.Black
-//                )
-//                Spacer(modifier = Modifier.height(4.dp))
-
                 // Tittel
                 Text(
                     text = "${alert.title?.split(",")?.firstOrNull()}",
@@ -166,9 +152,9 @@ fun AlertCard(alert: Alert, index: Int) {
 
                 // Område
                 Text(
-                    text = "${alert.area.toString()}",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge,
+                    text = "${alert.area}",
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMedium,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -187,12 +173,12 @@ fun AlertCard(alert: Alert, index: Int) {
                 // Instruksjoner
                 Text(
                     text = alert.instruction.toString(),
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.Black
                 )
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
     }
-}
+
