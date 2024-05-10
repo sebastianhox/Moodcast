@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team31.ui.mood
 
+import android.util.Log
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Scaffold
 import kotlinx.coroutines.launch
@@ -46,16 +47,28 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
+import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.SharedViewModel
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import kotlin.math.roundToInt
+
+enum class Mood {
+    HAPPY,
+    SAD,
+    ENERGETIC,
+    CALM,
+    ANGRY,
+    TIRED
+}
 
 @Composable
 fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = viewModel()) {
     val weatherData by moodViewModel.weatherDataUIState.collectAsState()
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val sharedViewModel: SharedViewModel = (LocalContext.current.applicationContext as MoodApplication).sharedViewModel
 
     Scaffold(
         topBar = {
@@ -144,10 +157,10 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 )
 
                 // Humørknapper
-                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState)
-                MoodButton("😢 Trist", Color(0xFF007AFF), Color.White, scope, snackbarState)
-                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState)
-                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState)
+                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState, sharedViewModel, Mood.HAPPY)
+                MoodButton("😢 Trist", Color(0xFF007AFF), Color.White, scope, snackbarState, sharedViewModel, Mood.SAD)
+                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGETIC)
+                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.CALM)
             }
         }
     }
@@ -159,7 +172,9 @@ fun MoodButton(
     backgroundColor: Color,
     textColor: Color,
     scope: CoroutineScope,
-    snackbarState: SnackbarHostState
+    snackbarState: SnackbarHostState,
+    sharedViewModel: SharedViewModel,
+    mood: Mood
 ) {
     Button(
         modifier = Modifier
@@ -169,6 +184,8 @@ fun MoodButton(
             .shadow(5.dp, RoundedCornerShape(25.dp)),
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
         onClick = {
+            sharedViewModel.selectedMood.value = mood
+            Log.d("moodfix", "Setting the mood to $mood")
             scope.launch {
                 snackbarState.showSnackbar("Valgt humør: $text ")
             }

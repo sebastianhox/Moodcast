@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MyApplication
+import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
@@ -47,7 +47,7 @@ data class SearchUiState(
 @OptIn(FlowPreview::class)
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val appContainer = (application as MyApplication).appContainer
+    private val appContainer = (application as MoodApplication).container
     private val repository = appContainer.locWeatherRepository
     private val alertRepository = appContainer.alertRepository
     private val geonameRepository = appContainer.geonameRepository

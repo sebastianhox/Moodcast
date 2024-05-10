@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -86,6 +87,10 @@ dependencies {
     implementation(libs.androidx.material)
     implementation(libs.androidx.material.icons.extended)
 
+    implementation("androidx.compose.material:material-icons-core:1.6.7")
+    implementation("androidx.compose.material:material-icons-extended:1.6.7")
+
+
     // For Preferences DataStore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
@@ -94,4 +99,20 @@ dependencies {
 
     implementation("androidx.core:core-splashscreen:1.0.1")
 
+    val room_version = "2.5.0"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+
+    implementation("androidx.activity:activity-compose:1.7.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
+    implementation("androidx.activity:activity-ktx:1.9.0")
+    implementation("androidx.fragment:fragment-ktx:1.7.0")
+
+    implementation("io.coil-kt:coil-compose:2.1.0")
+
+    implementation("com.google.code.gson:gson:2.10.1")
 }

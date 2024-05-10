@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import no.uio.ifi.in2000.team31.ui.activity.AddActivityScreen
 import no.uio.ifi.in2000.team31.ui.activity.ActivityScreen
+import no.uio.ifi.in2000.team31.ui.activity.AddActivityDestination
 import no.uio.ifi.in2000.team31.ui.alert.AlertScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
@@ -73,7 +75,7 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
                 }
             }
         ) {
-            HomeScreen(navController, homeViewModel)
+            HomeScreen(navController, homeViewModel, settingsViewModel)
         }
 
         composable(
@@ -129,7 +131,10 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
         }
 
         composable(AppRoutes.ACTIVITY) {
-            ActivityScreen(navController)
+            ActivityScreen(
+                navigateToAddActivity = { navController.navigate(AddActivityDestination.route)},
+                navController = navController
+            )
         }
 
         composable(AppRoutes.MOOD) {
@@ -138,6 +143,14 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
 
         composable(AppRoutes.SETTINGS) {
             SettingsScreen(navController, settingsViewModel)
+        }
+
+        composable(AppRoutes.ADD_ACTIVITY) {
+            AddActivityScreen(
+                navController = navController,
+                settingsViewModel = settingsViewModel,
+                navigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

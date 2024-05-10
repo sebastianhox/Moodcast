@@ -52,7 +52,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import no.uio.ifi.in2000.team31.R
@@ -60,30 +59,33 @@ import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
+import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
+import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
-
-// har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
+    val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
     val searchUiState = homeViewModel.searchUiState.collectAsStateWithLifecycle().value
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()
-    val temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
+    var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
+    var symbol = "°C"
+    if (isFahrenheit && temperature != null) { // Funker ikke enda
+        Log.d("temp", "Temp is $temperature before convertion")
+        temperature = celsiusToFahrenheit(temperature.toInt()).toDouble()
+        Log.d("temp", "Temp is $temperature after convertion")
+        symbol = "°F"
+    }
 
-    // Background image (PLACEHOLDER ENN SÅ LENGE]
-    val backgroundImageUrl =
-        "https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
+    // Background image (placeholder)
+    val backgroundImageUrl ="https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
 
     Scaffold(
-        topBar = {},
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
 

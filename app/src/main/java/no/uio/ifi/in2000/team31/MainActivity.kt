@@ -52,8 +52,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val navController = rememberNavController()
-                    SetupNavGraph(navController, homeViewModel, settingsViewModel)
+                    //val navController = rememberNavController()
+                    //SetupNavGraph(navController, homeViewModel, settingsViewModel)
+                    MoodApp(
+                        homeViewModel = homeViewModel,
+                        settingsViewModel = settingsViewModel,
+                    )
                 }
             }
         }

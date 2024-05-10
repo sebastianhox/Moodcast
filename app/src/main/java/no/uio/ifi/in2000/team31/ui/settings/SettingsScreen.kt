@@ -24,12 +24,20 @@ import kotlinx.coroutines.flow.first
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
+fun celsiusToFahrenheit(degreeInCelsius: Int): Int {
+    return ((9.0 / 5) * degreeInCelsius + 32).toInt()
+}
+
 @Composable
 fun SettingsScreen(navController: NavController, settingsViewModel: SettingsViewModel) {
     val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+    val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
     LaunchedEffect(key1 = settingsViewModel) {
         val darkThemeOn = settingsViewModel.isDarkTheme.first()
         settingsViewModel.onDarkThemeSwitchChange(darkThemeOn)
+
+        val fahrenheitOn = settingsViewModel.isFahrenheit.first()
+        settingsViewModel.onFahrenheitSwitchChange(fahrenheitOn)
     }
     Scaffold(
         topBar = { MoodCastTopBar() },
@@ -45,24 +53,11 @@ fun SettingsScreen(navController: NavController, settingsViewModel: SettingsView
                 settingsViewModel.onDarkThemeSwitchChange(it)
                 Log.d("settings", "Passing $isDarkTheme to switch")
             }
-            SettingItem(title = "Fahrenheit", description = "Bruk fahrenheit", false) {
-
+            SettingItem(title = "Fahrenheit", description = "Bruk fahrenheit", isFahrenheit) {
+                settingsViewModel.onFahrenheitSwitchChange(it)
+                Log.d("settings", "Passing $isFahrenheit to switch")
             }
 
-
-            // Ikke lagt til noe funksjonalitet på disse enda, kun for å se noenlunde bra ut
-            SettingItem(title = "Push varsler", description = "Tillat push varsler", false) {
-
-            }
-            SettingItem(title = "Lokasjon", description = "Tillat lokasjon", false) {
-
-            }
-            SettingItem(title = "Automatisk lokasjon", description = "Last lokasjon automatisk", false) {
-
-            }
-            SettingItem(title = "Eget design", description = "Bruk egendefinert design", false) {
-
-            }
         }
     }
 }

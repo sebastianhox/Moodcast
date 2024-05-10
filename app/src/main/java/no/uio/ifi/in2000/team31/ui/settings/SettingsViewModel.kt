@@ -24,17 +24,25 @@ object SettingsDataStore {
     // Add private?
     val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
     val DARK_THEME_ON_KEY = booleanPreferencesKey("dark_theme_on")
+    val FAHRENHEIT_ON = booleanPreferencesKey("fahrenheit_on")
 }
 
 class SettingsViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
     private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme = _isDarkTheme.asStateFlow()
 
+    private val _isFahrenheit = MutableStateFlow(false)
+    val isFahrenheit = _isFahrenheit.asStateFlow()
+
     init { // Setter theme til det som er lagret i repo
         viewModelScope.launch {
+            Log.d("settings", "init SettingsViewModel")
+
             val darkThemeOn = settingsRepository.getDarkThemeSwitchState()
             _isDarkTheme.value = darkThemeOn
-            Log.d("settings", "init SettingsViewModel")
+
+            val fahrenheitOn = settingsRepository.getFahrenheitSwitchState()
+            _isFahrenheit.value = fahrenheitOn
         }
     }
 
@@ -42,6 +50,13 @@ class SettingsViewModel(private val settingsRepository: SettingsRepository) : Vi
         viewModelScope.launch {
             settingsRepository.updateDarkThemeSwitchState(isChecked) // Oppdaterer repo med ny verdi
             _isDarkTheme.value = settingsRepository.getDarkThemeSwitchState() // Endrer på verdien slik at composable oppdaterer
+        }
+    }
+
+    fun onFahrenheitSwitchChange(isChecked: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updateFahrenheitSwitchState(isChecked)
+            _isFahrenheit.value = settingsRepository.getFahrenheitSwitchState()
         }
     }
 

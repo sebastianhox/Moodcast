@@ -7,12 +7,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MyApplication
+import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.ui.home.WeatherDataUIState
 
 class MoodViewModel(application: Application): AndroidViewModel(application) {
-    private val appContainer = (application as MyApplication).appContainer
+    private val appContainer = (application as MoodApplication).container
     private val repository = appContainer.locWeatherRepository
 
     private val _weatherDataUIState = MutableStateFlow(WeatherDataUIState())
