@@ -36,7 +36,6 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.AppViewModelProvider
 import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.ui.mood.Mood
@@ -54,7 +53,7 @@ fun AddActivityScreen(
     navigateBack: () -> Unit,
     navController: NavController,
     settingsViewModel: SettingsViewModel,
-    viewModel: AddActivityViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: AddActivityViewModel = viewModel()
 ) {
     var nameText by remember { mutableStateOf("") }
     var infoText by remember { mutableStateOf("") }
@@ -168,6 +167,7 @@ fun ActivityInputForm(
         )
     }
 }
+
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

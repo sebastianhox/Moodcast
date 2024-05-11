@@ -11,18 +11,24 @@ import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.ui.home.WeatherDataUIState
 
+data class MoodWeatherUIState(
+    val symbolCodeNow: String? = null,
+    val temperature: Double? = null
+)
 class MoodViewModel(application: Application): AndroidViewModel(application) {
-    private val appContainer = (application as MoodApplication).container
+    private val appContainer = (application as MoodApplication).appContainer
     private val repository = appContainer.locWeatherRepository
 
-    private val _weatherDataUIState = MutableStateFlow(WeatherDataUIState())
-    val weatherDataUIState: StateFlow<WeatherDataUIState> = _weatherDataUIState
+    private val _weatherDataUIState = MutableStateFlow(MoodWeatherUIState())
+    val weatherDataUIState: StateFlow<MoodWeatherUIState> = _weatherDataUIState
 
     init {
         viewModelScope.launch {
+            val dataNow = repository.fetchInfo(null,null,CachePolicy(CachePolicy.Type.ALWAYS)).instant.first()
             _weatherDataUIState.update { currentState ->
                 currentState.copy(
-                    weatherData = repository.fetchInfo(null,null,cachePolicy = CachePolicy(CachePolicy.Type.ALWAYS))
+                    symbolCodeNow = dataNow.symbolCode,
+                    temperature = dataNow.airTemperature
                 )
             }
         }

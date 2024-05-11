@@ -29,12 +29,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,9 +49,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.flow.firstOrNull
-import no.uio.ifi.in2000.team31.AppViewModelProvider
 import no.uio.ifi.in2000.team31.MoodApplication
-import no.uio.ifi.in2000.team31.SharedViewModel
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.ui.mood.Mood
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
@@ -69,8 +65,7 @@ enum class WeatherStatus {
 
 fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
     Log.d("populus", "imageName: $imageName")
-    val filename = imageName
-    val destinationFile = File(context.filesDir, filename)
+    val destinationFile = File(context.filesDir, imageName)
 
     try {
         context.assets.open(imageName).use { input ->
@@ -120,12 +115,15 @@ fun ActivityScreen(
     navigateToAddActivity: () -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: ActivityScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ActivityScreenViewModel = viewModel()
 ) {
-    val sharedViewModel: SharedViewModel = (LocalContext.current.applicationContext as MoodApplication).sharedViewModel
-    val userMood by sharedViewModel.selectedMood.collectAsState()
+
+    val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
+    val sharedViewModel = appContainer.sharedViewModel
+
+    val userMood by sharedViewModel.moodUIState.collectAsState()
     val activityScreenUiState by viewModel.activityScreenUiState.collectAsState()
-    var scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+//    var scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Log.d("moodfix", "UserMood is $userMood")
     Scaffold(
         topBar = {
@@ -146,7 +144,7 @@ fun ActivityScreen(
             modifier = modifier.fillMaxSize(),
             contentPadding = innerPadding,
             viewModel = viewModel,
-            userMood = userMood
+            userMood = userMood.selectedMood
         )
     }
 }
@@ -160,7 +158,7 @@ fun ActivityScreenBody(
     userMood: Mood?
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+
 
 
     LaunchedEffect(key1 = Unit) {
@@ -178,7 +176,7 @@ fun ActivityScreenBody(
     ) {
         Spacer(modifier = Modifier.height(128.dp))
         if (userMood != null) {
-            Text("Activities for when you're feeiling ${userMood.name}")
+            Text("Activities for when you're feeling ${userMood.name}")
         } else {
             Text("All Activities")
         }

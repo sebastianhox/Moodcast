@@ -21,14 +21,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -54,7 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.R
+import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -72,12 +76,20 @@ import kotlin.math.roundToInt
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
+
+    val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
+    val sharedViewModel = appContainer.sharedViewModel
+
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
     val searchUiState by homeViewModel.searchUiState.collectAsState()
+    val locationState by sharedViewModel.locationUIState.collectAsState()
     val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
+    val darkModeOn by settingsViewModel.isDarkTheme.collectAsState()
+
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()
+    val backgroundColor = if (darkModeOn) Color.DarkGray.copy(alpha = 0.85f) else Color.LightGray.copy(alpha = 0.85f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
@@ -135,7 +147,48 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                         }
                     }
                 ) {
-                    LazyColumn {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .fillMaxWidth()
+                            .clickable {
+                                val location = locationState
+                                homeViewModel.fetchWeatherData(
+                                    location.lat, location.lon,
+                                    CachePolicy(CachePolicy.Type.REFRESH)
+                                )
+                                homeViewModel.clearSelectedPlace()
+                                homeViewModel.onToogleSearch()
+                            },
+                    ) {
+                        Row (
+                            modifier = Modifier.padding(
+                                start = 8.dp,
+                                top = 10.dp,
+                                end = 8.dp,
+                                bottom = 4.dp
+                            )
+                        ){
+
+                            Icon(
+                                imageVector = Icons.Outlined.MyLocation,
+                                contentDescription = "my location",
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                            Text(
+                                text = "Min posisjon",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 8.dp)
+                    ) {
                         items(searchUiState.places) { place ->
                             Column(
                                 Modifier
@@ -151,7 +204,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                                 Card(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(10.dp))
-                                        .fillMaxSize()
+                                        .fillMaxSize(),
+                                    colors = CardDefaults.cardColors(Color.Transparent)
                                 ) {
                                     Text(
                                         text = "${place.placeName} ${place.adminName},  ${place.country}",
@@ -168,6 +222,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                         }
                     }
                 }
+
 
                 Column(
                     modifier = Modifier
@@ -244,16 +299,15 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                                     }
                                 }
                             }
-                            Log.d("test","${weatherData.symbolCodeNow}")
                             Image(
-                                painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable.svg),
+                                painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode] ?: R.drawable.svg),
                                 contentDescription = "weather icon",
                                 modifier = Modifier.size(80.dp),
                                 alignment = Alignment.Center
                             )
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 Text(
-                                    text = temperature?.let { "${it.roundToInt()}°" }
+                                    text = temperature?.let { "${it.roundToInt()}" + symbol}
                                         ?: "Henter data...",
                                     fontSize = 50.sp,
                                     textAlign = TextAlign.Center,
@@ -271,7 +325,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                             .fillMaxWidth()
                             .height(200.dp)
                             .background(
-                                Color.LightGray.copy(alpha = 0.85f),
+                                backgroundColor,
                                 shape = RoundedCornerShape(size = 15.dp)
                             )
                     ) {
@@ -317,7 +371,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                             .fillMaxWidth()
                             .height(300.dp)
                             .background(
-                                Color.LightGray.copy(alpha = 0.85f),
+                                backgroundColor,
                                 shape = RoundedCornerShape(size = 15.dp)
                             )
 
@@ -412,8 +466,8 @@ fun LongTermForecastRow(day: String, minTemp: Double, maxTemp: Double) {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                     append("${minTemp.roundToInt()}°")
                 }
-                append(" | ")
-                withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                append("  |  ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
                     append("${maxTemp.roundToInt()}°")
                 }
             }

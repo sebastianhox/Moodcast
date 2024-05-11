@@ -31,7 +31,6 @@ import java.net.URLEncoder
 
 data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
-    val symbolCodeNow: String? = "",
     val tempAndTimeData: List<Triple<String?, Double?, String?>> = listOf(),
     val longTermForecast: Map<String, Pair<Double, Double>>? = null,
     val alertIconData: List<Pair<String?,String?>> = listOf()
@@ -44,10 +43,14 @@ data class SearchUiState(
     val isSearching: Boolean = false
 )
 
+
+
 @OptIn(FlowPreview::class)
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val appContainer = (application as MoodApplication).container
+    private var initializeCalled = false
+
+    private val appContainer = (application as MoodApplication).appContainer
     private val repository = appContainer.locWeatherRepository
     private val alertRepository = appContainer.alertRepository
     private val geonameRepository = appContainer.geonameRepository
@@ -105,6 +108,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _searchText.value = currentQuery
     }
 
+    fun clearSelectedPlace() {
+        _selectedPlace.value = null
+
+    }
+
     private fun getCityNames(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _places.value = geonameRepository.getPlaceRecommendations(query).geonames
@@ -115,31 +123,57 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _places.value = emptyList()
     }
     @RequiresApi(Build.VERSION_CODES.O)
-    fun fetchWeatherData(lat: Double, lon: Double) {
-        viewModelScope.launch {
-            try {
-                val features = alertRepository.getDangerZonesOf(point(lon,lat), CachePolicy(CachePolicy.Type.REFRESH))
-                val alertIcons = mutableListOf<Pair<String?,String?>>()
-                features?.forEach {feature ->
-                    val event = feature.getStringProperty("event")
-                    val color = feature.getStringProperty("riskMatrixColor")
-                    alertIcons.add(Pair(event,color))
-                }
+    fun fetchWeatherData(lat: Double?, lon: Double?, cachePolicy: CachePolicy) {
+        if (initializeCalled) {
+            viewModelScope.launch {
                 _weatherDataUIState.update { currentState ->
                     currentState.copy(
-                        weatherData = repository.fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.REFRESH)),
-                        symbolCodeNow = repository.getSymbolCodeNow(lat, lon),
+                        weatherData = repository.fetchInfo(
+                            lat,
+                            lon,
+                            cachePolicy
+                        ),
                         tempAndTimeData = repository.get24HoursForecast(lat, lon),
-                        longTermForecast = repository.getNext7Days(lat,lon),
-                        alertIconData = alertIcons
+                        longTermForecast = repository.getNext7Days(lat, lon),
+                        alertIconData = alertRepository.getAlertIcons(
+                            lat,
+                            lon,
+                            cachePolicy
+                        )
                     )
                 }
+            }
 
-            } catch (e: Exception) {
-                Log.e("testing", "Error fetching weather data", e)
+        } else {
+            initializeCalled = true // get data from remote source when initialized
+            viewModelScope.launch {
+                try {
+
+                    _weatherDataUIState.update { currentState ->
+                        currentState.copy(
+                            weatherData = repository.fetchInfo(
+                                lat,
+                                lon,
+                                CachePolicy(CachePolicy.Type.REFRESH)
+                            ),
+                            tempAndTimeData = repository.get24HoursForecast(lat, lon),
+                            longTermForecast = repository.getNext7Days(lat, lon),
+                            alertIconData = alertRepository.getAlertIcons(
+                                lat,
+                                lon,
+                                CachePolicy(CachePolicy.Type.REFRESH)
+                            )
+                        )
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("testing", "Error fetching weather data", e)
+                }
             }
         }
     }
+
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun onPlaceSelected(place: GeonameData) {
@@ -147,6 +181,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _selectedPlace.value = place
         }
-        fetchWeatherData(_selectedPlace.value?.lat!!,_selectedPlace.value?.lon!!)
+        fetchWeatherData(_selectedPlace.value?.lat!!, _selectedPlace.value?.lon!!, cachePolicy = CachePolicy(CachePolicy.Type.REFRESH))
     }
 }

@@ -32,13 +32,13 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         return cachedData
     }
 
-    suspend fun getSymbolCodeNow(lat: Double, lon: Double): String? {
+    suspend fun getSymbolCodeNow(lat: Double?, lon: Double?): String? {
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
         return weatherData.instant.first().symbolCode
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun get24HoursForecast(lat: Double, lon: Double): List<Triple<String?, Double?, String?>> {
+    suspend fun get24HoursForecast(lat: Double?, lon: Double?): List<Triple<String?, Double?, String?>> {
 
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
         val temperaturesForNextHours = mutableListOf<Triple<String?,Double?,String?>>() // hourly forecast
@@ -59,7 +59,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         return temperaturesForNextHours
     }
 
-    suspend fun getNext7Days(lat: Double, lon: Double): Map<String, Pair<Double, Double>> {
+    suspend fun getNext7Days(lat: Double?, lon: Double?): Map<String, Pair<Double, Double>> {
 
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
 

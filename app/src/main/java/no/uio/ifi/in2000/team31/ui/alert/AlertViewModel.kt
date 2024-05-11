@@ -17,16 +17,16 @@ data class WeatherAlertUIState(
     val features: List<Feature>? = listOf()
 )
 class AlertViewModel(application: Application) : AndroidViewModel(application) {
-    private val appContainer = (application as MoodApplication).container
+    private val appContainer = (application as MoodApplication).appContainer
     private val alertRepository = appContainer.alertRepository
 
     private val _weatherAlertUIState = MutableStateFlow(WeatherAlertUIState())
     val weatherAlertUIState: StateFlow<WeatherAlertUIState> = _weatherAlertUIState.asStateFlow()
-    fun startAlertUpdates(point: Point = point(6.352810, 59.650822)) {
+    fun startAlertUpdates() {
         viewModelScope.launch {
             _weatherAlertUIState.update { currentState ->
                 currentState.copy(
-                    features = alertRepository.getDangerZonesOf(point, CachePolicy(CachePolicy.Type.ALWAYS))
+                    features = alertRepository.getDangerZonesOf(point(37.4220936, -122.083922), CachePolicy(CachePolicy.Type.ALWAYS))
                 )
             }
         }

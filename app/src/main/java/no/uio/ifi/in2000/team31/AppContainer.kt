@@ -11,12 +11,8 @@ import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherRepository
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertDataSource
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
 
-interface AppContainer {
-    val activityRepository: ActivityRepository
-}
-
-class AppDataContainer(private val context: Context) : AppContainer {
-    override val activityRepository: ActivityRepository by lazy {
+class AppContainer(private val context: Context) {
+    val activityRepository: ActivityRepository by lazy {
         OfflineActivityRepository(ActivityDatabase.detDatabase(context).activityDao())
     }
 
@@ -24,8 +20,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
     private val alertDataSource = WeatherAlertDataSource()
     private val geonameDataSource = GeonameDataSource()
 
+
     val locWeatherRepository = LocationWeatherRepository(locWeatherDataSource)
     val alertRepository = WeatherAlertRepository(alertDataSource)
     val geonameRepository = GeonameRepository(geonameDataSource)
-
+    val sharedViewModel = SharedViewModel()
 }
