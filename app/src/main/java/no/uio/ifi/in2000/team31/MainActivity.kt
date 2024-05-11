@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -54,10 +55,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     //val navController = rememberNavController()
                     //SetupNavGraph(navController, homeViewModel, settingsViewModel)
-                    MoodApp(
-                        homeViewModel = homeViewModel,
-                        settingsViewModel = settingsViewModel,
-                    )
+                    AppNavigation(homeViewModel = homeViewModel, settingsViewModel = settingsViewModel)
                 }
             }
         }
@@ -68,6 +66,19 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun requestLocationAndStartUpdates() {
         Log.d("location", "Start location permission request / updates")
+
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                fusedLocationClient.removeLocationUpdates(this)
+                if (locationResult.locations.isNotEmpty()) {
+                    val newLocation = locationResult.locations[0]
+                    homeViewModel.fetchWeatherData(newLocation.latitude,newLocation.longitude)
+
+                } else {
+                    Log.w("location", "Error with fetching the location")
+                }
+            }
+        }
 
         val permission = Manifest.permission.ACCESS_FINE_LOCATION
         if (ContextCompat.checkSelfPermission(
@@ -82,7 +93,11 @@ class MainActivity : ComponentActivity() {
         } else {
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 if (location == null) {
-                    Log.d("location","No location provided")
+                    Log.d("location", "Trying to refetch")
+                    fusedLocationClient.requestLocationUpdates(
+                        LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 2000).build(),
+                        locationCallback,
+                        null)
                 } else {
                     Log.d("location", "Fetched location: ${location.latitude}, ${location.longitude}")
                     homeViewModel.fetchWeatherData(location.latitude,location.longitude)

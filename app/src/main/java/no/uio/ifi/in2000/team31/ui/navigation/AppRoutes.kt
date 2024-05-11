@@ -9,4 +9,5 @@ object AppRoutes {
     const val ACTIVITY = "activity"
     const val SETTINGS = "settings"
     const val ADD_ACTIVITY = "add_activity"
+    const val SPLASH = "splash"
 }

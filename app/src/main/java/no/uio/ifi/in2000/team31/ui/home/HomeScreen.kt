@@ -64,12 +64,17 @@ import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
+
+// har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
+    val searchUiState by homeViewModel.searchUiState.collectAsState()
     val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
-    val searchUiState = homeViewModel.searchUiState.collectAsStateWithLifecycle().value
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()
@@ -175,7 +180,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                         modifier = Modifier
                             .padding(18.dp)
                             .width(360.dp)
-                            .height(200.dp)
                             .align(Alignment.CenterHorizontally)
                     ) {
 
@@ -191,13 +195,17 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
 
                                 Text(
                                     text = searchUiState.selectedPlace?.placeName ?: "Min posisjon",
-                                    fontSize = 25.sp,
+                                    fontSize = 30.sp,
                                     textAlign = TextAlign.Center,
-                                    modifier = Modifier.align(Alignment.Center)
+                                    modifier = Modifier.align(Alignment.Center),
+                                    fontWeight = FontWeight.Bold
                                 )
 
                                 var dynamicTopPadding = 0
                                 var dynamicLPadding = 0
+                                var alertIconsCount = 0
+                                val alertIconsLimit = 3
+
 
                                 Box(
                                     modifier = Modifier
@@ -217,29 +225,32 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                                         }
                                 ) {
                                     weatherData.alertIconData.forEach { alertIconData ->
+                                        if (alertIconsCount < alertIconsLimit) {
+                                            Image(
+                                                painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
+                                                contentDescription = alertIconData.first + alertIconData.second,
+                                                modifier = Modifier
+                                                    .align(Alignment.Center)
+                                                    .padding(
+                                                        top = dynamicTopPadding.dp,
+                                                        end = dynamicLPadding.dp
+                                                    )
+                                            )
+                                        }
 
-                                        Image(
-                                            painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
-                                            contentDescription = alertIconData.first + alertIconData.second,
-                                            modifier = Modifier
-                                                .align(Alignment.Center)
-                                                .padding(
-                                                    top = dynamicTopPadding.dp,
-                                                    end = dynamicLPadding.dp
-                                                )
-                                        )
+                                        alertIconsCount += 1
                                         dynamicTopPadding += 7
                                         dynamicLPadding += 7
                                     }
                                 }
                             }
                             Log.d("test","${weatherData.symbolCodeNow}")
-                             Image(
-                                painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable._01d),
+                            Image(
+                                painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable.svg),
                                 contentDescription = "weather icon",
                                 modifier = Modifier.size(80.dp),
                                 alignment = Alignment.Center
-                             )
+                            )
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 Text(
                                     text = temperature?.let { "${it.roundToInt()}°" }
@@ -256,8 +267,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(18.dp)
-                            .width(360.dp)
+                            .padding(30.dp)
+                            .fillMaxWidth()
                             .height(200.dp)
                             .background(
                                 Color.LightGray.copy(alpha = 0.85f),
@@ -274,7 +285,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "I dag",
+                                text = "Neste 24 timer",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
@@ -302,7 +313,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                             .shadow(50.dp)
-                            .width(360.dp)
+                            .padding(horizontal = 30.dp)
+                            .fillMaxWidth()
                             .height(300.dp)
                             .background(
                                 Color.LightGray.copy(alpha = 0.85f),

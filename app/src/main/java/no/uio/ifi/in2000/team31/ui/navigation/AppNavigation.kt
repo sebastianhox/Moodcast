@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import no.uio.ifi.in2000.team31.SplashScreen
 import no.uio.ifi.in2000.team31.ui.activity.AddActivityScreen
 import no.uio.ifi.in2000.team31.ui.activity.ActivityScreen
 import no.uio.ifi.in2000.team31.ui.activity.AddActivityDestination
@@ -151,6 +152,9 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
                 settingsViewModel = settingsViewModel,
                 navigateBack = { navController.popBackStack() }
             )
+        }
+        composable(AppRoutes.SPLASH) {
+            SplashScreen(navController = navController)
         }
     }
 }

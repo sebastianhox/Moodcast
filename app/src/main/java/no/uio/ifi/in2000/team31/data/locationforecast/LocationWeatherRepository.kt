@@ -43,7 +43,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
         val temperaturesForNextHours = mutableListOf<Triple<String?,Double?,String?>>() // hourly forecast
 
-        weatherData.instant.forEach{hourlyData ->
+        weatherData.instant.subList(0,25).forEach{hourlyData ->
 
             val utcHour = hourlyData.time?.substring(11,16)
             val utcTime = LocalTime.parse(utcHour)
