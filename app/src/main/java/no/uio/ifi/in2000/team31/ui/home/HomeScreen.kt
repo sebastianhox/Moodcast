@@ -130,7 +130,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, setti
                     trailingIcon = {
                         if (searchUiState.isSearching) {
                             IconButton(onClick = {
-                                homeViewModel.onToogleSearch()
+                                if (searchUiState.currentQuery.isBlank()) {
+                                    homeViewModel.onToogleSearch()
+                                } else {
+                                    homeViewModel.onPlaceNameSearch("")
+                                }
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,

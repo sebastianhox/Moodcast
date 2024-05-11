@@ -22,7 +22,19 @@ class MoodViewModel(application: Application): AndroidViewModel(application) {
     private val _weatherDataUIState = MutableStateFlow(MoodWeatherUIState())
     val weatherDataUIState: StateFlow<MoodWeatherUIState> = _weatherDataUIState
 
-    init {
+     init {
+        viewModelScope.launch {
+            val dataNow = repository.fetchInfo(null,null,CachePolicy(CachePolicy.Type.ALWAYS)).instant.first()
+            _weatherDataUIState.update { currentState ->
+                currentState.copy(
+                    symbolCodeNow = dataNow.symbolCode,
+                    temperature = dataNow.airTemperature
+                )
+            }
+        }
+    }
+
+    fun manuallyUpdate() {
         viewModelScope.launch {
             val dataNow = repository.fetchInfo(null,null,CachePolicy(CachePolicy.Type.ALWAYS)).instant.first()
             _weatherDataUIState.update { currentState ->

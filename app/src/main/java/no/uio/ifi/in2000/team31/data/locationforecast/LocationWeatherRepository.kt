@@ -63,17 +63,11 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
 
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
 
-        val weatherInstant = weatherData.instant
 
         val longTermForecast = mutableMapOf<String, Pair<Double, Double>>() // long term forecast
 
-        val numberOfDaysToFetch = weatherInstant.size
-
-        val startIndeks = 1 // Startindeks for neste dag
-        val endIndeks = minOf(
-            startIndeks + numberOfDaysToFetch * 24,
-            weatherInstant.size
-        ) // Hent 7 dager med data
+        val startIndeks = 0 // Startindeks for neste dag
+        val endIndeks = weatherData.instant.size
 
         //-------------------------------------------------------------------------
 
@@ -88,7 +82,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
 
         // Loop gjennom alle tidene i listen
         while (currentDateIndex < endIndeks) {
-            val dayForecast = weatherInstant[currentDateIndex]
+            val dayForecast = weatherData.instant[currentDateIndex]
 
             dayForecast.time?.let { time ->
                 val day = time.split("T")[0] // Hent ut datoen for langtidsvarselet

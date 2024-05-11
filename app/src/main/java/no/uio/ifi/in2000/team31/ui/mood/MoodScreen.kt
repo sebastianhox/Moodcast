@@ -75,6 +75,8 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    moodViewModel.manuallyUpdate()
+
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
     val sharedViewModel = appContainer.sharedViewModel
 
