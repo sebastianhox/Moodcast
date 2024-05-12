@@ -63,7 +63,6 @@ import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
-import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.LocalDate
 import kotlin.math.roundToInt
@@ -75,10 +74,11 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
     val sharedViewModel = appContainer.sharedViewModel
+    val settingsViewModel = appContainer.settingsViewModel
 
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
     val searchUiState by homeViewModel.searchUiState.collectAsState()

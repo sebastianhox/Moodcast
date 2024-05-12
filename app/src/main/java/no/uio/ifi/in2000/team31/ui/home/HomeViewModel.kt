@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.dellisd.spatialk.geojson.dsl.point
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -145,7 +144,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
 
         } else {
-            initializeCalled = true // get data from remote source when initialized
+            if (cachePolicy != CachePolicy(CachePolicy.Type.NEVER)) {
+                initializeCalled = true
+            }// get data from remote source when initialized
             viewModelScope.launch {
                 try {
 

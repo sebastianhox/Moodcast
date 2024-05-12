@@ -4,10 +4,10 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import no.uio.ifi.in2000.team31.cache.CachePolicy
-import no.uio.ifi.in2000.team31.model.WeatherDataModel
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
+import no.uio.ifi.in2000.team31.model.WeatherDataModel
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -32,10 +32,10 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         return cachedData
     }
 
-    suspend fun getSymbolCodeNow(lat: Double?, lon: Double?): String? {
-        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
-        return weatherData.instant.first().symbolCode
-    }
+//    suspend fun getSymbolCodeNow(lat: Double?, lon: Double?): String? {
+//        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
+//        return weatherData.instant.first().symbolCode
+//    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun get24HoursForecast(lat: Double?, lon: Double?): List<Triple<String?, Double?, String?>> {

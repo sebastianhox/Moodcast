@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
@@ -25,7 +24,7 @@ class AddActivityViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun validateInput(uiState: ActivityDetails = activityUiState.activityDetails): Boolean {
         return with(uiState) {
-            name.isNotBlank() && info.isNotBlank()
+            name.isNotBlank() && info.isNotBlank() && suitableMoods.isNotEmpty()
         }
     }
 
@@ -59,15 +58,15 @@ fun ActivityDetails.toActivity(): Activity = Activity(
     suitableMoods = suitableMoods
 )
 
-fun Activity.toActivityUiState(isEntryValid: Boolean = false): ActivityUiState = ActivityUiState(
-    activityDetails = this.toActivityDetails(),
-    isEntryValid = isEntryValid
-)
+//fun Activity.toActivityUiState(isEntryValid: Boolean = false): ActivityUiState = ActivityUiState(
+//    activityDetails = this.toActivityDetails(),
+//    isEntryValid = isEntryValid
+//)
 
-fun Activity.toActivityDetails(): ActivityDetails = ActivityDetails(
-    id = id,
-    name = name, // .toString()?
-    info = info, // .toString()?
-    imagePath = imagePath,
-    suitableMoods = suitableMoods
-)
+//fun Activity.toActivityDetails(): ActivityDetails = ActivityDetails(
+//    id = id,
+//    name = name, // .toString()?
+//    info = info, // .toString()?
+//    imagePath = imagePath,
+//    suitableMoods = suitableMoods
+//)

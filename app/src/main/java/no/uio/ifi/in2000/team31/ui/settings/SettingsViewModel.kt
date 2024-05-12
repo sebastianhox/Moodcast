@@ -1,17 +1,18 @@
 package no.uio.ifi.in2000.team31.ui.settings
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.data.settings.SettingsRepository
+import no.uio.ifi.in2000.team31.MoodApplication
 
 
 /*enum class AppTheme {
@@ -27,7 +28,11 @@ object SettingsDataStore {
     val FAHRENHEIT_ON = booleanPreferencesKey("fahrenheit_on")
 }
 
-class SettingsViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val appContainer = (application as MoodApplication).appContainer
+    private val settingsRepository = appContainer.settingsRepository
+
     private val _isDarkTheme = MutableStateFlow(false)
     val isDarkTheme = _isDarkTheme.asStateFlow()
 

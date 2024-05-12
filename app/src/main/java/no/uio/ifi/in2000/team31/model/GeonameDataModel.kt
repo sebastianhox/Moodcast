@@ -22,7 +22,7 @@ data class GeonameDTO (
 
 data class AdminCodes1 (
 
-    @SerializedName("ISO3166_2" ) var ISO31662 : String? = null
+    @SerializedName("ISO3166_2" ) var iso31662 : String? = null
 
 )
 
@@ -62,15 +62,5 @@ fun GeonameDTO.toModel(): GeonamesModel {
     }
     return GeonamesModel(
         geonames = geonamesList
-    )
-}
-
-fun GeonameDTO.toGeonameData(): GeonameData {
-    return GeonameData(
-        placeName = geonames[0].name,
-        country = geonames[0].countryName,
-        adminName = geonames[0].adminName1,
-        lat = geonames[0].lat,
-        lon = geonames[0].lng
     )
 }

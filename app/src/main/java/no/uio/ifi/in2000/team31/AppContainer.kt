@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team31
 
+import android.app.Application
 import android.content.Context
 import no.uio.ifi.in2000.team31.data.activity.ActivityDatabase
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
@@ -8,13 +9,12 @@ import no.uio.ifi.in2000.team31.data.geoname.GeonameDataSource
 import no.uio.ifi.in2000.team31.data.geoname.GeonameRepository
 import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherDataSource
 import no.uio.ifi.in2000.team31.data.locationforecast.LocationWeatherRepository
+import no.uio.ifi.in2000.team31.data.settings.SettingsRepository
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertDataSource
 import no.uio.ifi.in2000.team31.data.weatheralert.WeatherAlertRepository
+import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 
 class AppContainer(private val context: Context) {
-    val activityRepository: ActivityRepository by lazy {
-        OfflineActivityRepository(ActivityDatabase.detDatabase(context).activityDao())
-    }
 
     private val locWeatherDataSource = LocationWeatherDataSource()
     private val alertDataSource = WeatherAlertDataSource()
@@ -24,5 +24,11 @@ class AppContainer(private val context: Context) {
     val locWeatherRepository = LocationWeatherRepository(locWeatherDataSource)
     val alertRepository = WeatherAlertRepository(alertDataSource)
     val geonameRepository = GeonameRepository(geonameDataSource)
+    val settingsRepository by lazy { SettingsRepository(context)}
+    val activityRepository by lazy {
+        OfflineActivityRepository(ActivityDatabase.detDatabase(context).activityDao())
+    }
+
+    val settingsViewModel by lazy { SettingsViewModel(context.applicationContext as Application) }
     val sharedViewModel = SharedViewModel()
 }

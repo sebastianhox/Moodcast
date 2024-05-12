@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -73,8 +72,8 @@ fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
                 input.copyTo(output)
             }
         }
-        Log.d("populus", "destination: ${destinationFile.toString()}")
-        Log.d("populus", "abs path: ${destinationFile.absolutePath.toString()}")
+        Log.d("populus", "destination: $destinationFile")
+        Log.d("populus", "abs path: ${destinationFile.absolutePath}")
         return destinationFile.absolutePath // Return the absolute path
     } catch (e: IOException) {
         Log.e("populus", "Error saving image: ${e.message}")
@@ -88,7 +87,7 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
             name = "Running",
             info = "Go for a run!",
             imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.ENERGETIC, Mood.HAPPY, Mood.ANGRY)
+            suitableMoods = listOf(Mood.ENERGETIC, Mood.HAPPY)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
@@ -101,7 +100,7 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
             name = "Cycling",
             info = "Enjoy a trip on your bike!",
             imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.HAPPY, Mood.ANGRY, Mood.ENERGETIC)
+            suitableMoods = listOf(Mood.HAPPY, Mood.ENERGETIC)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
@@ -109,12 +108,10 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
         Log.e("populus", "Failed to copy image for preloading")
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityScreen(
     navigateToAddActivity: () -> Unit,
     navController: NavController,
-    modifier: Modifier = Modifier,
     viewModel: ActivityScreenViewModel = viewModel()
 ) {
 
@@ -141,7 +138,6 @@ fun ActivityScreen(
     ) { innerPadding ->
         ActivityScreenBody(
             activityList = activityScreenUiState.activitiesList,
-            modifier = modifier.fillMaxSize(),
             contentPadding = innerPadding,
             viewModel = viewModel,
             userMood = userMood.selectedMood
@@ -152,14 +148,11 @@ fun ActivityScreen(
 @Composable
 fun ActivityScreenBody(
     activityList: List<Activity>,
-    modifier: Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: ActivityScreenViewModel,
     userMood: Mood?
 ) {
     val context = LocalContext.current
-
-
 
     LaunchedEffect(key1 = Unit) {
         viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
@@ -310,7 +303,6 @@ fun MoodCastTopBar() {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityCardList (activityList: List<Activity>) {
     Column(modifier = Modifier
@@ -323,21 +315,19 @@ fun ActivityCardList (activityList: List<Activity>) {
             style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp))
         Spacer(modifier = Modifier.height(15.dp))
         LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-            items(activityList,) { activity ->
+            items(activityList) { activity ->
                 ActivityCard(activity)
-                ShowActivity(activity.toActivityDetails())
+//                ShowActivity(activity.toActivityDetails())
             }
         }
     }
 }
 
-@Composable
-fun ShowActivity(activity: ActivityDetails) {
+//@Composable
+//fun ShowActivity(activity: ActivityDetails) {
+//
+//}
 
-}
-
-/* Når det gjelder typography, ligger dette i Type filen. Du kan også søke på Typography material design på google for å se hvor store de er! */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityCard(activity: Activity) {
     Card(

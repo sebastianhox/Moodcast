@@ -6,9 +6,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.serialization.gson.gson
 import no.uio.ifi.in2000.team31.model.GeonameDTO
-import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.model.GeonamesModel
-import no.uio.ifi.in2000.team31.model.toGeonameData
 import no.uio.ifi.in2000.team31.model.toModel
 
 class GeonameDataSource {

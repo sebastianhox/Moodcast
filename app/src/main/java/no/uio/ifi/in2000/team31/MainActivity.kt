@@ -12,23 +12,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import kotlinx.coroutines.delay
 import no.uio.ifi.in2000.team31.cache.CachePolicy
-import no.uio.ifi.in2000.team31.data.settings.SettingsRepository
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
 import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
@@ -51,19 +55,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.d("location", "onCreate")
 
-
         appContainer = (application as MoodApplication).appContainer
         sharedViewModel = appContainer.sharedViewModel
-        val settingsRepository = SettingsRepository(applicationContext)
-        settingsViewModel = SettingsViewModel(settingsRepository)
+        settingsViewModel = appContainer.settingsViewModel
 
         setContent {
-            Team31Theme(settingsViewModel.isDarkTheme.collectAsState().value) {
+            val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+
+            Team31Theme(isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(homeViewModel = homeViewModel, settingsViewModel = settingsViewModel)
+                    AppNavigation(homeViewModel = homeViewModel)
+
                 }
             }
         }
@@ -72,18 +77,15 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onResume() {
         super.onResume()
-
-        val appContainer = (application as MoodApplication).appContainer
-        val sharedViewModel = appContainer.sharedViewModel
-
+        Log.d("location", "onResume")
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         requestLocationAndStartUpdates(CachePolicy(CachePolicy.Type.ALWAYS))
-        Log.d("location", "onResume")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun requestLocationAndStartUpdates(cachePolicy: CachePolicy) {
+    private fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
         Log.d("location", "Start location permission request / updates")
+
 
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
@@ -106,15 +108,7 @@ class MainActivity : ComponentActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Log.d("location", "Requesting permissions")
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { isGranted: Boolean ->
-                if (isGranted) {
-                    requestLocationAndStartUpdates(cachePolicy)
-                } else {
-                    Log.d("location", "Location Permission denied")
-                }
-            }.launch(
+            requestPermissionLauncher.launch(
                 permission
             )
         } else {
@@ -135,17 +129,17 @@ class MainActivity : ComponentActivity() {
         Log.d("location","End location updates")
     }
 
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    private val requestPermissionLauncher =
-//        registerForActivityResult(
-//            ActivityResultContracts.RequestPermission()
-//        ) { isGranted: Boolean ->
-//            if (isGranted) {
-//                requestLocationAndStartUpdates(sharedViewModel)
-//            } else {
-//                Log.d("location", "Location Permission denied")
-//            }
-//        }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                requestLocationAndStartUpdates()
+            } else {
+                Log.d("location", "Location Permission denied")
+            }
+        }
 }
 
 @Composable
@@ -176,18 +170,18 @@ fun SplashScreen(navController: NavHostController) {
         }
     }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun SetupNavGraph(navController: NavHostController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
-    NavHost(
-        navController = navController,
-        startDestination = "splash"
-    ) {
-        composable(route = "splash") {
-            SplashScreen(navController = navController)
-        }
-        composable(route = "home") {
-            AppNavigation(homeViewModel = homeViewModel, settingsViewModel = settingsViewModel)
-        }
-    }
-}
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Composable
+//fun SetupNavGraph(navController: NavHostController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
+//    NavHost(
+//        navController = navController,
+//        startDestination = "splash"
+//    ) {
+//        composable(route = "splash") {
+//            SplashScreen(navController = navController)
+//        }
+//        composable(route = "home") {
+//            AppNavigation(homeViewModel = homeViewModel)
+//        }
+//    }
+//}

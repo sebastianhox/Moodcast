@@ -10,20 +10,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team31.SplashScreen
-import no.uio.ifi.in2000.team31.ui.activity.AddActivityScreen
 import no.uio.ifi.in2000.team31.ui.activity.ActivityScreen
 import no.uio.ifi.in2000.team31.ui.activity.AddActivityDestination
+import no.uio.ifi.in2000.team31.ui.activity.AddActivityScreen
 import no.uio.ifi.in2000.team31.ui.alert.AlertScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 import no.uio.ifi.in2000.team31.ui.settings.SettingsScreen
-import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
+fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
     //val homeViewModel: HomeViewModel = viewModel()
@@ -76,7 +75,7 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
                 }
             }
         ) {
-            HomeScreen(navController, homeViewModel, settingsViewModel)
+            HomeScreen(navController, homeViewModel)
         }
 
         composable(
@@ -131,7 +130,53 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
             AlertScreen(navController)
         }
 
-        composable(AppRoutes.ACTIVITY) {
+        composable(
+            AppRoutes.ACTIVITY,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    AppRoutes.ADD_ACTIVITY ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    AppRoutes.ADD_ACTIVITY ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    AppRoutes.ADD_ACTIVITY ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    AppRoutes.ADD_ACTIVITY ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            }
+        ) {
             ActivityScreen(
                 navigateToAddActivity = { navController.navigate(AddActivityDestination.route)},
                 navController = navController
@@ -143,13 +188,58 @@ fun AppNavigation(homeViewModel: HomeViewModel, settingsViewModel: SettingsViewM
         }
 
         composable(AppRoutes.SETTINGS) {
-            SettingsScreen(navController, settingsViewModel)
+            SettingsScreen(navController)
         }
 
-        composable(AppRoutes.ADD_ACTIVITY) {
+        composable(
+            AppRoutes.ADD_ACTIVITY,
+            enterTransition = {
+                when (initialState.destination.route) {
+                    AppRoutes.ACTIVITY ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    AppRoutes.ACTIVITY ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    AppRoutes.ACTIVITY ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    AppRoutes.ACTIVITY ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            }
+            ) {
+
             AddActivityScreen(
-                navController = navController,
-                settingsViewModel = settingsViewModel,
                 navigateBack = { navController.popBackStack() }
             )
         }
