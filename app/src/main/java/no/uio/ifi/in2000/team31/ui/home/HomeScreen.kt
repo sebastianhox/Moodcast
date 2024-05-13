@@ -24,10 +24,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,6 +69,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.R
@@ -83,7 +88,7 @@ import kotlin.math.roundToInt
 // har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
@@ -98,6 +103,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
     val darkModeOn by settingsViewModel.isDarkTheme.collectAsState()
     val locationOn by settingsViewModel.locationOn.collectAsState()
+
+    Log.d("test12", locationState.toString())
 
     var isRefreshing by remember { mutableStateOf(false)  }
 
@@ -122,8 +129,22 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
         symbol = "°F"
     }
 
-    // Background image (placeholder)
-    val backgroundImageUrl ="https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
+    val refreshScope = rememberCoroutineScope()
+    var refreshing by remember { mutableStateOf(false) }
+
+
+
+    fun refresh() = refreshScope.launch {
+        refreshing = true
+        delay(1000)
+        Log.d("refreshstuff", "Getting location for ${locationState.lat} ${locationState.lon}")
+        sharedViewModel.updateLocation(locationState.lat, locationState.lon)
+
+        //homeViewModel.fetchWeatherData()
+        refreshing = false
+    }
+
+    val refreshState = rememberPullRefreshState(refreshing = refreshing, onRefresh = ::refresh)
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) },
@@ -142,6 +163,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .pullRefresh(refreshState)
         ) {
             // Tegner bakgrunnsbildet først
 
@@ -161,6 +183,9 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                 )
             }
             Column{
+                if (refreshing) {
+                    Text("Refreshing...")
+                }
                 SearchBar(
                     query = searchUiState.currentQuery,
                     onQueryChange = homeViewModel::onPlaceNameSearch,
@@ -468,6 +493,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                                 Spacer(modifier = Modifier.height(8.dp))
                                             }
                                         }
+
                                 }
                             } else {
                                 // Display a placeholder if forecast data is not available
@@ -480,6 +506,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     }
 
                 }
+                PullRefreshIndicator(refreshing = refreshing, state = refreshState)
             }
         }
     }
