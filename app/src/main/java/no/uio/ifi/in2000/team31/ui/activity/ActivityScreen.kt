@@ -84,10 +84,11 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
     var imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
     if (imagePath != null) {
         val activityDetails = ActivityDetails(
-            name = "Running",
-            info = "Go for a run!",
+            name = "Løpetur",
+            info = "Løp en tur, godt for kropp og sinn!",
             imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.ENERGETIC, Mood.HAPPY)
+            suitableMoods = listOf(Mood.ENERGETIC, Mood.HAPPY),
+            suitableWeathers = listOf(WeatherStatus.CLOUDY, WeatherStatus.SUNNY)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
@@ -97,10 +98,11 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
     imagePath = copyImageFromAssetsToStorage(context, "cycling.jpg")
     if (imagePath != null) {
         val activityDetails = ActivityDetails(
-            name = "Cycling",
-            info = "Enjoy a trip on your bike!",
+            name = "Sykling",
+            info = "Ta en sykkeltur utendørs!",
             imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.HAPPY, Mood.ENERGETIC)
+            suitableMoods = listOf(Mood.HAPPY, Mood.ENERGETIC),
+            suitableWeathers = listOf(WeatherStatus.CLOUDY, WeatherStatus.SUNNY)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
@@ -119,6 +121,8 @@ fun ActivityScreen(
     val sharedViewModel = appContainer.sharedViewModel
 
     val userMood by sharedViewModel.moodUIState.collectAsState()
+    val currentWeatherStatus by sharedViewModel.weatherUIState.collectAsState()
+
     val activityScreenUiState by viewModel.activityScreenUiState.collectAsState()
 //    var scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Log.d("moodfix", "UserMood is $userMood")
@@ -140,7 +144,8 @@ fun ActivityScreen(
             activityList = activityScreenUiState.activitiesList,
             contentPadding = innerPadding,
             viewModel = viewModel,
-            userMood = userMood.selectedMood
+            userMood = userMood.selectedMood,
+            currentWeather = currentWeatherStatus.currentWeatherStatus
         )
     }
 }
@@ -150,7 +155,8 @@ fun ActivityScreenBody(
     activityList: List<Activity>,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: ActivityScreenViewModel,
-    userMood: Mood?
+    userMood: Mood?,
+    currentWeather: WeatherStatus?
 ) {
     val context = LocalContext.current
 
@@ -169,15 +175,27 @@ fun ActivityScreenBody(
     ) {
         Spacer(modifier = Modifier.height(128.dp))
         if (userMood != null) {
-            Text("Activities for when you're feeling ${userMood.name}")
+            Text("Aktiviteter for humør: ${userMood.name}")
         } else {
-            Text("All Activities")
+            Text("Alle aktiviteter")
         }
-        val filteredList = if (userMood != null) {
+        if (currentWeather != null) {
+            Text("Værstatus: $currentWeather")
+        } else {
+            Text("Værstatus ikke funnet. Si ifra så fikser vi denne bugen?")
+        }
+
+        val filteredList = activityList.filter { activity ->
+            val matchesMood = userMood == null || activity.suitableMoods.contains(userMood)
+            val matchesWeather = currentWeather == null || activity.suitableWeathers.contains(currentWeather)
+            matchesMood && matchesWeather
+        }
+
+        /*val filteredList = if (userMood != null) {
             activityList.filter { it.suitableMoods.contains(userMood) }
         } else {
             activityList
-        }
+        }*/
         ActivityCardList(activityList = filteredList)
     }
     //ActivityList(activityList = activityList, contentPadding = contentPadding)

@@ -62,6 +62,7 @@ import coil.compose.AsyncImage
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.cache.CachePolicy
+import no.uio.ifi.in2000.team31.getWeatherStatus
 import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -91,6 +92,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
     var isRefreshing by remember { mutableStateOf(false)  }
 
+
+    // Midlertidig? Setter weatherstatus i sharedviewmodel til symbolkdoen fra api-kallet
+    val weatherStatusString = weatherData.weatherData?.instant?.get(0)?.symbolCode
+    val weatherStatus = getWeatherStatus(weatherStatusString)
+    sharedViewModel.setCurrentWeatherStatus(weatherStatus)
 
     val tempAndTimeList = weatherData.tempAndTimeData
     val scrollState = rememberScrollState()

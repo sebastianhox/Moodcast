@@ -120,6 +120,14 @@ fun AddActivityScreen(
                 modifier = Modifier
                     .padding(20.dp)
             )
+            SelectWeathers(
+                selectedWeathers = activityUiState.activityDetails.suitableWeathers,
+                onWeatherSelectionChange = { newSelectedWeathers ->
+                    viewModel.updateUiState(activityUiState.activityDetails.copy(suitableWeathers = newSelectedWeathers))
+                },
+                modifier = Modifier
+                    .padding(20.dp)
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -143,6 +151,47 @@ fun AddActivityScreen(
             }
         }
 
+    }
+}
+@Composable
+fun SelectWeathers(
+    selectedWeathers: List<WeatherStatus>,
+    onWeatherSelectionChange: (List<WeatherStatus>) -> Unit,
+    modifier: Modifier
+) {
+    Column (
+        modifier = modifier
+    ) {
+        Text("Suitable weathers:")
+
+        Spacer(modifier = Modifier.size(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            WeatherStatus.entries.forEach { weather ->
+                Log.d("chip", "loading: $weather")
+                MoodChip(
+                    label = {
+                        Text(
+                            text = weather.name,
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center
+                        )
+                    },
+                    onClick = {
+                        Log.d("chip", "chip clicked on")
+                        val newSelectedWeathers = if (weather in selectedWeathers) {
+                            selectedWeathers - weather
+                        } else {
+                            selectedWeathers + weather
+                        }
+                        onWeatherSelectionChange(newSelectedWeathers)
+                    }
+                )
+            }
+
+        }
     }
 }
 
