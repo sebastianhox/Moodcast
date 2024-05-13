@@ -37,6 +37,7 @@ fun SettingsScreen(navController: NavController) {
     val settingsViewModel = appContainer.settingsViewModel
     val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
     val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
+    val locationOn by settingsViewModel.locationOn.collectAsState()
     LaunchedEffect(key1 = settingsViewModel) {
         val darkThemeOn = settingsViewModel.isDarkTheme.first()
         settingsViewModel.onDarkThemeSwitchChange(darkThemeOn)
@@ -53,6 +54,10 @@ fun SettingsScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(padding),
         ) {
+            SettingItem(title = "Posisjonsbasert værvarsel", description = "Gi tilgang til enhetens posisjon" , locationOn) {
+                settingsViewModel.onLocationSwitchChange(it)
+                Log.d("settings", "Passing $locationOn to switch")
+            }
             SettingItem(title = "Dark theme", description = "Bruk dark theme", isDarkTheme) {
                 //settingsViewModel.toggleDarkTheme()
                 settingsViewModel.onDarkThemeSwitchChange(it)

@@ -37,6 +37,7 @@ import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
 import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
+import java.lang.ref.WeakReference
 
 class MainActivity : ComponentActivity() {
     private val homeViewModel: HomeViewModel by viewModels()
@@ -46,6 +47,13 @@ class MainActivity : ComponentActivity() {
     private lateinit var settingsViewModel: SettingsViewModel
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    companion object {
+        private var mInstanceActivity: WeakReference<MainActivity>? = null
+        fun getInstance(): MainActivity? {
+            return mInstanceActivity?.get()
+        }
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,9 +63,11 @@ class MainActivity : ComponentActivity() {
         appContainer = (application as MoodApplication).appContainer
         sharedViewModel = appContainer.sharedViewModel
         settingsViewModel = appContainer.settingsViewModel
+        mInstanceActivity = WeakReference(this)
 
         setContent {
             val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+
 
             Team31Theme(isDarkTheme) {
                 Surface(
@@ -67,29 +77,34 @@ class MainActivity : ComponentActivity() {
                     AppNavigation(homeViewModel = homeViewModel)
 
                 }
+                fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+                requestLocationAndStartUpdates(CachePolicy(CachePolicy.Type.ALWAYS))
             }
         }
     }
 
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    override fun onResume() {
+//        super.onResume()
+//        Log.d("location", "onResume")
+//
+//    }
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onResume() {
-        super.onResume()
-        Log.d("location", "onResume")
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        requestLocationAndStartUpdates(CachePolicy(CachePolicy.Type.ALWAYS))
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
+    fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
         Log.d("location", "Start location permission request / updates")
 
+        val locationOn = settingsViewModel.locationOn.value
 
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 fusedLocationClient.removeLocationUpdates(this)
                 if (locationResult.locations.isNotEmpty()) {
                     val newLocation = locationResult.locations[0]
-                    homeViewModel.fetchWeatherData(newLocation.latitude,newLocation.longitude, cachePolicy)
+                    homeViewModel.fetchWeatherData(
+                        newLocation.latitude,
+                        newLocation.longitude,
+                        cachePolicy
+                    )
                     sharedViewModel.updateLocation(newLocation.latitude, newLocation.longitude)
 
                 } else {
@@ -98,43 +113,84 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        val permission = Manifest.permission.ACCESS_FINE_LOCATION
-        if (ContextCompat.checkSelfPermission(
+        val permissions = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        if (
+            ContextCompat.checkSelfPermission(
                 this,
-                permission
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+            &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Log.d("location", "Requesting permissions")
-            requestPermissionLauncher.launch(
-                permission
-            )
+            requestPermissionLauncher.launch(permissions)
         } else {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                if (location == null) {
-                    Log.d("location", "Trying to refetch")
-                    fusedLocationClient.requestLocationUpdates(
-                        LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 2000).build(),
-                        locationCallback,
-                        null)
-                } else {
-                    Log.d("location", "Fetched location: ${location.latitude}, ${location.longitude}")
-                    homeViewModel.fetchWeatherData(location.latitude,location.longitude, cachePolicy)
-                    sharedViewModel.updateLocation(location.latitude, location.longitude)
+            if (locationOn) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                    if (location == null) {
+                        Log.d("location", "Trying to refetch")
+                        fusedLocationClient.requestLocationUpdates(
+                            LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 2000)
+                                .build(),
+                            locationCallback,
+                            null
+                        )
+                    } else {
+                        Log.d(
+                            "location",
+                            "Fetched location: ${location.latitude}, ${location.longitude}"
+                        )
+                        homeViewModel.fetchWeatherData(
+                            location.latitude,
+                            location.longitude,
+                            cachePolicy
+                        )
+                        sharedViewModel.updateLocation(location.latitude, location.longitude)
+                    }
                 }
+            } else {
+                homeViewModel.fetchWeatherData(
+                    59.913868,
+                    10.752245,
+                    CachePolicy(CachePolicy.Type.NEVER)
+                )
             }
         }
-        Log.d("location","End location updates")
+        Log.d("location", "End location updates")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private val requestPermissionLauncher =
         registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                requestLocationAndStartUpdates()
-            } else {
-                Log.d("location", "Location Permission denied")
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    settingsViewModel.onLocationSwitchChange(true)
+//                    requestLocationAndStartUpdates()
+                }
+
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    settingsViewModel.onLocationSwitchChange(true)
+//                    requestLocationAndStartUpdates()
+                }
+
+                else -> {
+                    Log.d("location", "Location Permission denied")
+                    settingsViewModel.onLocationSwitchChange(false)
+                    homeViewModel.fetchWeatherData(
+                        59.913868,
+                        10.752245,
+                        CachePolicy(CachePolicy.Type.NEVER)
+                    )
+                }
             }
         }
 }
@@ -163,9 +219,10 @@ fun SplashScreen(navController: NavHostController) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            }
         }
     }
+}
+
 
 //@RequiresApi(Build.VERSION_CODES.O)
 //@Composable

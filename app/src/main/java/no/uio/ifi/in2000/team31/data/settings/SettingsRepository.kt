@@ -39,4 +39,15 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun getLocationSwitchState(): Boolean {
+        return dataStore.data.map { preferences ->
+            preferences[SettingsDataStore.LOCATION_ON] ?: false
+        }.first()
+    }
+
+    suspend fun updateLocationSwitchState(isChecked: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[SettingsDataStore.LOCATION_ON] = isChecked
+        }
+    }
 }

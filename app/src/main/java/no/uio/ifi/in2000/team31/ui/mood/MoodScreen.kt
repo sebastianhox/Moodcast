@@ -87,9 +87,9 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
             snackbarHost = {
                 SnackbarHost(
                     hostState = snackbarState
-                ) {snackBarData ->
+                ) {snackbarData ->
                     CustomSnackBar(
-                        snackBarData.visuals.message,
+                        snackbarData.visuals.message,
                         navController = navController
                     )
 
