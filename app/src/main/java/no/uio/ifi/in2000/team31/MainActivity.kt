@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var settingsViewModel: SettingsViewModel
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     companion object {
         private var mInstanceActivity: WeakReference<MainActivity>? = null
         fun getInstance(): MainActivity? {
@@ -63,7 +64,7 @@ class MainActivity : ComponentActivity() {
         appContainer = (application as MoodApplication).appContainer
         sharedViewModel = appContainer.sharedViewModel
         settingsViewModel = appContainer.settingsViewModel
-        mInstanceActivity = WeakReference(this)
+        mInstanceActivity = WeakReference(this) // set the instance in order to call functions from other classes
 
         setContent {
             val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
@@ -77,13 +78,15 @@ class MainActivity : ComponentActivity() {
                     AppNavigation(homeViewModel = homeViewModel)
 
                 }
-                fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-                requestLocationAndStartUpdates(CachePolicy(CachePolicy.Type.ALWAYS))
+
             }
         }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        requestLocationAndStartUpdates(CachePolicy(CachePolicy.Type.ALWAYS))
     }
 
-//    @RequiresApi(Build.VERSION_CODES.O)
+    //    @RequiresApi(Build.VERSION_CODES.O)
 //    override fun onResume() {
 //        super.onResume()
 //        Log.d("location", "onResume")
@@ -132,35 +135,27 @@ class MainActivity : ComponentActivity() {
             Log.d("location", "Requesting permissions")
             requestPermissionLauncher.launch(permissions)
         } else {
-            if (locationOn) {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                    if (location == null) {
-                        Log.d("location", "Trying to refetch")
-                        fusedLocationClient.requestLocationUpdates(
-                            LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 2000)
-                                .build(),
-                            locationCallback,
-                            null
-                        )
-                    } else {
-                        Log.d(
-                            "location",
-                            "Fetched location: ${location.latitude}, ${location.longitude}"
-                        )
-                        homeViewModel.fetchWeatherData(
-                            location.latitude,
-                            location.longitude,
-                            cachePolicy
-                        )
-                        sharedViewModel.updateLocation(location.latitude, location.longitude)
-                    }
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location == null) {
+                    Log.d("location", "Trying to refetch")
+                    fusedLocationClient.requestLocationUpdates(
+                        LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 2000)
+                            .build(),
+                        locationCallback,
+                        null
+                    )
+                } else {
+                    Log.d(
+                        "location",
+                        "Fetched location: ${location.latitude}, ${location.longitude}, $cachePolicy"
+                    )
+                    homeViewModel.fetchWeatherData(
+                        location.latitude,
+                        location.longitude,
+                        cachePolicy
+                    )
+                    sharedViewModel.updateLocation(location.latitude, location.longitude)
                 }
-            } else {
-                homeViewModel.fetchWeatherData(
-                    59.913868,
-                    10.752245,
-                    CachePolicy(CachePolicy.Type.NEVER)
-                )
             }
         }
         Log.d("location", "End location updates")
