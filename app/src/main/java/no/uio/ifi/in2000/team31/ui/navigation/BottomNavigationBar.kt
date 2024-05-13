@@ -125,7 +125,7 @@ fun BottomNavigationBar(navController: NavController) {
             label = { Text("Innstillinger") },
             icon = {
                 Icon(
-                    if (moodSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
+                    if (settingsSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
                     contentDescription = "Settings"
                 )
             }

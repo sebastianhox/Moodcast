@@ -31,7 +31,7 @@ import java.net.URLEncoder
 data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
     val tempAndTimeData: List<Triple<String?, Double?, String?>> = listOf(),
-    val longTermForecast: Map<String, Pair<Double, Double>>? = null,
+    val longTermForecast: Map<String, Triple<String?, Double, Double>>? = null,
     val alertIconData: List<Pair<String?,String?>> = listOf()
 )
 

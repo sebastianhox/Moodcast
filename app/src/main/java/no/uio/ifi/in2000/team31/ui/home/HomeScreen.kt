@@ -46,7 +46,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,8 +65,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.R
@@ -79,6 +76,7 @@ import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.LocalDate
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 
@@ -147,12 +145,21 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
         ) {
             // Tegner bakgrunnsbildet først
 
-            AsyncImage(
-                model = backgroundImageUrl,
-                contentDescription = "Background Image",
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop
-            )
+            if (darkModeOn) {
+                Image(
+                    painter = painterResource(id = R.drawable.wallpaper_darkmode),
+                    contentDescription = "Background Image",
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.FillBounds
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.wallpaper_lightmode),
+                    contentDescription = "Background Image",
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.FillBounds
+                )
+            }
             Column{
                 SearchBar(
                     query = searchUiState.currentQuery,
@@ -441,10 +448,12 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                     modifier = Modifier.verticalScroll(rememberScrollState())
                                 ) {
                                     // Loop over the long-term forecast data to display each row
+                                    Log.d("test",weatherData.longTermForecast.toString())
                                     weatherData.longTermForecast!!.entries.drop(1)
-                                        .forEachIndexed { index, (day, temps) ->
+                                        .forEachIndexed { index,  (day, forecastData) ->
                                             // Displays the forecast row
-                                            LongTermForecastRow(day, temps.first, temps.second)
+                                            Log.d("test",forecastData.first.toString())
+                                            LongTermForecastRow(day, forecastData.first, forecastData.second, forecastData.third)
 
                                             // Adds a horizontal divider between rows
                                             if (index < weatherData.longTermForecast!!.size - 1) {
@@ -479,7 +488,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LongTermForecastRow(day: String, minTemp: Double, maxTemp: Double) {
+fun LongTermForecastRow(day: String, symbolCode: String?, minTemp: Double, maxTemp: Double) {
     val locale = java.util.Locale("no", "NO") // Norwegian locale
     val currentDate = LocalDate.now()
     val localDate = LocalDate.parse(day)
@@ -504,19 +513,33 @@ fun LongTermForecastRow(day: String, minTemp: Double, maxTemp: Double) {
             text = dayOfWeek,
             fontWeight = FontWeight.Bold
         )
-
-
-        Text(
-            buildAnnotatedString {
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                    append("${minTemp.roundToInt()}°")
-                }
-                append("  |  ")
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                    append("${maxTemp.roundToInt()}°")
-                }
-            }
+        Spacer(modifier = Modifier.weight(1f))
+        Image(
+            painter = painterResource(id = WeatherIconMapper.symbolCodeMap[symbolCode] ?: R.drawable.svg),
+            contentDescription = "Weather Icon",
+            modifier = Modifier
+                .size(20.dp)
         )
+        Box (
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .width(90.dp),
+            contentAlignment = Alignment.CenterEnd
+
+        ) {
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("${minTemp.roundToInt()}°")
+                    }
+                    append("  |  ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("${maxTemp.roundToInt()}°")
+
+                    }
+                },
+            )
+        }
     }
 }
 

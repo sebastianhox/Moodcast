@@ -8,6 +8,7 @@ import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -59,14 +60,15 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         return temperaturesForNextHours
     }
 
-    suspend fun getNext7Days(lat: Double?, lon: Double?): Map<String, Pair<Double, Double>> {
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun getNext7Days(lat: Double?, lon: Double?): Map<String, Triple<String?, Double, Double>> {
 
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
 
 
-        val longTermForecast = mutableMapOf<String, Pair<Double, Double>>() // long term forecast
+        val longTermForecast = mutableMapOf<String, Triple<String?, Double, Double>>() // long term forecast
 
-        val startIndeks = 0 // Startindeks for neste dag
+        val startIndeks = 1 // Startindeks for neste dag
         val endIndeks = weatherData.instant.size
 
         //-------------------------------------------------------------------------
@@ -75,7 +77,8 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         var maxTemp =
             Double.MIN_VALUE // Variabel for å holde maksimumstemperaturen for den nåværende dagen
         var minTemp =
-            Double.MAX_VALUE // Variabel for å holde minimumstemperaturen for den nåværende dagen
+            Double.MAX_VALUE
+        var symbolCode: String? = null// Variabel for å holde minimumstemperaturen for den nåværende dagen
 
         var currentDateIndex =
             startIndeks // Variabel for å holde indeksen til den nåværende datoen i listen
@@ -86,7 +89,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
 
             dayForecast.time?.let { time ->
                 val day = time.split("T")[0] // Hent ut datoen for langtidsvarselet
-
+                val givenTime = time.split("T")[1]
                 // Sjekk om `day` er lik `dateToday`
                 if (day == dateToday) {
                     // Sjekk om temperaturen er høyere eller lavere enn min og maks for nåværende dag
@@ -94,9 +97,15 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
                         maxTemp = maxOf(maxTemp, temperature) // Oppdater maksimumstemperaturen
                         minTemp = minOf(minTemp, temperature) // Oppdater minimumstemperaturen
                     }
+                    if (givenTime == "12:00:00Z" || day == LocalDate.now().toString()) {
+                        symbolCode = dayForecast.symbolCode ?: dayForecast.next6Hours_symbolCode
+                    }
+
                 } else {
+                    longTermForecast[dateToday] = Triple(symbolCode, minTemp, maxTemp)
+
                     // Hvis `day` er forskjellig fra `dateToday`, legg til temperaturene for forrige dag i forecasten
-                    longTermForecast[dateToday] = Pair(minTemp, maxTemp)
+//                    longTermForecast[dateToday] = Pair(minTemp, maxTemp)
 
                     // Oppdater `dateToday` til den nåværende datoen
                     dateToday = day
@@ -104,7 +113,9 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
                     // Nullstill maksimums- og minimumstemperaturen for den nye dagen
                     maxTemp = Double.MIN_VALUE
                     minTemp = Double.MAX_VALUE
+                    symbolCode = null
                 }
+
             }
 
             // Hopp til neste tid i listen
