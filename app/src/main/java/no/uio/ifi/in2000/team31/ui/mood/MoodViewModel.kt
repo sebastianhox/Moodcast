@@ -33,7 +33,7 @@ class MoodViewModel(application: Application): AndroidViewModel(application) {
 //        }
 //    }
 
-    fun manuallyUpdate(lat: Double?, lon: Double?) {
+    fun manuallyUpdate() {
         viewModelScope.launch {
             val dataNow = repository.fetchInfo(59.913868,10.752245 ,CachePolicy(CachePolicy.Type.ALWAYS)).instant.first()
             _weatherDataUIState.update { currentState ->

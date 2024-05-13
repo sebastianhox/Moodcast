@@ -71,9 +71,7 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
     val sharedViewModel = appContainer.sharedViewModel
 
-    val locationState by sharedViewModel.locationUIState.collectAsState()
-
-    moodViewModel.manuallyUpdate(locationState.lat,locationState.lon)
+    moodViewModel.manuallyUpdate()
 
 
 
