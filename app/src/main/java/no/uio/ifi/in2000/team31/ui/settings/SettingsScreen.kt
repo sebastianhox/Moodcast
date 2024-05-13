@@ -77,7 +77,7 @@ fun SettingsScreen(navController: NavController) {
             }
 
             Text(
-                text = "Posisjon",
+                text = "Tema",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(horizontal =  32.dp, vertical = 8.dp))
 

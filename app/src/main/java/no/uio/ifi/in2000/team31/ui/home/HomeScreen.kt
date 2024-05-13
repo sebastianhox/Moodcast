@@ -80,7 +80,9 @@ import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
+import java.time.Clock
 import java.time.LocalDate
+import java.util.Stack
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -104,10 +106,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val darkModeOn by settingsViewModel.isDarkTheme.collectAsState()
     val locationOn by settingsViewModel.locationOn.collectAsState()
 
-    Log.d("test12", locationState.toString())
-
-    var isRefreshing by remember { mutableStateOf(false)  }
-
 
     // Midlertidig? Setter weatherstatus i sharedviewmodel til symbolkdoen fra api-kallet
     val weatherStatusString = weatherData.weatherData?.instant?.get(0)?.symbolCode
@@ -117,9 +115,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val tempAndTimeList = weatherData.tempAndTimeData
 
     val scrollState = rememberScrollState()
+    val outerScroll = rememberScrollState()
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val backgroundColor = if (darkModeOn) Color.DarkGray.copy(alpha = 0.85f) else Color.LightGray.copy(alpha = 0.85f)
+    val backgroundColor =
+        if (darkModeOn) Color.DarkGray.copy(alpha = 0.85f) else Color.LightGray.copy(alpha = 0.85f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
@@ -133,12 +133,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     var refreshing by remember { mutableStateOf(false) }
 
 
-
     fun refresh() = refreshScope.launch {
         refreshing = true
         delay(1000)
         Log.d("refreshstuff", "Getting location for ${locationState.lat} ${locationState.lon}")
-        sharedViewModel.updateLocation(locationState.lat, locationState.lon)
+        homeViewModel.fetchWeatherData(locationState.lat, locationState.lon, CachePolicy(CachePolicy.Type.REFRESH))
 
         //homeViewModel.fetchWeatherData()
         refreshing = false
@@ -146,24 +145,25 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
     val refreshState = rememberPullRefreshState(refreshing = refreshing, onRefresh = ::refresh)
 
+
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) },
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarState
-            ) {snackbarData ->
+            ) { snackbarData ->
                 CustomSnackBar(
                     snackbarData.visuals.message,
-                    navController = navController)
+                    navController = navController
+                )
             }
         }
     ) { innerPadding ->
-
         Box(
             modifier = Modifier
+                .pullRefresh(refreshState)
                 .fillMaxSize()
                 .padding(innerPadding)
-                .pullRefresh(refreshState)
         ) {
             // Tegner bakgrunnsbildet først
 
@@ -182,10 +182,9 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     contentScale = ContentScale.FillBounds
                 )
             }
-            Column{
-                if (refreshing) {
-                    Text("Refreshing...")
-                }
+
+            Column {
+
                 SearchBar(
                     query = searchUiState.currentQuery,
                     onQueryChange = homeViewModel::onPlaceNameSearch,
@@ -300,8 +299,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         }
                     }
                 }
-
-
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -311,11 +308,9 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     // Temperature right now, in celcius
                     Box(
                         modifier = Modifier
-                            .padding(18.dp)
                             .width(360.dp)
                             .align(Alignment.CenterHorizontally)
                     ) {
-
                         Column(
                             modifier = Modifier.padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -326,7 +321,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 contentAlignment = Alignment.TopEnd
                             ) {
                                 Text(
-                                    text = searchUiState.selectedPlace?.placeName ?: "Min posisjon",
+                                    text = searchUiState.selectedPlace?.placeName
+                                        ?: "Min posisjon",
                                     fontSize = 30.sp,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.align(Alignment.Center),
@@ -377,14 +373,17 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 }
                             }
                             Image(
-                                painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode] ?: R.drawable.svg),
+                                painter = painterResource(
+                                    id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode]
+                                        ?: R.drawable.svg
+                                ),
                                 contentDescription = "weather icon",
                                 modifier = Modifier.size(80.dp),
                                 alignment = Alignment.Center
                             )
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 Text(
-                                    text = temperature?.let { "${it.roundToInt()}" + symbol}
+                                    text = temperature?.let { "${it.roundToInt()}" + symbol }
                                         ?: "Henter data...",
                                     fontSize = 50.sp,
                                     textAlign = TextAlign.Center,
@@ -393,6 +392,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             }
                         }
                     }
+
 
                     //Vær i dag - time for time
                     Box(
@@ -473,12 +473,17 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                     modifier = Modifier.verticalScroll(rememberScrollState())
                                 ) {
                                     // Loop over the long-term forecast data to display each row
-                                    Log.d("test",weatherData.longTermForecast.toString())
+                                    Log.d("test", weatherData.longTermForecast.toString())
                                     weatherData.longTermForecast!!.entries.drop(1)
-                                        .forEachIndexed { index,  (day, forecastData) ->
+                                        .forEachIndexed { index, (day, forecastData) ->
                                             // Displays the forecast row
-                                            Log.d("test",forecastData.first.toString())
-                                            LongTermForecastRow(day, forecastData.first, forecastData.second, forecastData.third)
+                                            Log.d("test", forecastData.first.toString())
+                                            LongTermForecastRow(
+                                                day,
+                                                forecastData.first,
+                                                forecastData.second,
+                                                forecastData.third
+                                            )
 
                                             // Adds a horizontal divider between rows
                                             if (index < weatherData.longTermForecast!!.size - 1) {
@@ -506,8 +511,8 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     }
 
                 }
-                PullRefreshIndicator(refreshing = refreshing, state = refreshState)
             }
+            PullRefreshIndicator(refreshing, refreshState, Modifier.align(Alignment.TopCenter))
         }
     }
 }
@@ -517,55 +522,59 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 @Composable
 fun LongTermForecastRow(day: String, symbolCode: String?, minTemp: Double, maxTemp: Double) {
     val locale = java.util.Locale("no", "NO") // Norwegian locale
-    val currentDate = LocalDate.now()
+    val currentDate = LocalDate.now(Clock.systemDefaultZone())
     val localDate = LocalDate.parse(day)
 
-    val dayOfWeek =
-        if (localDate == currentDate) {
-            "I dag"
-        } else {
-            localDate.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, locale)
-                .replaceFirstChar(Char::titlecase)
-        }
+    if (localDate >= currentDate) {
+        val dayOfWeek =
+            if (localDate == currentDate) {
+                "I dag"
+            } else {
+                localDate.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, locale)
+                    .replaceFirstChar(Char::titlecase)
+            }
 
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 15.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = dayOfWeek,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Image(
-            painter = painterResource(id = WeatherIconMapper.symbolCodeMap[symbolCode] ?: R.drawable.svg),
-            contentDescription = "Weather Icon",
+        Row(
             modifier = Modifier
-                .size(20.dp)
-        )
-        Box (
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .width(90.dp),
-            contentAlignment = Alignment.CenterEnd
-
+                .fillMaxWidth()
+                .padding(vertical = 15.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("${minTemp.roundToInt()}°")
-                    }
-                    append("  |  ")
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                        append("${maxTemp.roundToInt()}°")
-
-                    }
-                },
+                text = dayOfWeek,
+                fontWeight = FontWeight.Bold
             )
+            Spacer(modifier = Modifier.weight(1f))
+            Image(
+                painter = painterResource(
+                    id = WeatherIconMapper.symbolCodeMap[symbolCode] ?: R.drawable.svg
+                ),
+                contentDescription = "Weather Icon",
+                modifier = Modifier
+                    .size(20.dp)
+            )
+            Box(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .width(90.dp),
+                contentAlignment = Alignment.CenterEnd
+
+            ) {
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("${minTemp.roundToInt()}°")
+                        }
+                        append("  |  ")
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("${maxTemp.roundToInt()}°")
+
+                        }
+                    },
+                )
+            }
         }
     }
 }
@@ -576,7 +585,7 @@ fun LongTermForecastRow(day: String, symbolCode: String?, minTemp: Double, maxTe
 fun TimeAndTempCards(
     hour: String?,
     temperature: Double?,
-    symbolCode: String?
+    symbolCode: String?,
 ) {
 
     Spacer(modifier = Modifier.height(10.dp))
@@ -632,17 +641,19 @@ fun TimeAndTempCards(
         }
     }
 }
+
 @Composable
 fun CustomSnackBar(
     message: String,
     isRtl: Boolean = false,
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
-    navController: NavController
+    navController: NavController,
 ) {
     Snackbar(
         containerColor = containerColor,
-        contentColor = contentColor) {
+        contentColor = contentColor
+    ) {
         CompositionLocalProvider(
             LocalLayoutDirection provides
                     if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr

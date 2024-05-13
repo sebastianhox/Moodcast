@@ -8,6 +8,7 @@ import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -102,6 +103,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
                     }
 
                 } else {
+//
                     longTermForecast[dateToday] = Triple(symbolCode, minTemp, maxTemp)
 
                     // Hvis `day` er forskjellig fra `dateToday`, legg til temperaturene for forrige dag i forecasten
@@ -109,7 +111,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
 
                     // Oppdater `dateToday` til den nåværende datoen
                     dateToday = day
-
+                    Log.d("test", "$maxTemp  $minTemp")
                     // Nullstill maksimums- og minimumstemperaturen for den nye dagen
                     maxTemp = Double.MIN_VALUE
                     minTemp = Double.MAX_VALUE
