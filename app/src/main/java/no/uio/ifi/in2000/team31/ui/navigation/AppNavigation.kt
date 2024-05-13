@@ -25,7 +25,6 @@ import no.uio.ifi.in2000.team31.ui.settings.SettingsScreen
 fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
-    //val homeViewModel: HomeViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = AppRoutes.HOME) {
         composable(
