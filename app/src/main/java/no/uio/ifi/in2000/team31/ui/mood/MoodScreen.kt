@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.SharedViewModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
@@ -67,10 +68,12 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
-    moodViewModel.manuallyUpdate()
-
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
     val sharedViewModel = appContainer.sharedViewModel
+
+    val locationState by sharedViewModel.locationUIState.collectAsState()
+
+    moodViewModel.manuallyUpdate(locationState.lat,locationState.lon)
 
 
 
@@ -127,7 +130,7 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Image(
-                        painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow]!!), // placeholder icon, hard coded
+                        painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable.svg), // placeholder icon, hard coded
                         contentDescription = "Værikon",
                         modifier = Modifier.size(44.dp),
 

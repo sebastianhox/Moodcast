@@ -83,7 +83,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _locationOn.value = settingsRepository.getLocationSwitchState() // Endrer på verdien slik at composable oppdaterer
 
             if (_locationOn.value) {
-                Log.d("settingss", "location on")
                 MainActivity.getInstance()?.requestLocationAndStartUpdates(CachePolicy(CachePolicy.Type.ALWAYS))
             }
 

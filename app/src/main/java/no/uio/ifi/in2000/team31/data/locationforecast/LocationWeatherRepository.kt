@@ -16,7 +16,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
     suspend fun fetchInfo(lat: Double?, lon: Double?, cachePolicy: CachePolicy): WeatherDataModel {
         return when (cachePolicy.type) {
             NEVER -> fetch(lat, lon)
-            ALWAYS -> cachedData
+            ALWAYS -> if (::cachedData.isInitialized) cachedData else fetch(lat, lon)
             REFRESH -> fetchAndCache(lat, lon)
             else -> fetch(lat,lon)
         }
