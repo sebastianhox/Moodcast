@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team31
 
+import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -13,5 +14,12 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
+    }
+
+    @Test
+    fun testCelsiusToFahrenheitConvertion() {
+        val celsius: Int = 15
+        val fahrenheit = celsiusToFahrenheit(celsius)
+        assertEquals(59, fahrenheit)
     }
 }

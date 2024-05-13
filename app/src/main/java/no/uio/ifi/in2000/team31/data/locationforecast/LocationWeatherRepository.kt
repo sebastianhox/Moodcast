@@ -4,10 +4,10 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import no.uio.ifi.in2000.team31.cache.CachePolicy
-import no.uio.ifi.in2000.team31.model.WeatherDataModel
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
+import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
 import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
+import no.uio.ifi.in2000.team31.model.WeatherDataModel
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -32,14 +32,18 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         return cachedData
     }
 
+//    suspend fun getSymbolCodeNow(lat: Double?, lon: Double?): String? {
+//        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
+//        return weatherData.instant.first().symbolCode
+//    }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun get24HoursForecast(lat: Double, lon: Double): List<Triple<String?, Double?, String?>> {
+    suspend fun get24HoursForecast(lat: Double?, lon: Double?): List<Triple<String?, Double?, String?>> {
 
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
         val temperaturesForNextHours = mutableListOf<Triple<String?,Double?,String?>>() // hourly forecast
 
-        weatherData.instant.subList(1,26).forEach{hourlyData ->
+        weatherData.instant.subList(0,25).forEach{hourlyData ->
 
             val utcHour = hourlyData.time?.substring(11,16)
             val utcTime = LocalTime.parse(utcHour)
@@ -55,21 +59,15 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         return temperaturesForNextHours
     }
 
-    suspend fun getNext7Days(lat: Double, lon: Double): Map<String, Pair<Double, Double>> {
+    suspend fun getNext7Days(lat: Double?, lon: Double?): Map<String, Pair<Double, Double>> {
 
         val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
 
-        val weatherInstant = weatherData.instant
 
         val longTermForecast = mutableMapOf<String, Pair<Double, Double>>() // long term forecast
 
-        val numberOfDaysToFetch = weatherInstant.size
-
-        val startIndeks = 1 // Startindeks for neste dag
-        val endIndeks = minOf(
-            startIndeks + numberOfDaysToFetch * 24,
-            weatherInstant.size
-        ) // Hent 7 dager med data
+        val startIndeks = 0 // Startindeks for neste dag
+        val endIndeks = weatherData.instant.size
 
         //-------------------------------------------------------------------------
 
@@ -84,7 +82,7 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
 
         // Loop gjennom alle tidene i listen
         while (currentDateIndex < endIndeks) {
-            val dayForecast = weatherInstant[currentDateIndex]
+            val dayForecast = weatherData.instant[currentDateIndex]
 
             dayForecast.time?.let { time ->
                 val day = time.split("T")[0] // Hent ut datoen for langtidsvarselet

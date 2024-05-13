@@ -26,4 +26,17 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun getFahrenheitSwitchState(): Boolean {
+        Log.d("settings", "Getting fahrenheit switch state")
+        return dataStore.data.map { preferences ->
+            preferences[SettingsDataStore.FAHRENHEIT_ON] ?: false
+        }.first()
+    }
+
+    suspend fun updateFahrenheitSwitchState(isChecked: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[SettingsDataStore.FAHRENHEIT_ON] = isChecked
+        }
+    }
+
 }

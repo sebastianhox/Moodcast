@@ -18,18 +18,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.first
+import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
+fun celsiusToFahrenheit(degreeInCelsius: Int): Int {
+    return ((9.0 / 5) * degreeInCelsius + 32).toInt()
+}
+
 @Composable
-fun SettingsScreen(navController: NavController, settingsViewModel: SettingsViewModel) {
+fun SettingsScreen(navController: NavController) {
+
+    val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
+    val settingsViewModel = appContainer.settingsViewModel
     val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
+    val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
     LaunchedEffect(key1 = settingsViewModel) {
         val darkThemeOn = settingsViewModel.isDarkTheme.first()
         settingsViewModel.onDarkThemeSwitchChange(darkThemeOn)
+
+        val fahrenheitOn = settingsViewModel.isFahrenheit.first()
+        settingsViewModel.onFahrenheitSwitchChange(fahrenheitOn)
     }
     Scaffold(
         topBar = { MoodCastTopBar() },
@@ -40,29 +53,16 @@ fun SettingsScreen(navController: NavController, settingsViewModel: SettingsView
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            SettingItem(title = "Dark theme", description = "Bruk dark theme", isDarkTheme) {it ->
+            SettingItem(title = "Dark theme", description = "Bruk dark theme", isDarkTheme) {
                 //settingsViewModel.toggleDarkTheme()
                 settingsViewModel.onDarkThemeSwitchChange(it)
                 Log.d("settings", "Passing $isDarkTheme to switch")
             }
-            SettingItem(title = "Fahrenheit", description = "Bruk fahrenheit", false) {
-
+            SettingItem(title = "Fahrenheit", description = "Bruk fahrenheit", isFahrenheit) {
+                settingsViewModel.onFahrenheitSwitchChange(it)
+                Log.d("settings", "Passing $isFahrenheit to switch")
             }
 
-
-            // Ikke lagt til noe funksjonalitet på disse enda, kun for å se noenlunde bra ut
-            SettingItem(title = "Push varsler", description = "Tillat push varsler", false) {
-
-            }
-            SettingItem(title = "Lokasjon", description = "Tillat lokasjon", false) {
-
-            }
-            SettingItem(title = "Automatisk lokasjon", description = "Last lokasjon automatisk", false) {
-
-            }
-            SettingItem(title = "Eget design", description = "Bruk egendefinert design", false) {
-
-            }
         }
     }
 }
