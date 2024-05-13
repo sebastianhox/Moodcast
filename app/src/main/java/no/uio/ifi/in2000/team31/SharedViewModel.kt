@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team31
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,6 +67,7 @@ class SharedViewModel : ViewModel() {
     fun updateLocation(lat: Double?, lon: Double?) {
         viewModelScope.launch {
             _locationUIState.update { currentState ->
+                Log.d("refreshstuff", "lat: $lat, lon: $lon")
                 currentState.copy(
                     lat = lat,
                     lon = lon
