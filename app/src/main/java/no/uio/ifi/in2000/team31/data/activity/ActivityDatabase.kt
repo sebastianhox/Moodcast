@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(entities = [Activity::class], version = 1, exportSchema = false)
-@TypeConverters(MoodListConverter::class)
+@TypeConverters(Converters::class)
 abstract class ActivityDatabase : RoomDatabase(){
     abstract fun activityDao(): ActivityDao
     companion object {

@@ -47,7 +47,8 @@ data class ActivityDetails(
     val info: String = "",
     val text: String = "",
     val imagePath: String? = null,
-    val suitableMoods: List<Mood> = listOf()
+    val suitableMoods: List<Mood> = listOf(),
+    val suitableWeathers: List<WeatherStatus> = listOf()
 )
 
 fun ActivityDetails.toActivity(): Activity = Activity(
@@ -55,18 +56,20 @@ fun ActivityDetails.toActivity(): Activity = Activity(
     name = name,
     info = info,
     imagePath = imagePath,
-    suitableMoods = suitableMoods
+    suitableMoods = suitableMoods,
+    suitableWeathers = suitableWeathers
 )
 
-//fun Activity.toActivityUiState(isEntryValid: Boolean = false): ActivityUiState = ActivityUiState(
-//    activityDetails = this.toActivityDetails(),
-//    isEntryValid = isEntryValid
-//)
+fun Activity.toActivityUiState(isEntryValid: Boolean = false): ActivityUiState = ActivityUiState(
+    activityDetails = this.toActivityDetails(),
+    isEntryValid = isEntryValid
+)
 
-//fun Activity.toActivityDetails(): ActivityDetails = ActivityDetails(
-//    id = id,
-//    name = name, // .toString()?
-//    info = info, // .toString()?
-//    imagePath = imagePath,
-//    suitableMoods = suitableMoods
-//)
+fun Activity.toActivityDetails(): ActivityDetails = ActivityDetails(
+    id = id,
+    name = name, // .toString()?
+    info = info, // .toString()?
+    imagePath = imagePath,
+    suitableMoods = suitableMoods,
+    suitableWeathers = suitableWeathers
+)

@@ -40,14 +40,11 @@ import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 import java.lang.ref.WeakReference
 
 class MainActivity : ComponentActivity() {
-
-
     private val homeViewModel: HomeViewModel by viewModels()
 
     private lateinit var appContainer: AppContainer
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var settingsViewModel: SettingsViewModel
-
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     companion object {
