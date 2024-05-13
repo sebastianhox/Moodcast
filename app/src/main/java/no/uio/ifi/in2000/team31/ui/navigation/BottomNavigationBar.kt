@@ -21,9 +21,6 @@ import no.uio.ifi.in2000.team31.MoodApplication
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
-    val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
-    val sharedViewModel = appContainer.sharedViewModel
-
     NavigationBar {
         val homeSelected = navController.currentDestination?.route == AppRoutes.HOME
         // hjemskjerm
