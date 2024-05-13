@@ -35,13 +35,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,16 +55,20 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.cache.CachePolicy
@@ -89,6 +99,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val locationState by sharedViewModel.locationUIState.collectAsState()
     val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
     val darkModeOn by settingsViewModel.isDarkTheme.collectAsState()
+    val locationOn by settingsViewModel.locationOn.collectAsState()
 
     var isRefreshing by remember { mutableStateOf(false)  }
 
@@ -99,7 +110,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     sharedViewModel.setCurrentWeatherStatus(weatherStatus)
 
     val tempAndTimeList = weatherData.tempAndTimeData
+
     val scrollState = rememberScrollState()
+    val snackbarState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val backgroundColor = if (darkModeOn) Color.DarkGray.copy(alpha = 0.85f) else Color.LightGray.copy(alpha = 0.85f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     var symbol = "°C"
@@ -114,7 +128,16 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val backgroundImageUrl ="https://img.freepik.com/free-vector/gradient-mountain-landscape_23-2149162009.jpg?size=626&ext=jpg&ga=GA1.1.553209589.1714608000&semt=sph"
 
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
+        bottomBar = { BottomNavigationBar(navController) },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarState
+            ) {snackbarData ->
+                CustomSnackBar(
+                    snackbarData.visuals.message,
+                    navController = navController)
+            }
+        }
     ) { innerPadding ->
 
         Box(
@@ -162,28 +185,35 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                         }
                     }
                 ) {
+
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
                             .fillMaxWidth()
                             .clickable {
-                                val location = locationState
-                                homeViewModel.fetchWeatherData(
-                                    location.lat, location.lon,
-                                    CachePolicy(CachePolicy.Type.REFRESH)
-                                )
-                                homeViewModel.clearSelectedPlace()
-                                homeViewModel.onToogleSearch()
+                                if (locationOn) {
+                                    homeViewModel.fetchWeatherData(
+                                        locationState.lat,
+                                        locationState.lon,
+                                        CachePolicy(CachePolicy.Type.REFRESH)
+                                    )
+                                    homeViewModel.clearSelectedPlace()
+                                    homeViewModel.onToogleSearch()
+                                } else {
+                                    scope.launch {
+                                        snackbarState.showSnackbar("Posisjonsbasert værvarsel er slått av.\nDu kan slå den på igjen på instillinger")
+                                    }
+                                }
                             },
                     ) {
-                        Row (
+                        Row(
                             modifier = Modifier.padding(
                                 start = 8.dp,
                                 top = 10.dp,
                                 end = 8.dp,
                                 bottom = 4.dp
                             )
-                        ){
+                        ) {
 
                             Icon(
                                 imageVector = Icons.Outlined.MyLocation,
@@ -198,6 +228,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             )
                         }
                     }
+
 
                     LazyColumn(
                         modifier = Modifier
@@ -262,7 +293,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.TopEnd
                             ) {
-
                                 Text(
                                     text = searchUiState.selectedPlace?.placeName ?: "Min posisjon",
                                     fontSize = 30.sp,
@@ -550,6 +580,49 @@ fun TimeAndTempCards(
                     )
             }
         }
+    }
+}
+@Composable
+fun CustomSnackBar(
+    message: String,
+    isRtl: Boolean = false,
+    containerColor: Color = Color.White,
+    contentColor: Color = Color.Black,
+    navController: NavController
+) {
+    Snackbar(
+        containerColor = containerColor,
+        contentColor = contentColor) {
+        CompositionLocalProvider(
+            LocalLayoutDirection provides
+                    if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+        ) {
+            Row {
+                Text(message)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    modifier = Modifier.clickable {
+                        navController.navigate(AppRoutes.SETTINGS) {
+                            if (navController.currentDestination?.route != AppRoutes.SETTINGS) {
+                                navController.navigate(AppRoutes.SETTINGS) {
+                                    // fikser backstack
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+
+                                    //unngår flere instanser
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        }
+                    },
+                    text = "Til instillinger"
+                )
+            }
+
+        }
+
     }
 }
 
