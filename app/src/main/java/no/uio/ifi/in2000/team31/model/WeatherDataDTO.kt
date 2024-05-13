@@ -133,7 +133,7 @@ fun WeatherData.toModelInstant(): WeatherDataModel {
                 windSpeed = it.data?.instant?.details?.windSpeed,
                 symbolCode = it.data?.next1Hours?.summary?.symbolCode,
                 precipitationAmount = it.data?.instant?.details?.precipitationAmount,
-                next12Hours = it.data?.next12Hours?.details?.airTemperature
+                next6Hours_symbolCode = it.data?.next6Hours?.summary?.symbolCode,
             )
         )
     }

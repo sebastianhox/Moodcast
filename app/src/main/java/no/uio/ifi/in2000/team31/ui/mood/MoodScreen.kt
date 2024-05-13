@@ -161,9 +161,11 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
 
                 // Humørknapper
                 MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState, sharedViewModel, Mood.HAPPY)
-                MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.SAD)
                 MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGETIC)
                 MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.CALM)
+                MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.SAD)
+
+
             }
         }
     }

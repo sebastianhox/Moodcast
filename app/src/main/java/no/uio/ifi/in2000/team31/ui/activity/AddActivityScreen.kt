@@ -162,7 +162,7 @@ fun SelectWeathers(
     Column (
         modifier = modifier
     ) {
-        Text("Suitable weathers:")
+        Text("Passende værforhold:")
 
         Spacer(modifier = Modifier.size(10.dp))
 
