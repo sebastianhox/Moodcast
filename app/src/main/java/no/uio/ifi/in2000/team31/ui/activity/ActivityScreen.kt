@@ -178,9 +178,6 @@ fun ActivityScreenBody(
 ) {
     val context = LocalContext.current
 
-    var selectedActivity by remember { mutableStateOf<Activity?>(null) }
-    var showOverlay by remember { mutableStateOf(false) }
-
     LaunchedEffect(key1 = Unit) {
         viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
             if (existingActivity.isEmpty()) {
@@ -194,17 +191,22 @@ fun ActivityScreenBody(
     Column(
         modifier = Modifier.padding(contentPadding)
     ) {
-        Spacer(modifier = Modifier.height(128.dp))
         if (userMood != null) {
-            Text("Aktiviteter for humør: ${userMood.name}")
+            //Text("Aktiviteter for humør: ${userMood.name}")
+            Log.d("moodScreen", "Weatherstatus ${userMood.name}")
         } else {
-            Text("Alle aktiviteter")
+            //Text("Alle aktiviteter")
+            Log.d("moodScreen", "No mood found")
         }
         if (currentWeather != null) {
-            Text("Værstatus: $currentWeather")
+            //Text("Værstatus: $currentWeather")
+            Log.d("moodScreen", "Weatherstatus $currentWeather")
         } else {
             Text("Værstatus ikke funnet. Si ifra så fikser vi denne bugen?")
+            Log.d("moodScreen", "No weatherstatus found")
         }
+
+        HeroText(status = currentWeather, modifier = Modifier.padding(12.dp) )
 
         val filteredList = activityList.filter { activity ->
             val matchesMood = userMood == null || activity.suitableMoods.contains(userMood)
@@ -212,116 +214,31 @@ fun ActivityScreenBody(
             matchesMood && matchesWeather
         }
 
-        /*val filteredList = if (userMood != null) {
-            activityList.filter { it.suitableMoods.contains(userMood) }
-        } else {
-            activityList
-        }*/
         ActivityCardList(
             activityList = filteredList,
             viewModel = viewModel,
             onActivityClick = { activity ->
-                navController.navigate("activityDetails/${activity.id}") {
-                    popUpTo
-                }
-                //selectedActivity = activity
-                //showOverlay = true
+                navController.navigate("activityDetails/${activity.id}")
             }
         )
-
-        if (showOverlay && selectedActivity != null) {
-            ActivityOverlay(
-                activity = selectedActivity!!,
-                onDismiss = { showOverlay = false }
-            )
-        }
-    }
-    //ActivityList(activityList = activityList, contentPadding = contentPadding)
-}
-/*
-@Composable
-fun ActivityList(
-    activityList: List<Activity>,
-    contentPadding: PaddingValues,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = contentPadding
-    ) {
-        items(items = activityList, key = { it.id }) { activity ->
-            ActivityItem(
-                activity = activity,
-                modifier = modifier
-            )
-        }
-    }
-}*/
-
-@Composable
-fun ActivityItem(
-    activity: Activity,
-    onDeleteClick: () -> Unit,
-    onEditClick: () -> Unit,
-    onViewDetailsClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val painter = rememberAsyncImagePainter(File(activity.imagePath.toString()))
-    Card(
-        modifier = modifier
-    ) {
-        Column {
-            Text(activity.name)
-            Text(activity.info)
-            Image(
-                painter = painter,
-                contentDescription = "Activity Image",
-                modifier = Modifier.size(128.dp)
-            )
-        }
     }
 }
 
-/*
 @Composable
-fun ActivityScreen(navController: NavController){
-    Scaffold (
-        topBar = {
-            MoodCastTopBar()
-        },
-        bottomBar = {
-            BottomNavigationBar(navController)
-        },
-        floatingActionButton = {
-            AddActivityButton { navController.navigate(AppRoutes.ADD_ACTIVITY) }
-        }
-    ) { innerpadding ->
-        Column (modifier = Modifier.padding(innerpadding)){
-            Spacer(modifier = Modifier.height(10.dp))
-            HeroText(status = WeatherStatus.SUNNY,
-                Modifier
-                    .fillMaxWidth()
-                    .padding())
-            Spacer(modifier = Modifier.height(15.dp))
-            ActivityCardList()
-        }
-    }
-}
-*/
-
-@Composable
-fun HeroText(status: WeatherStatus, modifier: Modifier) {
+fun HeroText(status: WeatherStatus?, modifier: Modifier) {
     val text = when (status) {
         WeatherStatus.SUNNY -> "Solfylt og glad?"
         WeatherStatus.RAINY -> "Regn, regn, regn!"
         WeatherStatus.SNOWY -> "Snø, snø, snø!"
         WeatherStatus.CLOUDY -> "Overskyet..."
+        null -> "Mangler værstatus"
     }
     val description = when (status) {
         WeatherStatus.SUNNY -> "Ta en tur ut i det fine været, nyt en piknik i parken eller utforsk byen på sykkel for en perfekt dag!"
         WeatherStatus.RAINY -> "Det er en flott dag for innendørsaktiviteter. Hva med å besøke et museum eller se en god film?"
         WeatherStatus.SNOWY -> "Kle deg varmt og nyt vinterlandskapet. Hva med å bygge en snømann?"
         WeatherStatus.CLOUDY -> "En perfekt dag for litt rolig tid. Kanskje lese en bok eller nyte en kaffe på en koselig kafé?"
+        null -> "Noe har gått galt..."
     }
     Column(
         modifier = modifier
@@ -389,16 +306,10 @@ fun ActivityCardList (
                     },
                     onClick = onActivityClick
                 )
-//                ShowActivity(activity.toActivityDetails())
             }
         }
     }
 }
-
-//@Composable
-//fun ShowActivity(activity: ActivityDetails) {
-//
-//}
 
 @Composable
 fun ActivityCard(
@@ -456,45 +367,6 @@ fun ActivityCard(
     }
 }
 
-@Composable
-fun ActivityOverlay(
-    activity: Activity,
-    onDismiss: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f))
-            .clickable(onClick = onDismiss),
-        contentAlignment = Alignment.Center
-    ) {
-        Card(
-            modifier = Modifier
-                .padding(32.dp)
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AsyncImage(
-                    model = activity.imagePath,
-                    contentDescription = activity.name,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(activity.name, style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(activity.info)
-            }
-        }
-    }
-}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepository, onBackClick: () -> Unit) {
@@ -531,7 +403,9 @@ fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepositor
 
         if (activity == null) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
