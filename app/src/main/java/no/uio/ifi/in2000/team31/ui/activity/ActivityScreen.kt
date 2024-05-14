@@ -3,30 +3,34 @@ package no.uio.ifi.in2000.team31.ui.activity
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,11 +60,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.data.activity.Activity
+import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
 import no.uio.ifi.in2000.team31.ui.mood.Mood
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import java.io.File
@@ -156,7 +161,8 @@ fun ActivityScreen(
             contentPadding = innerPadding,
             viewModel = viewModel,
             userMood = userMood.selectedMood,
-            currentWeather = currentWeatherStatus.currentWeatherStatus
+            currentWeather = currentWeatherStatus.currentWeatherStatus,
+            navController = navController
         )
     }
 }
@@ -168,8 +174,12 @@ fun ActivityScreenBody(
     viewModel: ActivityScreenViewModel,
     userMood: Mood?,
     currentWeather: WeatherStatus?,
+    navController: NavController
 ) {
     val context = LocalContext.current
+
+    var selectedActivity by remember { mutableStateOf<Activity?>(null) }
+    var showOverlay by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
@@ -209,8 +219,22 @@ fun ActivityScreenBody(
         }*/
         ActivityCardList(
             activityList = filteredList,
-            viewModel = viewModel
+            viewModel = viewModel,
+            onActivityClick = { activity ->
+                navController.navigate("activityDetails/${activity.id}") {
+                    popUpTo
+                }
+                //selectedActivity = activity
+                //showOverlay = true
+            }
         )
+
+        if (showOverlay && selectedActivity != null) {
+            ActivityOverlay(
+                activity = selectedActivity!!,
+                onDismiss = { showOverlay = false }
+            )
+        }
     }
     //ActivityList(activityList = activityList, contentPadding = contentPadding)
 }
@@ -339,7 +363,11 @@ fun MoodCastTopBar() {
 }
 
 @Composable
-fun ActivityCardList (activityList: List<Activity>, viewModel: ActivityScreenViewModel) {
+fun ActivityCardList (
+    activityList: List<Activity>,
+    viewModel: ActivityScreenViewModel,
+    onActivityClick: (Activity) -> Unit
+) {
     val scope = rememberCoroutineScope()
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -358,7 +386,8 @@ fun ActivityCardList (activityList: List<Activity>, viewModel: ActivityScreenVie
                         scope.launch {
                             viewModel.activityRepository.deleteActivity(activityToDelete)
                         }
-                    }
+                    },
+                    onClick = onActivityClick
                 )
 //                ShowActivity(activity.toActivityDetails())
             }
@@ -372,10 +401,15 @@ fun ActivityCardList (activityList: List<Activity>, viewModel: ActivityScreenVie
 //}
 
 @Composable
-fun ActivityCard(activity: Activity, onDeleteClick: (Activity) -> Unit) {
+fun ActivityCard(
+    activity: Activity,
+    onDeleteClick: (Activity) -> Unit,
+    onClick: (Activity) -> Unit
+) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        modifier = Modifier.clickable { onClick(activity) }
     ) {
         Box {
             Column(modifier = Modifier.padding(8.dp)) {
@@ -419,5 +453,107 @@ fun ActivityCard(activity: Activity, onDeleteClick: (Activity) -> Unit) {
                 }
             }
         )
+    }
+}
+
+@Composable
+fun ActivityOverlay(
+    activity: Activity,
+    onDismiss: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable(onClick = onDismiss),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .padding(32.dp)
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AsyncImage(
+                    model = activity.imagePath,
+                    contentDescription = activity.name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(activity.name, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(activity.info)
+            }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepository, onBackClick: () -> Unit) {
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(
+                    "MoodCast",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 31.dp)
+                )},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 1.dp)
+                    .shadow(3.dp, RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp)),
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        val activityFlow: Flow<Activity?> = activityRepository.getItemStream(activityId)
+        val activity by activityFlow.collectAsState(initial = null)
+
+        if (activity == null) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            // Display activity details
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                AsyncImage(
+                    model = activity!!.imagePath,
+                    contentDescription = "Activity Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+                Text(text = "Activity Name: ${activity!!.name}")
+                Text(text = "Activity Name: ${activity!!.info}")
+            }
+        }
+
     }
 }
