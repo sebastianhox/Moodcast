@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -17,9 +18,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +37,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +56,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.ui.mood.Mood
@@ -156,7 +167,7 @@ fun ActivityScreenBody(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: ActivityScreenViewModel,
     userMood: Mood?,
-    currentWeather: WeatherStatus?
+    currentWeather: WeatherStatus?,
 ) {
     val context = LocalContext.current
 
@@ -196,11 +207,14 @@ fun ActivityScreenBody(
         } else {
             activityList
         }*/
-        ActivityCardList(activityList = filteredList)
+        ActivityCardList(
+            activityList = filteredList,
+            viewModel = viewModel
+        )
     }
     //ActivityList(activityList = activityList, contentPadding = contentPadding)
 }
-
+/*
 @Composable
 fun ActivityList(
     activityList: List<Activity>,
@@ -218,11 +232,14 @@ fun ActivityList(
             )
         }
     }
-}
+}*/
 
 @Composable
 fun ActivityItem(
     activity: Activity,
+    onDeleteClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onViewDetailsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val painter = rememberAsyncImagePainter(File(activity.imagePath.toString()))
@@ -322,7 +339,8 @@ fun MoodCastTopBar() {
 }
 
 @Composable
-fun ActivityCardList (activityList: List<Activity>) {
+fun ActivityCardList (activityList: List<Activity>, viewModel: ActivityScreenViewModel) {
+    val scope = rememberCoroutineScope()
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)) {
@@ -334,7 +352,14 @@ fun ActivityCardList (activityList: List<Activity>) {
         Spacer(modifier = Modifier.height(15.dp))
         LazyVerticalGrid(columns = GridCells.Fixed(2)) {
             items(activityList) { activity ->
-                ActivityCard(activity)
+                ActivityCard(
+                    activity,
+                    onDeleteClick = {activityToDelete ->
+                        scope.launch {
+                            viewModel.activityRepository.deleteActivity(activityToDelete)
+                        }
+                    }
+                )
 //                ShowActivity(activity.toActivityDetails())
             }
         }
@@ -347,22 +372,52 @@ fun ActivityCardList (activityList: List<Activity>) {
 //}
 
 @Composable
-fun ActivityCard(activity: Activity) {
+fun ActivityCard(activity: Activity, onDeleteClick: (Activity) -> Unit) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            AsyncImage(
-                model = activity.imagePath,
-                contentDescription = activity.name,
-                modifier = Modifier
-                    .height(100.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
-            Text(activity.name, style = MaterialTheme.typography.titleMedium)
-            Text(activity.info, style = MaterialTheme.typography.titleMedium)
+        Box {
+            Column(modifier = Modifier.padding(8.dp)) {
+                AsyncImage(
+                    model = activity.imagePath,
+                    contentDescription = activity.name,
+                    modifier = Modifier
+                        .height(100.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+                Text(activity.name, style = MaterialTheme.typography.titleMedium)
+                Text(activity.info, style = MaterialTheme.typography.titleMedium)
+            }
+            IconButton(
+                onClick = { showDeleteDialog = true },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = "Delete")
+            }
         }
+
+    }
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete?") },
+            text = { Text("Sure?") },
+            confirmButton = {
+                            Button(onClick = {
+                                onDeleteClick(activity)
+                                showDeleteDialog = false
+                            }) {
+                                Text("Delete")
+                            }
+            },
+            dismissButton = {
+                Button(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
