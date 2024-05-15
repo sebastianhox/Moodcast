@@ -12,9 +12,11 @@ import no.uio.ifi.in2000.team31.ui.mood.Mood
 
 class AddActivityViewModel(application: Application) : AndroidViewModel(application) {
 
+
     private val appContainer = (application as MoodApplication).appContainer
     private val activityRepository: ActivityRepository = appContainer.activityRepository
     var activityUiState by mutableStateOf(ActivityUiState())
+        /* TODO MAKE IT A STATEFLOW*/
         private set
 
     fun updateUiState(activityDetails: ActivityDetails) {
@@ -24,14 +26,12 @@ class AddActivityViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun validateInput(uiState: ActivityDetails = activityUiState.activityDetails): Boolean {
         return with(uiState) {
-            name.isNotBlank() && info.isNotBlank() && suitableMoods.isNotEmpty()
+            name.isNotBlank() && info.isNotBlank() && suitableMoods.isNotEmpty() && suitableWeathers.isNotEmpty()
         }
     }
 
     suspend fun saveActivity() {
-        if (validateInput()) {
-            activityRepository.insertActivity(activityUiState.activityDetails.toActivity())
-        }
+        activityRepository.insertActivity(activityUiState.activityDetails.toActivity())
     }
 
 }

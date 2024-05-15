@@ -49,8 +49,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
@@ -82,8 +83,7 @@ import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.Clock
 import java.time.LocalDate
-import java.util.Stack
-import kotlin.math.min
+import java.util.logging.Handler
 import kotlin.math.roundToInt
 
 
@@ -115,7 +115,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val tempAndTimeList = weatherData.tempAndTimeData
 
     val scrollState = rememberScrollState()
-    val outerScroll = rememberScrollState()
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val backgroundColor =
@@ -138,7 +137,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
         refreshing = true
         delay(1000)
         Log.d("refreshstuff", "Getting location for ${locationState.lat} ${locationState.lon}")
-        homeViewModel.fetchWeatherData(locationState.lat, locationState.lon, CachePolicy(CachePolicy.Type.REFRESH))
+        homeViewModel.fetchWeatherData(
+            locationState.lat,
+            locationState.lon,
+            CachePolicy(CachePolicy.Type.REFRESH)
+        )
 
         //homeViewModel.fetchWeatherData()
         refreshing = false
@@ -147,282 +150,289 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val refreshState = rememberPullRefreshState(refreshing = refreshing, onRefresh = ::refresh)
 
 
-    Scaffold(
-        bottomBar = { BottomNavigationBar(navController) },
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarState
-            ) { snackbarData ->
-                CustomSnackBar(
-                    snackbarData.visuals.message,
-                    navController = navController
-                )
+    // Tegner bakgrunnsbildet først
+    Box (
+        modifier = Modifier.pullRefresh(refreshState)
+    ) {
+        Scaffold(
+            bottomBar = { BottomNavigationBar(navController) },
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarState
+                ) { snackbarData ->
+                    CustomSnackBar(
+                        snackbarData.visuals.message,
+                        navController = navController
+                    )
+                }
             }
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .pullRefresh(refreshState)
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            // Tegner bakgrunnsbildet først
+        ) { innerPadding ->
 
-            if (darkModeOn) {
-                Image(
-                    painter = painterResource(id = R.drawable.wallpaper_darkmode),
-                    contentDescription = "Background Image",
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.FillBounds
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.wallpaper_lightmode),
-                    contentDescription = "Background Image",
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.FillBounds
-                )
-            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                // Tegner bakgrunnsbildet først
 
-            Column {
+                if (darkModeOn) {
+                    Image(
+                        painter = painterResource(id = R.drawable.wallpaper_darkmode),
+                        contentDescription = "Background Image",
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.wallpaper_lightmode),
+                        contentDescription = "Background Image",
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.FillBounds
+                    )
+                }
 
-                SearchBar(
-                    query = searchUiState.currentQuery,
-                    onQueryChange = homeViewModel::onPlaceNameSearch,
-                    onSearch = {},
-                    active = searchUiState.isSearching,
-                    onActiveChange = { homeViewModel.onToogleSearch() },
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    trailingIcon = {
-                        if (searchUiState.isSearching) {
-                            IconButton(onClick = {
-                                if (searchUiState.currentQuery.isBlank()) {
-                                    homeViewModel.onToogleSearch()
-                                } else {
-                                    homeViewModel.onPlaceNameSearch("")
+                Column {
+
+                    SearchBar(
+                        query = searchUiState.currentQuery,
+                        onQueryChange = homeViewModel::onPlaceNameSearch,
+                        onSearch = {},
+                        active = searchUiState.isSearching,
+                        onActiveChange = { homeViewModel.onToogleSearch() },
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        trailingIcon = {
+                            if (searchUiState.isSearching) {
+                                IconButton(onClick = {
+                                    if (searchUiState.currentQuery.isBlank()) {
+                                        homeViewModel.onToogleSearch()
+                                    } else {
+                                        homeViewModel.onPlaceNameSearch("")
+                                    }
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Close,
+                                        contentDescription = "Close Icon",
+                                        modifier = Modifier.size(24.dp)
+                                    )
                                 }
-                            }) {
+                            } else {
                                 Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = "Close Icon",
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = "Search Icon",
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
-                        } else {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = "Search Icon",
-                                modifier = Modifier.size(24.dp)
-                            )
                         }
-                    }
-                ) {
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .fillMaxWidth()
-                            .clickable {
-                                if (locationOn) {
-                                    homeViewModel.fetchWeatherData(
-                                        locationState.lat,
-                                        locationState.lon,
-                                        CachePolicy(CachePolicy.Type.REFRESH)
-                                    )
-                                    homeViewModel.clearSelectedPlace()
-                                    homeViewModel.onToogleSearch()
-                                } else {
-                                    scope.launch {
-                                        snackbarState.showSnackbar("Posisjonsbasert værvarsel er slått av.\nDu kan slå den på igjen på instillinger")
-                                    }
-                                }
-                            },
                     ) {
-                        Row(
-                            modifier = Modifier.padding(
-                                start = 8.dp,
-                                top = 10.dp,
-                                end = 8.dp,
-                                bottom = 4.dp
-                            )
-                        ) {
 
-                            Icon(
-                                imageVector = Icons.Outlined.MyLocation,
-                                contentDescription = "my location",
-                                modifier = Modifier.padding(top = 2.dp)
-                            )
-                            Text(
-                                text = "Min posisjon",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                    }
-
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 8.dp)
-                    ) {
-                        items(searchUiState.places) { place ->
-                            Column(
-                                Modifier
-                                    .padding(top = 6.dp, bottom = 6.dp)
-                                    .fillMaxSize()
-                                    .clickable(
-                                        onClick = {
-                                            homeViewModel.onPlaceSelected(place)
-                                        }
-                                    ),
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Card(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .fillMaxSize(),
-                                    colors = CardDefaults.cardColors(Color.Transparent)
-                                ) {
-                                    Text(
-                                        text = "${place.placeName} ${place.adminName},  ${place.country}",
-                                        modifier = Modifier.padding(
-                                            start = 8.dp,
-                                            top = 4.dp,
-                                            end = 8.dp,
-                                            bottom = 4.dp
-                                        )
-                                    )
-                                }
-
-                            }
-                        }
-                    }
-                }
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                ) {
-
-                    // Temperature right now, in celcius
-                    Box(
-                        modifier = Modifier
-                            .width(360.dp)
-                            .align(Alignment.CenterHorizontally)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.TopEnd
-                            ) {
-                                Text(
-                                    text = searchUiState.selectedPlace?.placeName
-                                        ?: "Min posisjon",
-                                    fontSize = 30.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.align(Alignment.Center),
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                var dynamicTopPadding = 0
-                                var dynamicLPadding = 0
-                                var alertIconsCount = 0
-                                val alertIconsLimit = 3
-
-
-                                Box(
-                                    modifier = Modifier
-                                        .clickable {
-                                            if (weatherData.alertIconData.isNotEmpty()) {
-                                                navController.navigate(AppRoutes.ALERT) {
-                                                    // fikser backstack
-                                                    popUpTo(navController.graph.startDestinationId) {
-                                                        saveState = true
-                                                    }
-
-                                                    //unngår flere instanser
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                }
-                                            }
-                                        }
-                                ) {
-                                    weatherData.alertIconData.forEach { alertIconData ->
-                                        if (alertIconsCount < alertIconsLimit) {
-                                            Image(
-                                                painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
-                                                contentDescription = alertIconData.first + alertIconData.second,
-                                                modifier = Modifier
-                                                    .align(Alignment.Center)
-                                                    .padding(
-                                                        top = dynamicTopPadding.dp,
-                                                        end = dynamicLPadding.dp
-                                                    )
-                                            )
-                                        }
-
-                                        alertIconsCount += 1
-                                        dynamicTopPadding += 7
-                                        dynamicLPadding += 7
-                                    }
-                                }
-                            }
-                            Image(
-                                painter = painterResource(
-                                    id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode]
-                                        ?: R.drawable.svg
-                                ),
-                                contentDescription = "weather icon",
-                                modifier = Modifier.size(80.dp),
-                                alignment = Alignment.Center
-                            )
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = temperature?.let { "${it.roundToInt()}" + symbol }
-                                        ?: "Henter data...",
-                                    fontSize = 50.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.align(Alignment.Center)
-                                )
-                            }
-                        }
-                    }
-
-
-                    //Vær i dag - time for time
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(30.dp)
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .background(
-                                backgroundColor,
-                                shape = RoundedCornerShape(size = 15.dp)
-                            )
-                    ) {
                         Box(
                             modifier = Modifier
-                                .padding(
-                                    horizontal = 8.dp,
-                                    vertical = 4.dp
-                                )
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
+                                .clip(RoundedCornerShape(10.dp))
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (locationOn) {
+                                        homeViewModel.fetchWeatherData(
+                                            locationState.lat,
+                                            locationState.lon,
+                                            CachePolicy(CachePolicy.Type.REFRESH)
+                                        )
+                                        homeViewModel.clearSelectedPlace()
+                                        homeViewModel.onToogleSearch()
+                                    } else {
+                                        scope.launch {
+                                            snackbarState.showSnackbar("Posisjonsbasert værvarsel er slått av.\nDu kan slå den på igjen på instillinger")
+                                        }
+                                    }
+                                },
                         ) {
-                            Text(
-                                text = "Neste 24 timer",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
+                            Row(
+                                modifier = Modifier.padding(
+                                    start = 8.dp,
+                                    top = 10.dp,
+                                    end = 8.dp,
+                                    bottom = 4.dp
+                                )
+                            ) {
+
+                                Icon(
+                                    imageVector = Icons.Outlined.MyLocation,
+                                    contentDescription = "my location",
+                                    modifier = Modifier.padding(top = 2.dp)
+                                )
+                                Text(
+                                    text = "Min posisjon",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 20.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
                         }
+
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 8.dp)
+                        ) {
+                            items(searchUiState.places) { place ->
+                                Column(
+                                    Modifier
+                                        .padding(top = 6.dp, bottom = 6.dp)
+                                        .fillMaxSize()
+                                        .clickable(
+                                            onClick = {
+                                                homeViewModel.onToogleSearch()
+                                                homeViewModel.onPlaceSelected(place, CachePolicy(CachePolicy.Type.REFRESH))
+                                            }
+                                        ),
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Card(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .fillMaxSize(),
+                                        colors = CardDefaults.cardColors(Color.Transparent)
+                                    ) {
+                                        Text(
+                                            text = "${place.placeName} ${place.adminName},  ${place.country}",
+                                            modifier = Modifier.padding(
+                                                start = 8.dp,
+                                                top = 4.dp,
+                                                end = 8.dp,
+                                                bottom = 4.dp
+                                            )
+                                        )
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                    ) {
+
+                        // Temperature right now, in celcius
+                        Box(
+                            modifier = Modifier
+                                .width(360.dp)
+                                .align(Alignment.CenterHorizontally)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.TopEnd
+                                ) {
+
+                                    Text(
+                                        text = searchUiState.selectedPlace?.placeName
+                                            ?: "Min posisjon",
+                                        fontSize = 30.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.align(Alignment.Center),
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+
+                                    var dynamicTopPadding = 0
+                                    var dynamicLPadding = 0
+                                    var alertIconsCount = 0
+                                    val alertIconsLimit = 3
+
+
+                                    Box(
+                                        modifier = Modifier
+                                            .clickable {
+                                                if (weatherData.alertIconData.isNotEmpty()) {
+                                                    navController.navigate(AppRoutes.ALERT) {
+                                                        // fikser backstack
+                                                        popUpTo(navController.graph.startDestinationId) {
+                                                            saveState = true
+                                                        }
+
+                                                        //unngår flere instanser
+                                                        launchSingleTop = true
+                                                        restoreState = true
+                                                    }
+                                                }
+                                            }
+                                    ) {
+                                        weatherData.alertIconData.forEach { alertIconData ->
+                                            if (alertIconsCount < alertIconsLimit) {
+                                                Image(
+                                                    painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
+                                                    contentDescription = alertIconData.first + alertIconData.second,
+                                                    modifier = Modifier
+                                                        .align(Alignment.Center)
+                                                        .padding(
+                                                            top = dynamicTopPadding.dp,
+                                                            end = dynamicLPadding.dp
+                                                        )
+                                                )
+                                            }
+
+                                            alertIconsCount += 1
+                                            dynamicTopPadding += 7
+                                            dynamicLPadding += 7
+                                        }
+                                    }
+                                }
+                                Image(
+                                    painter = painterResource(
+                                        id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode]
+                                            ?: R.drawable.svg
+                                    ),
+                                    contentDescription = "weather icon",
+                                    modifier = Modifier.size(80.dp),
+                                    alignment = Alignment.Center
+                                )
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = temperature?.let { "${it.roundToInt()}" + symbol }
+                                            ?: "Henter data...",
+                                        fontSize = 50.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                            }
+                        }
+
+
+                        //Vær i dag - time for time
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(30.dp)
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .background(
+                                    backgroundColor,
+                                    shape = RoundedCornerShape(size = 15.dp)
+                                )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(
+                                        horizontal = 8.dp,
+                                        vertical = 4.dp
+                                    )
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Neste 24 timer",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
 
                         LazyRow(
                             modifier = Modifier
@@ -460,19 +470,19 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 shape = RoundedCornerShape(size = 15.dp)
                             )
 
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
                         ) {
-                            Text(
-                                text = "Langtidsvarsel",
-                                fontSize = 20.sp,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = "Langtidsvarsel",
+                                    fontSize = 20.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
 
-                            )
+                                )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
 
                             // Check if long-term forecast data is available
                             if (weatherData.longTermForecast != null) {
@@ -501,42 +511,56 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                                 maxTemp
                                             )
 
-                                            // Adds a horizontal divider between rows
-                                            if (index < weatherData.longTermForecast!!.size - 1) {
-                                                Spacer(modifier = Modifier.height(5.dp))
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .height(1.dp)
-                                                        .background(Color.White.copy(alpha = 0.5f))
+                                                // Adds a horizontal divider between rows
+                                                if (index < weatherData.longTermForecast!!.size - 1) {
+                                                    Spacer(modifier = Modifier.height(5.dp))
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .height(1.dp)
+                                                            .background(
+                                                                Color.White.copy(
+                                                                    alpha = 0.5f
+                                                                )
+                                                            )
 
-                                                )
-                                                Spacer(modifier = Modifier.height(8.dp))
+                                                    )
+                                                    Spacer(modifier = Modifier.height(8.dp))
+                                                }
                                             }
-                                        }
 
+                                    }
+                                } else {
+                                    // Display a placeholder if forecast data is not available
+                                    Text(
+                                        text = "No forecast data available",
+                                        fontSize = 16.sp
+                                    )
                                 }
-                            } else {
-                                // Display a placeholder if forecast data is not available
-                                Text(
-                                    text = "No forecast data available",
-                                    fontSize = 16.sp
-                                )
                             }
                         }
-                    }
 
+                    }
                 }
             }
-            PullRefreshIndicator(refreshing, refreshState, Modifier.align(Alignment.TopCenter))
+
         }
+        PullRefreshIndicator(
+            refreshing,
+            refreshState,
+            Modifier.align(Alignment.TopCenter)
+        )
     }
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LongTermForecastRow(day: String, symbolCode: String?, minTemp: Double, maxTemp: Double) {
+fun LongTermForecastRow(
+    day: String,
+    symbolCode: String?,
+    minTemp: Double,
+    maxTemp: Double,
+) {
     val locale = java.util.Locale("no", "NO") // Norwegian locale
     val currentDate = LocalDate.now(Clock.systemDefaultZone())
     val localDate = LocalDate.parse(day)
@@ -702,5 +726,4 @@ fun CustomSnackBar(
 
     }
 }
-
 
