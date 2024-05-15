@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -26,10 +27,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Water
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -56,8 +60,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -84,13 +88,26 @@ import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.Clock
 import java.time.LocalDate
-import java.util.Stack
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 
 // har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
-
+fun getWindDirectionIcon(degrees: Int?): Int {
+    if (degrees != null) {
+        return when ((degrees + 22.5) % 360) {
+            in 0.0..45.0 -> R.drawable.north_24px
+            in 45.0..90.0 -> R.drawable.north_east_24px
+            in 90.0..135.0 -> R.drawable.east_24px
+            in 135.0..180.0 -> R.drawable.south_east_24px
+            in 180.0..225.0 -> R.drawable.south_24px
+            in 225.0..270.0 -> R.drawable.south_west_24px
+            in 270.0..315.0 -> R.drawable.west_24px
+            else -> R.drawable.north_west_24px
+        }
+    } else {
+        return R.drawable.north_east_24px // Bare som en default for at det skal se bra ut
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -128,8 +145,12 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val timeValue = weatherData.weatherData?.instant?.get(0)?.time
     val windSpeed = weatherData.weatherData?.instant?.get(0)?.windSpeed
     val windDirection = weatherData.weatherData?.instant?.get(0)?.windFromDirection
-    val rain = weatherData.weatherData?.instant?.get(0)?.precipitationAmount
+    var rain = weatherData.weatherData?.instant?.get(0)?.precipitationAmount
+    val arrowIcon = getWindDirectionIcon(windDirection?.roundToInt())
 
+    if (rain == null) {
+        rain = 0.0
+    }
 
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
@@ -313,21 +334,23 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(scrollState)
+                        .weight(1f)
                 ) {
 
                     // Temperature right now, in celcius
                     Box(
                         modifier = Modifier
-                            .width(360.dp)
                             .align(Alignment.CenterHorizontally)
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier
+                                .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
 
                             Box(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth(),
                                 contentAlignment = Alignment.TopEnd
                             ) {
                                 Text(
@@ -391,11 +414,14 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 modifier = Modifier.size(80.dp),
                                 alignment = Alignment.Center
                             )
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                Row(
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                Column(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
                                         text = temperature?.let { "${it.roundToInt()}" + symbol }
@@ -403,19 +429,35 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                         fontSize = 50.sp,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
-                                            .weight(1f)
                                             .wrapContentWidth(Alignment.CenterHorizontally)
                                         //modifier = Modifier.align(Alignment.Center)
                                     )
-                                    Column(
-                                        modifier = Modifier.weight(1f),
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.End
+                                    Row(
+                                        //modifier = Modifier.weight(1f),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(IntrinsicSize.Min)
+                                            .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(text = "Vind: ${windSpeed.toString()} m/s")
-                                        Text(text = "Rething ${windDirection.toString()}")
-                                        Text(text = "Regn: ${rain.toString()}mm")
-                                        Text(text = "Luftfukt: ${humidity.toString()}%")
+                                        Column() {
+                                            Text(text = "${windSpeed.toString()} m/s")
+                                            Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
+                                        }
+                                        Column() {
+                                            Text(text = windDirection.toString())
+                                            //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
+                                            Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = ColorFilter.tint(Color.Black))
+                                        }
+                                        Column() {
+                                            Text(text = "${rain.toString()} mm.")
+                                            Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Precipation")
+                                        }
+                                        Column() {
+                                            Text(text = "${humidity.toString()} %")
+                                            Icon(imageVector = Icons.Filled.Water, contentDescription = "Humidity")
+                                        }
                                     }
                                 }
                             }
