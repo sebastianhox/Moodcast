@@ -52,7 +52,6 @@ import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
-import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import kotlin.math.roundToInt
 
@@ -178,7 +177,6 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.SAD)
                 MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSED)
                 MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.ANGRY)
-
             }
         }
     }

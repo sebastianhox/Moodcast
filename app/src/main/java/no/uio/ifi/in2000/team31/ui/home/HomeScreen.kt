@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -25,6 +26,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -120,8 +122,15 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val scope = rememberCoroutineScope()
     val backgroundColor =
         if (darkModeOn) Color.DarkGray.copy(alpha = 0.85f) else Color.LightGray.copy(alpha = 0.85f)
+
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     val humidity = weatherData.weatherData?.instant?.get(0)?.relativeHumidity
+    val timeValue = weatherData.weatherData?.instant?.get(0)?.time
+    val windSpeed = weatherData.weatherData?.instant?.get(0)?.windSpeed
+    val windDirection = weatherData.weatherData?.instant?.get(0)?.windFromDirection
+    val rain = weatherData.weatherData?.instant?.get(0)?.precipitationAmount
+
+
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
         Log.d("temp", "Temp is $temperature before convertion")
@@ -383,13 +392,32 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 alignment = Alignment.Center
                             )
                             Box(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = temperature?.let { "${it.roundToInt()}" + symbol }
-                                        ?: "Henter data...",
-                                    fontSize = 50.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.align(Alignment.Center)
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = temperature?.let { "${it.roundToInt()}" + symbol }
+                                            ?: "Henter data...",
+                                        fontSize = 50.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .wrapContentWidth(Alignment.CenterHorizontally)
+                                        //modifier = Modifier.align(Alignment.Center)
+                                    )
+                                    Column(
+                                        modifier = Modifier.weight(1f),
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = Alignment.End
+                                    ) {
+                                        Text(text = "Vind: ${windSpeed.toString()} m/s")
+                                        Text(text = "Rething ${windDirection.toString()}")
+                                        Text(text = "Regn: ${rain.toString()}mm")
+                                        Text(text = "Luftfukt: ${humidity.toString()}%")
+                                    }
+                                }
                             }
                         }
                     }
@@ -403,7 +431,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             .fillMaxWidth()
                             .height(200.dp)
                             .background(
-                                backgroundColor,
+                                backgroundColor.copy(alpha = 0.5f),
                                 shape = RoundedCornerShape(size = 15.dp)
                             )
                     ) {
@@ -414,13 +442,14 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                     vertical = 4.dp
                                 )
                                 .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
+                            contentAlignment = Alignment.Center,
+
                         ) {
                             Text(
                                 text = "Neste 24 timer",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
                             )
                         }
 
@@ -429,7 +458,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 .padding(15.dp)
                                 .fillMaxHeight(),
                             horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             items(tempAndTimeList) { hourlyData ->
                                 val hour = hourlyData.first
@@ -451,12 +480,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .shadow(50.dp)
                             .padding(horizontal = 30.dp)
                             .fillMaxWidth()
                             .height(300.dp)
                             .background(
-                                backgroundColor,
+                                backgroundColor.copy(alpha = 0.5f),
                                 shape = RoundedCornerShape(size = 15.dp)
                             )
 

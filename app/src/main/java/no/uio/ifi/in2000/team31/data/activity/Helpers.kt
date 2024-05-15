@@ -29,6 +29,30 @@ fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
         return null
     }
 }
+
+fun addActivityToDb(
+    context: Context,
+    viewModel: ActivityScreenViewModel,
+    name: String,
+    info: String,
+    imagePath: String,
+    suitableMoods: List<Mood>,
+    suitableWeathers: List<WeatherStatus>
+) {
+    val imageString = copyImageFromAssetsToStorage(context, imagePath)
+    if (imageString != null) {
+        val activityDetails = ActivityDetails(
+            name = name,
+            info = info,
+            imagePath = imageString,
+            suitableMoods = suitableMoods,
+            suitableWeathers = suitableWeathers
+        )
+        val activity = activityDetails.toActivity()
+        viewModel.preloadActivity(activity)
+    }
+}
+
 fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
     var imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
     if (imagePath != null) {
@@ -58,4 +82,24 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
     } else {
         Log.e("populus", "Failed to copy image for preloading")
     }
+
+    addActivityToDb(
+        context,
+        viewModel,
+        "Lese en bok",
+        "Hvor som helst, når som helst",
+        "reading.jpeg",
+        suitableMoods = listOf(Mood.HAPPY, Mood.SAD, Mood.CALM, Mood.STRESSED),
+        suitableWeathers = listOf(WeatherStatus.SUNNY, WeatherStatus.CLOUDY, WeatherStatus.RAINY, WeatherStatus.SNOWY)
+    )
+
+    addActivityToDb(
+        context,
+        viewModel,
+        "Drikk en kopp te",
+        "Det er godt vettu",
+        "drinking-tea.jpg",
+        suitableMoods = listOf(Mood.HAPPY, Mood.SAD, Mood.CALM, Mood.STRESSED, Mood.ENERGETIC, Mood.ANGRY),
+        suitableWeathers = listOf(WeatherStatus.SUNNY, WeatherStatus.CLOUDY, WeatherStatus.RAINY, WeatherStatus.SNOWY)
+    )
 }
