@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
@@ -52,8 +54,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,6 +70,7 @@ import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
+import no.uio.ifi.in2000.team31.data.activity.populateDatabase
 import no.uio.ifi.in2000.team31.ui.mood.Mood
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import java.io.File
@@ -78,54 +83,6 @@ enum class WeatherStatus {
     CLOUDY
 }
 
-fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
-    Log.d("populus", "imageName: $imageName")
-    val destinationFile = File(context.filesDir, imageName)
-
-    try {
-        context.assets.open(imageName).use { input ->
-            destinationFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-        Log.d("populus", "destination: $destinationFile")
-        Log.d("populus", "abs path: ${destinationFile.absolutePath}")
-        return destinationFile.absolutePath // Return the absolute path
-    } catch (e: IOException) {
-        Log.e("populus", "Error saving image: ${e.message}")
-        return null
-    }
-}
-fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
-    var imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
-    if (imagePath != null) {
-        val activityDetails = ActivityDetails(
-            name = "Løpetur",
-            info = "Løp en tur, godt for kropp og sinn!",
-            imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.ENERGETIC, Mood.HAPPY),
-            suitableWeathers = listOf(WeatherStatus.CLOUDY, WeatherStatus.SUNNY)
-        )
-        val activity = activityDetails.toActivity()
-        viewModel.preloadActivity(activity)
-    } else {
-        Log.e("populus", "Failed to copy image for preloading")
-    }
-    imagePath = copyImageFromAssetsToStorage(context, "cycling.jpg")
-    if (imagePath != null) {
-        val activityDetails = ActivityDetails(
-            name = "Sykling",
-            info = "Ta en sykkeltur utendørs!",
-            imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.HAPPY, Mood.ENERGETIC),
-            suitableWeathers = listOf(WeatherStatus.CLOUDY, WeatherStatus.SUNNY)
-        )
-        val activity = activityDetails.toActivity()
-        viewModel.preloadActivity(activity)
-    } else {
-        Log.e("populus", "Failed to copy image for preloading")
-    }
-}
 @Composable
 fun ActivityScreen(
     navigateToAddActivity: () -> Unit,
@@ -334,7 +291,12 @@ fun ActivityCard(
                     contentScale = ContentScale.Crop
                 )
                 Text(activity.name, style = MaterialTheme.typography.titleMedium)
-                Text(activity.info, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    activity.info,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
             IconButton(
                 onClick = { showDeleteDialog = true },
@@ -385,8 +347,8 @@ fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepositor
                 )},
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 1.dp)
-                    .shadow(3.dp, RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp)),
+                    .padding(horizontal = 4.dp)
+                    .shadow(4.dp, RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp)),
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -414,7 +376,9 @@ fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepositor
         } else {
             // Display activity details
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -424,8 +388,16 @@ fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepositor
                     modifier = Modifier
                         .fillMaxWidth()
                 )
-                Text(text = "Activity Name: ${activity!!.name}")
-                Text(text = "Activity Name: ${activity!!.info}")
+                Text(
+                    text = activity!!.name,
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    text = activity!!.info,
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
 

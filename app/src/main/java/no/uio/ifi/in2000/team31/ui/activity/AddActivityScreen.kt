@@ -11,6 +11,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -159,6 +161,7 @@ fun AddActivityScreen(
 
     }
 }
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SelectWeathers(
     selectedWeathers: List<WeatherStatus>,
@@ -172,7 +175,7 @@ fun SelectWeathers(
 
         Spacer(modifier = Modifier.size(10.dp))
 
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth()
         ) {
             WeatherStatus.entries.forEach { weather ->
@@ -202,6 +205,7 @@ fun SelectWeathers(
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SelectMoods(
     selectedMoods: List<Mood>,
@@ -215,8 +219,8 @@ fun SelectMoods(
 
         Spacer(modifier = Modifier.size(10.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth()
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Mood.entries.forEach { mood ->
                 Log.d("chip", "loading: $mood")
