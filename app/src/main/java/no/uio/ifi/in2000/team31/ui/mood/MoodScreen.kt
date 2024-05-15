@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -220,7 +221,8 @@ fun CustomSnackBar(
                 Text(message)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    modifier = Modifier.clickable {
+                    modifier = Modifier
+                        .clickable {
                         navController.navigate(AppRoutes.ACTIVITY) {
                                     if (navController.currentDestination?.route != AppRoutes.ACTIVITY) {
                                         navController.navigate(AppRoutes.ACTIVITY) {
@@ -236,7 +238,8 @@ fun CustomSnackBar(
                                     }
                                 }
                         },
-                    text = "Til aktiviteter"
+                    text = "Til aktiviteter",
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
 

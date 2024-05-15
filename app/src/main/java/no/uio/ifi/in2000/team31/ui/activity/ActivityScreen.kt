@@ -119,7 +119,9 @@ fun ActivityScreen(
 
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
     val sharedViewModel = appContainer.sharedViewModel
+    val settingsViewModel = appContainer.settingsViewModel
 
+    val isDarkMode by settingsViewModel.isDarkTheme.collectAsState()
     val userMood by sharedViewModel.moodUIState.collectAsState()
     val currentWeatherStatus by sharedViewModel.weatherUIState.collectAsState()
 
@@ -135,8 +137,14 @@ fun ActivityScreen(
         },
 
         floatingActionButton = {
-            FloatingActionButton(onClick = navigateToAddActivity) {
-                Icon(Icons.Filled.Add, "")
+            val color = if (isDarkMode) Color(0xFF002591) else Color(0xFFAAD3FF)
+            FloatingActionButton(
+                onClick = navigateToAddActivity,
+                backgroundColor = color
+                ) {
+                Icon(
+                    Icons.Filled.Add,
+                    "add activity")
             }
         }
     ) { innerPadding ->

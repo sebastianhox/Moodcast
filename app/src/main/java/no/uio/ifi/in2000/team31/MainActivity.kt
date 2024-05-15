@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team31
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
@@ -33,6 +34,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.delay
 import no.uio.ifi.in2000.team31.cache.CachePolicy
+import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
 import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
@@ -92,6 +94,7 @@ class MainActivity : ComponentActivity() {
 //        Log.d("location", "onResume")
 //
 //    }
+    @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.O)
     fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
         Log.d("location", "Start location permission request / updates")
@@ -103,6 +106,7 @@ class MainActivity : ComponentActivity() {
                 fusedLocationClient.removeLocationUpdates(this)
                 if (locationResult.locations.isNotEmpty()) {
                     val newLocation = locationResult.locations[0]
+                    homeViewModel.clearSelectedPlace()
                     homeViewModel.fetchWeatherData(
                         newLocation.latitude,
                         newLocation.longitude,
@@ -120,18 +124,7 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        if (
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-            &&
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (checkPermissions()) {
             Log.d("location", "Requesting permissions")
             requestPermissionLauncher.launch(permissions)
         } else {
@@ -149,6 +142,7 @@ class MainActivity : ComponentActivity() {
                         "location",
                         "Fetched location: ${location.latitude}, ${location.longitude}, $cachePolicy"
                     )
+                    homeViewModel.clearSelectedPlace()
                     homeViewModel.fetchWeatherData(
                         location.latitude,
                         location.longitude,
@@ -180,14 +174,33 @@ class MainActivity : ComponentActivity() {
                 else -> {
                     Log.d("location", "Location Permission denied")
                     settingsViewModel.onLocationSwitchChange(false)
-                    homeViewModel.fetchWeatherData(
-                        59.913868,
-                        10.752245,
+                    homeViewModel.onPlaceSelected(
+                        GeonameData(
+                            placeName = "Oslo",
+                            country = null,
+                            adminName = null,
+                            lat = 59.913868,
+                            lon = 10.752245
+                        ),
                         CachePolicy(CachePolicy.Type.NEVER)
                     )
                 }
             }
         }
+    fun checkPermissions(): Boolean {
+        return (
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+            &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+
+            ) != PackageManager.PERMISSION_GRANTED
+        )
+    }
 }
 
 @Composable

@@ -177,11 +177,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun onPlaceSelected(place: GeonameData) {
-        onToogleSearch()
+    fun onPlaceSelected(place: GeonameData, cachePolicy: CachePolicy) {
         viewModelScope.launch {
             _selectedPlace.value = place
         }
-        fetchWeatherData(_selectedPlace.value?.lat!!, _selectedPlace.value?.lon!!, cachePolicy = CachePolicy(CachePolicy.Type.REFRESH))
+        fetchWeatherData(_selectedPlace.value?.lat!!, _selectedPlace.value?.lon!!, cachePolicy)
     }
 }
