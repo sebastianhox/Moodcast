@@ -121,10 +121,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val backgroundColor =
         if (darkModeOn) Color.DarkGray.copy(alpha = 0.85f) else Color.LightGray.copy(alpha = 0.85f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
+    val humidity = weatherData.weatherData?.instant?.get(0)?.relativeHumidity
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
         Log.d("temp", "Temp is $temperature before convertion")
-        temperature = celsiusToFahrenheit(temperature.toInt()).toDouble()
+        temperature = celsiusToFahrenheit(temperature.toInt())?.toDouble()
         Log.d("temp", "Temp is $temperature after convertion")
         symbol = "°F"
     }
@@ -431,10 +432,17 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             items(tempAndTimeList) { hourlyData ->
+                                val hour = hourlyData.first
+                                var temp = hourlyData.second
+                                val symbolCode = hourlyData.third
+
+                                if (isFahrenheit) {
+                                    temp = celsiusToFahrenheit(temp?.roundToInt())?.toDouble()
+                                }
                                 TimeAndTempCards(
-                                    hourlyData.first,
-                                    hourlyData.second,
-                                    hourlyData.third
+                                    hour,
+                                    temp,
+                                    symbolCode
                                 )
                             }
                         }
@@ -478,11 +486,19 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                         .forEachIndexed { index, (day, forecastData) ->
                                             // Displays the forecast row
                                             Log.d("test", forecastData.first.toString())
+                                            //day: String, symbolCode: String?, minTemp: Double, maxTemp: Double
+                                            val symbolCode = forecastData.first
+                                            var minTemp = forecastData.second
+                                            var maxTemp = forecastData.third
+                                            if (isFahrenheit) {
+                                                minTemp = celsiusToFahrenheit(minTemp.roundToInt())?.toDouble()!!
+                                                maxTemp = celsiusToFahrenheit(maxTemp.roundToInt())?.toDouble()!!
+                                            }
                                             LongTermForecastRow(
                                                 day,
-                                                forecastData.first,
-                                                forecastData.second,
-                                                forecastData.third
+                                                symbolCode,
+                                                minTemp,
+                                                maxTemp
                                             )
 
                                             // Adds a horizontal divider between rows
