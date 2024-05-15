@@ -53,13 +53,17 @@ import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
+import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
+import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import kotlin.math.roundToInt
 
 enum class Mood {
     HAPPY,
     SAD,
     ENERGETIC,
-    CALM
+    CALM,
+    STRESSED,
+    ANGRY
 }
 
 @Composable
@@ -71,9 +75,17 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
 
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
     val sharedViewModel = appContainer.sharedViewModel
+    val settingsViewModel = appContainer.settingsViewModel
 
     moodViewModel.manuallyUpdate()
+    var temperature = weatherData.temperature
+    var symbol = "°C"
 
+    val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
+    if (isFahrenheit) {
+        temperature = celsiusToFahrenheit(temperature?.roundToInt())?.toDouble()
+        symbol = "°F"
+    }
 
 
     Scaffold(
@@ -103,7 +115,7 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxWidth()
-                .padding(top = 42.dp, start = 10.dp, end = 10.dp, bottom = 0.dp)
+                .padding(top = 16.dp, start = 10.dp, end = 10.dp, bottom = 0.dp)
                 .verticalScroll(scrollState)
         ) {
             Text(
@@ -120,7 +132,7 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
-                    .padding(5.dp)
+                    .padding(4.dp)
 
             ) {
                 Row(
@@ -131,13 +143,13 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                     Image(
                         painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable.svg), // placeholder icon, hard coded
                         contentDescription = "Værikon",
-                        modifier = Modifier.size(44.dp),
+                        modifier = Modifier.size(42.dp),
 
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${weatherData.temperature?.roundToInt()}°C ",
-                        fontSize = 25.sp,
+                        text = "${temperature?.roundToInt()}" + symbol,
+                        fontSize = 24.sp,
                     )
                 }
             }
@@ -145,13 +157,13 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(26.dp),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
 
             ) {
                 Text(
-                    text = "Hvordan føler du deg i dag?",
+                    text = "Hvordan føler du deg?",
                     fontSize = 24.sp,
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -165,7 +177,8 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGETIC)
                 MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.CALM)
                 MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.SAD)
-
+                MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSED)
+                MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.ANGRY)
 
             }
         }
@@ -185,10 +198,10 @@ fun MoodButton(
     Button(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
-            .padding(horizontal = 62.dp, vertical = 20.dp)
+            .height(84.dp)
+            .padding(horizontal = 32.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(20.dp))
-            .shadow(5.dp, RoundedCornerShape(55.dp)),
+            .shadow(5.dp, RoundedCornerShape(56.dp)),
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
         onClick = {
             sharedViewModel.setSelectedMood(mood)

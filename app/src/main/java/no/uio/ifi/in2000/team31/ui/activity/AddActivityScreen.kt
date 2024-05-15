@@ -1,7 +1,9 @@
 package no.uio.ifi.in2000.team31.ui.activity
 
+import android.Manifest
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,6 +11,8 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +53,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.ui.mood.Mood
@@ -154,6 +161,7 @@ fun AddActivityScreen(
 
     }
 }
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SelectWeathers(
     selectedWeathers: List<WeatherStatus>,
@@ -167,7 +175,7 @@ fun SelectWeathers(
 
         Spacer(modifier = Modifier.size(10.dp))
 
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth()
         ) {
             WeatherStatus.entries.forEach { weather ->
@@ -197,6 +205,7 @@ fun SelectWeathers(
 }
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SelectMoods(
     selectedMoods: List<Mood>,
@@ -210,8 +219,8 @@ fun SelectMoods(
 
         Spacer(modifier = Modifier.size(10.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth()
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Mood.entries.forEach { mood ->
                 Log.d("chip", "loading: $mood")
@@ -278,6 +287,7 @@ fun ActivityInputForm(
         )
     }
 }
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SelectPhotoFromGallery(
     activityDetails: ActivityDetails,
@@ -289,7 +299,14 @@ fun SelectPhotoFromGallery(
     var imageFileName by remember { mutableStateOf<String?>(null) }
 //    var showPermissionsRationale by remember { mutableStateOf(false) }
 //    val storagePermission = rememberPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE)
-
+    val permissionToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_IMAGES
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+    
+    val permissionState = rememberPermissionState(permission = permissionToRequest)
+    
     val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { imageUri ->
             val newFilePath = copyImageToStorage(context, imageUri)
@@ -304,13 +321,22 @@ fun SelectPhotoFromGallery(
     Column (
         modifier = modifier
     ) {
-        Button(onClick = {
-            val request = PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            pickMedia.launch(request)
-        }) {
-            Text("Pick an Image")
+        if (permissionState.status.isGranted) {
+            Button(onClick = {
+                val request = PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                pickMedia.launch(request)
+            }) {
+                Text("Pick an Image")
+            }
+            Text(text = imageFileName ?: "")   
+        } else {
+            Button(onClick = { 
+                permissionState.launchPermissionRequest()
+            }) {
+                Text("Request permission")
+            }
+            Text("No access")
         }
-        Text(text = imageFileName ?: "")
     }
 }
 fun getFilenameFromUri(context: Context, uri: Uri): String {

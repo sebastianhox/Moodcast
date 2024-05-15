@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(homeViewModel = homeViewModel)
+                    AppNavigation(homeViewModel = homeViewModel, activityRepository = appContainer.activityRepository)
 
                 }
 

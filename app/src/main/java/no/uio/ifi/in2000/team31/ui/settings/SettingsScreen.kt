@@ -56,7 +56,10 @@ import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
-fun celsiusToFahrenheit(degreeInCelsius: Int): Int {
+fun celsiusToFahrenheit(degreeInCelsius: Int?): Int? {
+    if (degreeInCelsius == null) {
+        return null
+    }
     return ((9.0 / 5) * degreeInCelsius + 32).toInt()
 }
 
