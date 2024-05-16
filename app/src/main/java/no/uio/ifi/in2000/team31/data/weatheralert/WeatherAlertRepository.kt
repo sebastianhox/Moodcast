@@ -28,7 +28,7 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
 
     suspend fun getAlertIcons(lat: Double?, lon: Double?, cachePolicy: CachePolicy): List<Pair<String?,String?>> {
         val point = if (lat == null || lon == null) {
-            point(37.4220936, -122.083922)
+            point(59.914099, 10.750554)
         } else {
             point(lon, lat)
         }
