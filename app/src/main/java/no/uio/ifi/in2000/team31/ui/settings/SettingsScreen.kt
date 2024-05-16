@@ -74,7 +74,6 @@ fun SettingsScreen(navController: NavController) {
     val locationOn by settingsViewModel.locationOn.collectAsState()
 
     val snackbarState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = settingsViewModel) {
         val darkThemeOn = settingsViewModel.isDarkTheme.first()

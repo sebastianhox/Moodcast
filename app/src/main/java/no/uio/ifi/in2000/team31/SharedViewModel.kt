@@ -1,6 +1,8 @@
 package no.uio.ifi.in2000.team31
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +37,11 @@ data class LocationUIState(
     val lat: Double? = null ,
     val lon: Double? = null
 )
-class SharedViewModel : ViewModel() {
+class SharedViewModel(application: Application) : AndroidViewModel(application) {
+    private val appContainer = (application as MoodApplication).appContainer
+    private val connecivityObserver = appContainer.connectivityObserver
+
+    val connectionStatus = connecivityObserver.observe()
     private val _moodUIState = MutableStateFlow(MoodUIState())
     val moodUIState: StateFlow<MoodUIState> = _moodUIState.asStateFlow()
 
@@ -44,6 +50,13 @@ class SharedViewModel : ViewModel() {
 
     private val _locationUIState = MutableStateFlow(LocationUIState())
     val locationUIState: StateFlow<LocationUIState> = _locationUIState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            connectionStatus.collect {connectionStatus
+            }
+        }
+    }
     fun setSelectedMood(mood: Mood?) {
         viewModelScope.launch {
             _moodUIState.update { currentState ->

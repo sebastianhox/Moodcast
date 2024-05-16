@@ -24,19 +24,23 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Snackbar
@@ -74,6 +78,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.R
+import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.getWeatherStatus
 import no.uio.ifi.in2000.team31.model.AlertIconModel
@@ -99,6 +104,9 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val sharedViewModel = appContainer.sharedViewModel
     val settingsViewModel = appContainer.settingsViewModel
 
+    val connectionState by sharedViewModel.connectionStatus.collectAsState(
+        initial = Status.Unavailable
+    )
     val weatherData by homeViewModel.weatherDataUIState.collectAsState()
     val searchUiState by homeViewModel.searchUiState.collectAsState()
     val locationState by sharedViewModel.locationUIState.collectAsState()
@@ -118,7 +126,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val backgroundColor =
-        if (darkModeOn) Color.DarkGray.copy(alpha = 0.85f) else Color.LightGray.copy(alpha = 0.85f)
+        if (darkModeOn) Color(0xFF002571).copy(alpha = 0.50f) else Color(0xFFAAD3FF).copy(alpha = 0.45f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     val humidity = weatherData.weatherData?.instant?.get(0)?.relativeHumidity
     var symbol = "°C"
@@ -137,11 +145,19 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
         refreshing = true
         delay(1000)
         Log.d("refreshstuff", "Getting location for ${locationState.lat} ${locationState.lon}")
-        homeViewModel.fetchWeatherData(
-            locationState.lat,
-            locationState.lon,
-            CachePolicy(CachePolicy.Type.REFRESH)
-        )
+        if (searchUiState.selectedPlace != null) {
+            homeViewModel.fetchWeatherData(
+                searchUiState.selectedPlace!!.lat,
+                searchUiState.selectedPlace!!.lon,
+                CachePolicy(CachePolicy.Type.REFRESH)
+            )
+        } else {
+            homeViewModel.fetchWeatherData(
+                locationState.lat,
+                locationState.lon,
+                CachePolicy(CachePolicy.Type.REFRESH)
+            )
+        }
 
         //homeViewModel.fetchWeatherData()
         refreshing = false
@@ -160,10 +176,40 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                 SnackbarHost(
                     hostState = snackbarState
                 ) { snackbarData ->
-                    CustomSnackBar(
-                        snackbarData.visuals.message,
-                        navController = navController
-                    )
+                    if (searchUiState.isSearching) {
+                        CustomSnackBar(
+                            snackbarData.visuals.message,
+                            directionMessage = "Til instillinger",
+                            modifier = Modifier.padding(bottom = 200.dp),
+                            onClick = {
+                                homeViewModel.onToogleSearch()
+                                navController.navigate(AppRoutes.SETTINGS) {
+                                    if (navController.currentDestination?.route != AppRoutes.SETTINGS) {
+                                        navController.navigate(AppRoutes.SETTINGS) {
+                                            // fikser backstack
+                                            popUpTo(navController.graph.startDestinationId) {
+                                                saveState = true
+                                            }
+                                            //unngår flere instanser
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    if (connectionState != Status.Available) {
+
+                        CustomSnackBar(
+                            message = "Mangler internett tilgang",
+                            directionMessage = "Prøv igjen",
+                            modifier = Modifier,
+                            onClick = {
+                                refresh()
+                            }
+                        )
+                    }
                 }
             }
         ) { innerPadding ->
@@ -282,7 +328,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                         .clickable(
                                             onClick = {
                                                 homeViewModel.onToogleSearch()
-                                                homeViewModel.onPlaceSelected(place, CachePolicy(CachePolicy.Type.REFRESH))
+                                                homeViewModel.onPlaceSelected(
+                                                    place,
+                                                    CachePolicy(CachePolicy.Type.REFRESH)
+                                                )
                                             }
                                         ),
                                     verticalArrangement = Arrangement.Center
@@ -314,93 +363,152 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             .verticalScroll(scrollState)
                     ) {
 
-                        // Temperature right now, in celcius
+
+                            // Temperature right now, in celcius
                         Box(
                             modifier = Modifier
                                 .width(360.dp)
                                 .align(Alignment.CenterHorizontally)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.TopEnd
+                            if (connectionState == Status.Available) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
 
-                                    Text(
-                                        text = searchUiState.selectedPlace?.placeName
-                                            ?: "Min posisjon",
-                                        fontSize = 30.sp,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.align(Alignment.Center),
-                                        fontWeight = FontWeight.Bold
-                                    )
-
-
-                                    var dynamicTopPadding = 0
-                                    var dynamicLPadding = 0
-                                    var alertIconsCount = 0
-                                    val alertIconsLimit = 3
-
-
                                     Box(
-                                        modifier = Modifier
-                                            .clickable {
-                                                if (weatherData.alertIconData.isNotEmpty()) {
-                                                    navController.navigate(AppRoutes.ALERT) {
-                                                        // fikser backstack
-                                                        popUpTo(navController.graph.startDestinationId) {
-                                                            saveState = true
-                                                        }
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.TopEnd
+                                    ) {
+                                        Text(
+                                            text = searchUiState.selectedPlace?.placeName
+                                                ?: "Min posisjon",
+                                            fontSize = 30.sp,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.align(Alignment.Center),
+                                            fontWeight = FontWeight.Bold
+                                        )
 
-                                                        //unngår flere instanser
-                                                        launchSingleTop = true
-                                                        restoreState = true
+
+                                        var dynamicTopPadding = 0
+                                        var dynamicLPadding = 0
+                                        var alertIconsCount = 0
+                                        val alertIconsLimit = 3
+
+
+                                        Box(
+                                            modifier = Modifier
+                                                .clickable {
+                                                    if (weatherData.alertIconData.isNotEmpty()) {
+                                                        navController.navigate(AppRoutes.ALERT) {
+                                                            // fikser backstack
+                                                            popUpTo(navController.graph.startDestinationId) {
+                                                                saveState = true
+                                                            }
+
+                                                            //unngår flere instanser
+                                                            launchSingleTop = true
+                                                            restoreState = true
+                                                        }
                                                     }
                                                 }
-                                            }
-                                    ) {
-                                        weatherData.alertIconData.forEach { alertIconData ->
-                                            if (alertIconsCount < alertIconsLimit) {
-                                                Image(
-                                                    painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
-                                                    contentDescription = alertIconData.first + alertIconData.second,
-                                                    modifier = Modifier
-                                                        .align(Alignment.Center)
-                                                        .padding(
-                                                            top = dynamicTopPadding.dp,
-                                                            end = dynamicLPadding.dp
-                                                        )
-                                                )
-                                            }
+                                        ) {
+                                            weatherData.alertIconData.forEach { alertIconData ->
+                                                if (alertIconsCount < alertIconsLimit) {
+                                                    Image(
+                                                        painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
+                                                        contentDescription = alertIconData.first + alertIconData.second,
+                                                        modifier = Modifier
+                                                            .align(Alignment.Center)
+                                                            .padding(
+                                                                top = dynamicTopPadding.dp,
+                                                                end = dynamicLPadding.dp
+                                                            )
+                                                    )
+                                                }
 
-                                            alertIconsCount += 1
-                                            dynamicTopPadding += 7
-                                            dynamicLPadding += 7
+                                                alertIconsCount += 1
+                                                dynamicTopPadding += 7
+                                                dynamicLPadding += 7
+                                            }
                                         }
                                     }
+                                    Image(
+                                        painter = painterResource(
+                                            id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode]
+                                                ?: R.drawable.svg
+                                        ),
+                                        contentDescription = "weather icon",
+                                        modifier = Modifier.size(80.dp),
+                                        alignment = Alignment.Center
+                                    )
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        Text(
+                                            text = temperature?.let { "${it.roundToInt()}" + symbol }
+                                                ?: "Henter data...",
+                                            fontSize = 50.sp,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                    }
                                 }
-                                Image(
-                                    painter = painterResource(
-                                        id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode]
-                                            ?: R.drawable.svg
-                                    ),
-                                    contentDescription = "weather icon",
-                                    modifier = Modifier.size(80.dp),
-                                    alignment = Alignment.Center
-                                )
-                                Box(modifier = Modifier.fillMaxWidth()) {
+                            } else {
+                                Column (
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
                                     Text(
-                                        text = temperature?.let { "${it.roundToInt()}" + symbol }
-                                            ?: "Henter data...",
-                                        fontSize = 50.sp,
+                                        text = "Mangler internett tilgang",
+                                        style = MaterialTheme.typography.headlineMedium,
                                         textAlign = TextAlign.Center,
-                                        modifier = Modifier.align(Alignment.Center)
+                                        modifier = Modifier
+                                            .align(Alignment.CenterHorizontally)
+                                            .padding(top = 12.dp)
+                                    )
+
+                                    Text(
+                                        text = "Dobbeltsjekk internett tilgang",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterHorizontally)
+                                            .padding(bottom= 12.dp)
+                                    )
+                                    val buttonColorPrim = if (darkModeOn) Color(0xFF002571) else Color(0xFFAAD3FF)
+                                    val buttonColorSec = if (darkModeOn) Color.White else  Color.Black
+                                    Button(
+                                        onClick = { refresh() },
+                                            colors = ButtonDefaults.buttonColors(
+                                            containerColor = buttonColorPrim
+                                            )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Refresh,
+                                            contentDescription = "Refresh Icon",
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .padding(end = 6.dp),
+                                            tint = buttonColorSec
+                                        )
+                                        Text(
+                                            text = "Prøv igjen",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            textAlign = TextAlign.End,
+                                            color = buttonColorSec
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text(
+                                        text = "(Du kan fortsatt se, legge til og endre aktiviteter)",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterHorizontally)
+                                            .padding(bottom= 12.dp)
                                     )
                                 }
+
                             }
                         }
 
@@ -461,7 +569,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .shadow(50.dp)
                             .padding(horizontal = 30.dp)
                             .fillMaxWidth()
                             .height(300.dp)
@@ -533,7 +640,9 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 } else {
                                     // Display a placeholder if forecast data is not available
                                     Text(
-                                        text = "No forecast data available",
+                                        text = "Langtidsvarsel ikke tilgjengelig",
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally),
                                         fontSize = 16.sp
                                     )
                                 }
@@ -593,7 +702,7 @@ fun LongTermForecastRow(
                 ),
                 contentDescription = "Weather Icon",
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(25.dp)
             )
             Box(
                 modifier = Modifier
@@ -685,14 +794,17 @@ fun TimeAndTempCards(
 @Composable
 fun CustomSnackBar(
     message: String,
+    directionMessage: String,
     isRtl: Boolean = false,
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
-    navController: NavController,
+    modifier: Modifier,
+    onClick: () -> Unit
 ) {
     Snackbar(
         containerColor = containerColor,
-        contentColor = contentColor
+        contentColor = contentColor,
+        modifier = modifier
     ) {
         CompositionLocalProvider(
             LocalLayoutDirection provides
@@ -702,23 +814,8 @@ fun CustomSnackBar(
                 Text(message)
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    modifier = Modifier.clickable {
-                        navController.navigate(AppRoutes.SETTINGS) {
-                            if (navController.currentDestination?.route != AppRoutes.SETTINGS) {
-                                navController.navigate(AppRoutes.SETTINGS) {
-                                    // fikser backstack
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
-                                    }
-
-                                    //unngår flere instanser
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        }
-                    },
-                    text = "Til instillinger"
+                    modifier = Modifier.clickable(onClick = onClick),
+                    text = directionMessage
                 )
             }
 

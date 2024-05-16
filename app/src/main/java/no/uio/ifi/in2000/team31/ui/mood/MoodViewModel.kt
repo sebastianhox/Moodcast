@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 
 data class MoodWeatherUIState(
@@ -17,6 +18,7 @@ data class MoodWeatherUIState(
 class MoodViewModel(application: Application): AndroidViewModel(application) {
     private val appContainer = (application as MoodApplication).appContainer
     private val repository = appContainer.locWeatherRepository
+    private val sharedViewModel = appContainer.sharedViewModel
 
     private val _weatherDataUIState = MutableStateFlow(MoodWeatherUIState())
     val weatherDataUIState: StateFlow<MoodWeatherUIState> = _weatherDataUIState
@@ -35,12 +37,20 @@ class MoodViewModel(application: Application): AndroidViewModel(application) {
 
     fun manuallyUpdate() {
         viewModelScope.launch {
-            val dataNow = repository.fetchInfo(59.913868,10.752245 ,CachePolicy(CachePolicy.Type.ALWAYS)).instant.first()
-            _weatherDataUIState.update { currentState ->
-                currentState.copy(
-                    symbolCodeNow = dataNow.symbolCode,
-                    temperature = dataNow.airTemperature
-                )
+            sharedViewModel.connectionStatus.collect {status ->
+                if (status == Status.Available) {
+                    val dataNow = repository.fetchInfo(
+                        59.913868,
+                        10.752245,
+                        CachePolicy(CachePolicy.Type.ALWAYS)
+                    ).instant.first()
+                    _weatherDataUIState.update { currentState ->
+                        currentState.copy(
+                            symbolCodeNow = dataNow.symbolCode,
+                            temperature = dataNow.airTemperature
+                        )
+                    }
+                }
             }
         }
     }
