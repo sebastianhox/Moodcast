@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team31.model
-data class WeatherDataModel (
-    val instant: List<WeatherDataInstant> = listOf() //ANTAR AT DET ER STUFF - NÅ
+
+data class WeatherDataModel(
+    val instant: List<WeatherDataInstant> = listOf(), //ANTAR AT DET ER STUFF - NÅ
 )
 
 /*
@@ -9,15 +10,15 @@ Hver TimesSeries objekt i den listen har 1 time "mellomrom" fra hverandre (APIet
  */
 
 
-data class WeatherDataInstant (
-    val time                  : String? = null,
-    val airPressureAtSeaLevel : Double? = null,
-    val airTemperature        : Double? = null,
-    val cloudAreaFraction     : Double? = null,
-    val relativeHumidity      : Double? = null,
-    val windFromDirection     : Double? = null,
-    val windSpeed             : Double? = null,
-    val symbolCode            : String? = null,
-    val precipitationAmount   : Double? = null,
-    val next6Hours_symbolCode : String? = null
+data class WeatherDataInstant(
+    val time: String? = null,
+    val airPressureAtSeaLevel: Double? = null,
+    val airTemperature: Double? = null,
+    val cloudAreaFraction: Double? = null,
+    val relativeHumidity: Double? = null,
+    val windFromDirection: Double? = null,
+    val windSpeed: Double? = null,
+    val symbolCode: String? = null,
+    val precipitationAmount: Double? = null,
+    val next6Hours_symbolCode: String? = null,
 )

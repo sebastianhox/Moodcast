@@ -8,15 +8,16 @@ import io.github.dellisd.spatialk.geojson.Point
 import io.github.dellisd.spatialk.geojson.Polygon
 import io.github.dellisd.spatialk.geojson.dsl.point
 import io.github.dellisd.spatialk.turf.booleanPointInPolygon
-import no.uio.ifi.in2000.team31.cache.CachePolicy
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy.Type.NEVER
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy.Type.ALWAYS
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy.Type.REFRESH
 
 
-class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
+class WeatherAlertRepository(private val alert: WeatherAlertDataSource) {
     private lateinit var featuresCached: List<Feature>
 
+    // Returns all the alert zones the include the given point
     suspend fun getDangerZonesOf(point: Point, cachePolicy: CachePolicy): List<Feature>? {
         return when (cachePolicy.type) {
             NEVER -> fetch(point)
@@ -26,9 +27,14 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
         }
     }
 
-    suspend fun getAlertIcons(lat: Double?, lon: Double?, cachePolicy: CachePolicy): List<Pair<String?,String?>> {
+    // Returns needed data for showing the alert icons
+    suspend fun getAlertIcons(
+        lat: Double?,
+        lon: Double?,
+        cachePolicy: CachePolicy,
+    ): List<Pair<String?, String?>> {
         val point = if (lat == null || lon == null) {
-            point(37.4220936, -122.083922)
+            point(59.914099, 10.750554)
         } else {
             point(lon, lat)
         }
@@ -39,11 +45,11 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
             else -> null
         }
 
-        val alertIcons = mutableListOf<Pair<String?,String?>>()
-        features?.forEach {feature ->
+        val alertIcons = mutableListOf<Pair<String?, String?>>()
+        features?.forEach { feature ->
             val event = feature.getStringProperty("event")
             val color = feature.getStringProperty("riskMatrixColor")
-            alertIcons.add(Pair(event,color))
+            alertIcons.add(Pair(event, color))
         }
 
         return alertIcons
@@ -66,9 +72,8 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
         return featuresCached
     }
 
-    /*
-    Help-function used to smart-cast spatialk.Geometry class to Polygon/MultiPolygon class
-    */
+    // Help-function used to smart-cast spatialk.Geometry class to Polygon/MultiPolygon class
+    // Returns true if the point is inside the polygon, false otherwise
     private fun isInsideDangerZone(polygon: Geometry?, point: Point): Boolean {
         when (polygon) {
             is Polygon -> {
@@ -76,11 +81,13 @@ class WeatherAlertRepository(private val alert : WeatherAlertDataSource) {
                     return true
                 }
             }
+
             is MultiPolygon -> {
                 if (booleanPointInPolygon(point, polygon)) {
                     return true
                 }
             }
+
             else -> {}
         }
         return false

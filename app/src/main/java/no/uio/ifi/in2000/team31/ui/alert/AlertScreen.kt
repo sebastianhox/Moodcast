@@ -2,8 +2,10 @@ package no.uio.ifi.in2000.team31.ui.alert
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,7 +35,6 @@ data class Alert(
     val instruction: String?
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = viewModel()) {
     alertViewModel.startAlertUpdates()
@@ -51,7 +52,7 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (features != null) {
-                    itemsIndexed(features) { _, feature ->
+                    items(features) {feature ->
                         val dataMap = mutableMapOf<String, String?>()
                         feature.properties.forEach { entry ->
                             if (entry.value !is kotlinx.serialization.json.JsonArray) {
@@ -86,14 +87,12 @@ fun AlertTopAppBar(navController: NavController) {
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .padding(start = 24.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             )
         },
         actions = {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.Close, "close")
+                Icon(Icons.Filled.Close, contentDescription = "close")
             }
         },
         modifier = Modifier
@@ -103,47 +102,47 @@ fun AlertTopAppBar(navController: NavController) {
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
+
 fun formatDate(dateString: String?): String {
     return if (dateString != null) {
-        try {
-            val formatter = DateTimeFormatter.ofPattern("dd/MM-yyyy HH:mm")
-            val date = ZonedDateTime.parse(dateString)
-            date.format(formatter)
-        } catch (e: Exception) {
-            "Ukjent dato"
-        }
+        val formatter = DateTimeFormatter.ofPattern("dd/MM-yyyy HH:mm")
+        val date = ZonedDateTime.parse(dateString)
+        date.format(formatter)
     } else {
         "Ukjent"
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlertCard(alert: Alert) {
     Card(
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = 16.dp)
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = when (alert.awarenessColor.toString()) {
-                "Yellow" -> Color(0xFFFFF176).copy(alpha = 0.9f)
-                "Orange" -> Color(0xFFFFA726).copy(alpha = 0.9f)
-                "Red" -> Color(0xFFE57373).copy(alpha = 0.9f)
-                else -> Color.LightGray.copy(alpha = 0.9f)
-            }
-        )
-        ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start
-
+            .shadow(4.dp, RoundedCornerShape(6.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+                    .background(
+                        when (alert.awarenessColor.toString()) {
+                            "Yellow" -> Color(0xFFF7E61E).copy(alpha = 0.9f)
+                            "Orange" -> Color(0xFFF4A624).copy(alpha = 0.9f)
+                            "Red" -> Color(0xFFC41510).copy(alpha = 0.9f)
+                            else -> Color.LightGray.copy(alpha = 0.9f)
+                        }
+                    )
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.Start
             ) {
-                // Tittel
                 Text(
                     text = "${alert.title?.split(",")?.firstOrNull()}",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
@@ -152,27 +151,27 @@ fun AlertCard(alert: Alert) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Område
                 Text(
                     text = "${alert.area}",
                     fontWeight = FontWeight.SemiBold,
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Gjelder til (vises kun hvis farevarselet faktisk har et final tidspunkt)
+                // Shows only when there is an end date
                 if (formatDate(alert.endDate) != "Ukjent") {
                     Text(
                         text = "Gjelder til ${formatDate(alert.endDate)}",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         color = Color.Black
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Instruksjoner
+                // Instructions
                 Text(
                     text = alert.instruction.toString(),
                     fontWeight = FontWeight.Medium,
@@ -183,4 +182,6 @@ fun AlertCard(alert: Alert) {
         }
         Spacer(modifier = Modifier.height(10.dp))
     }
+}
+
 

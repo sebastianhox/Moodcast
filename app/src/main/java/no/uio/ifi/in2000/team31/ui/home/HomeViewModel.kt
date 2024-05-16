@@ -2,7 +2,6 @@ package no.uio.ifi.in2000.team31.ui.home
 
 import android.app.Application
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,9 +21,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MoodApplication
-import no.uio.ifi.in2000.team31.Status
-import no.uio.ifi.in2000.team31.cache.CachePolicy
+import no.uio.ifi.in2000.team31.container.MoodApplication
+import no.uio.ifi.in2000.team31.data.network.Status
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy
 import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
 import java.net.URLEncoder
@@ -125,10 +124,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         _places.value = emptyList()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun fetchWeatherData(lat: Double?, lon: Double?, cachePolicy: CachePolicy) {
         viewModelScope.launch {
-            sharedViewModel.connectionStatus.collect {status ->
+            sharedViewModel.connectionStatus.collect { status ->
                 if (status == Status.Available) {
                     if (initializeCalled) {
                         _weatherDataUIState.update { currentState ->
@@ -139,7 +137,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                                     cachePolicy
                                 ),
                                 tempAndTimeData = repository.get24HoursForecast(lat, lon),
-                                longTermForecast = repository.getNext7Days(lat, lon),
+                                longTermForecast = repository.getNext9Days(lat, lon),
                                 alertIconData = alertRepository.getAlertIcons(
                                     lat,
                                     lon,
@@ -159,7 +157,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                                     CachePolicy(CachePolicy.Type.REFRESH)
                                 ),
                                 tempAndTimeData = repository.get24HoursForecast(lat, lon),
-                                longTermForecast = repository.getNext7Days(lat, lon),
+                                longTermForecast = repository.getNext9Days(lat, lon),
                                 alertIconData = alertRepository.getAlertIcons(
                                     lat,
                                     lon,

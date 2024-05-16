@@ -19,6 +19,7 @@ class LocationWeatherDataSource {
             gson()
         }
         defaultRequest {
+            // Default header that gives access to the proxy server set up by the Meteorologic institute
             url("https://gw-uio.intark.uh-it.no/in2000/")
             headers.appendIfNameAbsent("X-Gravitee-API-Key", "0cdacead-89b3-408a-bcf5-bb6bd685a874")
         }

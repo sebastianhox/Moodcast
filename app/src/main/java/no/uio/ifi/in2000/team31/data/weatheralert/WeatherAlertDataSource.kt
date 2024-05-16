@@ -20,8 +20,9 @@ class WeatherAlertDataSource {
             header("X-Gravitee-API-Key", "0cdacead-89b3-408a-bcf5-bb6bd685a874")
         }
     }
+
     suspend fun fetchData(): FeatureCollection {
-        val response: HttpResponse = client.get("weatherapi/metalerts/2.0/current.json")
+        val response: HttpResponse = client.get("weatherapi/metalerts/2.0/all.json")
         return FeatureCollection.fromJson(response.bodyAsText())
     }
 }

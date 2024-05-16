@@ -1,15 +1,15 @@
-package no.uio.ifi.in2000.team31
+package no.uio.ifi.in2000.team31.ui.shared
 
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.uio.ifi.in2000.team31.container.MoodApplication
 import no.uio.ifi.in2000.team31.ui.activity.WeatherStatus
 import no.uio.ifi.in2000.team31.ui.mood.Mood
 

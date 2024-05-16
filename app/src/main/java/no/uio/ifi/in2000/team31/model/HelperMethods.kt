@@ -1,9 +1,10 @@
-package no.uio.ifi.in2000.team31
+package no.uio.ifi.in2000.team31.model
 
 import android.content.Context
 import android.util.Log
+import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.ui.activity.ActivityDetails
-import no.uio.ifi.in2000.team31.ui.activity.ActivityScreenViewModel
+import no.uio.ifi.in2000.team31.ui.activity.ActivityViewModel
 import no.uio.ifi.in2000.team31.ui.activity.WeatherStatus
 import no.uio.ifi.in2000.team31.ui.activity.toActivity
 import no.uio.ifi.in2000.team31.ui.mood.Mood
@@ -58,10 +59,7 @@ fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
         return null
     }
 }
-
-
-// Fyller inn activities i databasen
-fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
+fun populateDatabase(context: Context, viewModel: ActivityViewModel) {
     var imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
     if (imagePath != null) {
         val activityDetails = ActivityDetails(

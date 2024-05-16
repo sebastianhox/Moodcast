@@ -53,9 +53,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MoodApplication
-import no.uio.ifi.in2000.team31.Status
+import no.uio.ifi.in2000.team31.container.MoodApplication
+import no.uio.ifi.in2000.team31.data.network.Status
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.populateDatabase
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
@@ -69,9 +68,8 @@ enum class WeatherStatus {
 
 @Composable
 fun ActivityScreen(
-    navigateToAddActivity: () -> Unit,
     navController: NavController,
-    viewModel: ActivityScreenViewModel = viewModel()
+    viewModel: ActivityViewModel = viewModel()
 ) {
 
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
@@ -99,7 +97,7 @@ fun ActivityScreen(
         floatingActionButton = {
             val color = if (isDarkMode) Color(0xFF002591) else Color(0xFFAAD3FF)
             FloatingActionButton(
-                onClick = navigateToAddActivity,
+                onClick = { navController.navigate(AppRoutes.ADD_ACTIVITY) },
                 backgroundColor = color
                 ) {
                 Icon(
@@ -232,7 +230,7 @@ fun MoodCastTopBar() {
 @Composable
 fun ActivityCardList (
     activityList: List<Activity>,
-    viewModel: ActivityScreenViewModel,
+    viewModel: ActivityViewModel,
     onActivityClick: (Activity) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -250,9 +248,7 @@ fun ActivityCardList (
                 ActivityCard(
                     activity,
                     onDeleteClick = {activityToDelete ->
-                        scope.launch {
-                            viewModel.activityRepository.deleteActivity(activityToDelete)
-                        }
+                            viewModel.deleteActivity(activityToDelete)
                     },
                     onClick = onActivityClick
                 )

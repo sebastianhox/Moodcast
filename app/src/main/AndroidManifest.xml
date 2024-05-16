@@ -13,7 +13,7 @@
 
 
     <application
-        android:name=".MoodApplication"
+        android:name=".container.MoodApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:networkSecurityConfig="@xml/network_security_config"
