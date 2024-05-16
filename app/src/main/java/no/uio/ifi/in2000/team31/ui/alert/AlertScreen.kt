@@ -2,6 +2,7 @@ package no.uio.ifi.in2000.team31.ui.alert
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -86,14 +87,15 @@ fun AlertTopAppBar(navController: NavController) {
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .padding(start = 24.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
+        },
+        navigationIcon = {
         },
         actions = {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.Close, "close")
+                Icon(Icons.Filled.Close, contentDescription = "close")
             }
         },
         modifier = Modifier
@@ -102,6 +104,8 @@ fun AlertTopAppBar(navController: NavController) {
             .shadow(3.dp, RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp))
     )
 }
+
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun formatDate(dateString: String?): String {
@@ -125,23 +129,28 @@ fun AlertCard(alert: Alert) {
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = 16.dp)
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = when (alert.awarenessColor.toString()) {
-                "Yellow" -> Color(0xFFFFF176).copy(alpha = 0.9f)
-                "Orange" -> Color(0xFFFFA726).copy(alpha = 0.9f)
-                "Red" -> Color(0xFFE57373).copy(alpha = 0.9f)
-                else -> Color.LightGray.copy(alpha = 0.9f)
-            }
-        )
-        ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start
-
+            .shadow(4.dp, RoundedCornerShape(6.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+                    .background(
+                        when (alert.awarenessColor.toString()) {
+                            "Yellow" -> Color(0xFFF7E61E).copy(alpha = 0.9f)
+                            "Orange" -> Color(0xFFF4A624).copy(alpha = 0.9f)
+                            "Red" -> Color(0xFFC41510).copy(alpha = 0.9f)
+                            else -> Color.LightGray.copy(alpha = 0.9f)
+                        }
+                    )
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.Start
             ) {
                 // Tittel
                 Text(
@@ -159,6 +168,7 @@ fun AlertCard(alert: Alert) {
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Black
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Gjelder til (vises kun hvis farevarselet faktisk har et final tidspunkt)
@@ -183,4 +193,6 @@ fun AlertCard(alert: Alert) {
         }
         Spacer(modifier = Modifier.height(10.dp))
     }
+}
+
 
