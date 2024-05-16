@@ -199,17 +199,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                             }
                         )
                     }
-                    if (connectionState != Status.Available) {
-
-                        CustomSnackBar(
-                            message = "Mangler internett tilgang",
-                            directionMessage = "Prøv igjen",
-                            modifier = Modifier,
-                            onClick = {
-                                refresh()
-                            }
-                        )
-                    }
                 }
             }
         ) { innerPadding ->
@@ -238,6 +227,64 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                 }
 
                 Column {
+                    if (connectionState != Status.Available) {
+                        Column (
+                            modifier = Modifier.padding(top = 10.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Mangler internett tilgang",
+                                style = MaterialTheme.typography.headlineMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(top = 12.dp)
+                            )
+
+                            Text(
+                                text = "Dobbeltsjekk internett tilgang",
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(bottom= 12.dp)
+                            )
+                            val buttonColorPrim = if (darkModeOn) Color(0xFF002571) else Color(0xFFAAD3FF)
+                            val buttonColorSec = if (darkModeOn) Color.White else  Color.Black
+                            Button(
+                                onClick = { refresh() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = buttonColorPrim
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Refresh,
+                                    contentDescription = "Refresh Icon",
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .padding(end = 6.dp),
+                                    tint = buttonColorSec
+                                )
+                                Text(
+                                    text = "Prøv igjen",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    textAlign = TextAlign.End,
+                                    color = buttonColorSec
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "(Du kan fortsatt se, legge til og endre aktiviteter)",
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(bottom= 12.dp)
+                            )
+                        }
+                    }
 
                     SearchBar(
                         query = searchUiState.currentQuery,
@@ -370,7 +417,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 .width(360.dp)
                                 .align(Alignment.CenterHorizontally)
                         ) {
-                            if (connectionState == Status.Available) {
                                 Column(
                                     modifier = Modifier.padding(16.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
@@ -443,73 +489,16 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                         alignment = Alignment.Center
                                     )
                                     Box(modifier = Modifier.fillMaxWidth()) {
+                                        val infoMessage = if (connectionState == Status.Available) "Henter data..." else "En feil oppsto "
                                         Text(
                                             text = temperature?.let { "${it.roundToInt()}" + symbol }
-                                                ?: "Henter data...",
+                                                ?: infoMessage,
                                             fontSize = 50.sp,
                                             textAlign = TextAlign.Center,
                                             modifier = Modifier.align(Alignment.Center)
                                         )
                                     }
                                 }
-                            } else {
-                                Column (
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "Mangler internett tilgang",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .padding(top = 12.dp)
-                                    )
-
-                                    Text(
-                                        text = "Dobbeltsjekk internett tilgang",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .padding(bottom= 12.dp)
-                                    )
-                                    val buttonColorPrim = if (darkModeOn) Color(0xFF002571) else Color(0xFFAAD3FF)
-                                    val buttonColorSec = if (darkModeOn) Color.White else  Color.Black
-                                    Button(
-                                        onClick = { refresh() },
-                                            colors = ButtonDefaults.buttonColors(
-                                            containerColor = buttonColorPrim
-                                            )
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Refresh,
-                                            contentDescription = "Refresh Icon",
-                                            modifier = Modifier
-                                                .size(28.dp)
-                                                .padding(end = 6.dp),
-                                            tint = buttonColorSec
-                                        )
-                                        Text(
-                                            text = "Prøv igjen",
-                                            style = MaterialTheme.typography.titleMedium,
-                                            textAlign = TextAlign.End,
-                                            color = buttonColorSec
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Text(
-                                        text = "(Du kan fortsatt se, legge til og endre aktiviteter)",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .padding(bottom= 12.dp)
-                                    )
-                                }
-
-                            }
                         }
 
 

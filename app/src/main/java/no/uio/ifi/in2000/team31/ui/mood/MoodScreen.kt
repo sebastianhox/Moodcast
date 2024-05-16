@@ -174,9 +174,15 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                             fontSize = 24.sp,
                         )
                     } else {
+                        val colorPrim = if (isDarkMode) Color(0xFF002571) else Color(0xFFAAD3FF)
                         Text(
                             text = "Værdata ikke tilgjengelig\nMangler internett tilgang",
                             style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(colorPrim)
+                                .padding(20.dp)
+
                         )
                     }
                 }
