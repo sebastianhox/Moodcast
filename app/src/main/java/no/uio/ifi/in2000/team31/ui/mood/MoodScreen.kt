@@ -204,7 +204,7 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGISK)
                 MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.ROLIG)
                 MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.TRIST)
-                MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSET)
+                MoodButton("😰 Stresset", Color(0xFF505E1C), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSET)
                 MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.SINT)
 
             }

@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team31.ui.activity
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -28,7 +29,11 @@ class ActivityScreenViewModel(application: Application) : AndroidViewModel(appli
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
+    fun getActivityById(activityId: Int): Flow<Activity?> {
+        return activityRepository.getItemStream(activityId)
+    }
 
+    // Laster inn aktiviterer, skal kalles første gang appen kjører
     fun preloadActivity(activity: Activity) {
         viewModelScope.launch {
             activityRepository.insertActivity(activity)
