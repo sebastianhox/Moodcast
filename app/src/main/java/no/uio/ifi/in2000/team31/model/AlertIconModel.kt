@@ -2,6 +2,7 @@ package no.uio.ifi.in2000.team31.model
 
 import no.uio.ifi.in2000.team31.R
 
+// Maps event names to their respective alert icons
 object AlertIconModel {
     val eventIconMap: Map<String, Int> = mutableMapOf(
         Pair("avalanchesYellow", AlertIcons.avalanchesYellow),
@@ -57,6 +58,7 @@ object AlertIconModel {
         Pair("unknownOrange", AlertIcons.unknownOrange)
     )
 }
+
 object AlertIcons {
     val avalanchesYellow = R.drawable.icon_warning_avalanches_yellow
     val avalanchesRed = R.drawable.icon_warning_avalanches_red

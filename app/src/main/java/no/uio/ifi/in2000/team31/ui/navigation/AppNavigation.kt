@@ -1,21 +1,14 @@
 package no.uio.ifi.in2000.team31.ui.navigation
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import no.uio.ifi.in2000.team31.SplashScreen
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
-import no.uio.ifi.in2000.team31.ui.activity.ActivityDetailsScreen
 import no.uio.ifi.in2000.team31.ui.activity.ActivityScreen
-import no.uio.ifi.in2000.team31.ui.activity.AddActivityDestination
 import no.uio.ifi.in2000.team31.ui.activity.AddActivityScreen
 import no.uio.ifi.in2000.team31.ui.alert.AlertScreen
 import no.uio.ifi.in2000.team31.ui.home.HomeScreen
@@ -23,10 +16,9 @@ import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 import no.uio.ifi.in2000.team31.ui.settings.SettingsScreen
 
-@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AppNavigation(homeViewModel: HomeViewModel, activityRepository: ActivityRepository) {
+fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
 
@@ -181,7 +173,6 @@ fun AppNavigation(homeViewModel: HomeViewModel, activityRepository: ActivityRepo
             }
         ) {
             ActivityScreen(
-                navigateToAddActivity = { navController.navigate(AddActivityDestination.route)},
                 navController = navController
             )
         }
@@ -240,22 +231,9 @@ fun AppNavigation(homeViewModel: HomeViewModel, activityRepository: ActivityRepo
                     else -> null
                 }
             }
-            ) {
+        ) {
 
-            AddActivityScreen(
-                navigateBack = { navController.popBackStack() }
-            )
-        }
-        composable(AppRoutes.SPLASH) {
-            SplashScreen(navController = navController)
-        }
-
-        composable(
-            route = "activityDetails/{activityId}",
-            arguments = listOf(navArgument("activityId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val activityId = backStackEntry.arguments?.getInt("activityId") ?: return@composable
-            ActivityDetailsScreen(activityId = activityId, activityRepository = activityRepository, onBackClick = { navController.popBackStack() })
+            AddActivityScreen(navController)
         }
     }
 }

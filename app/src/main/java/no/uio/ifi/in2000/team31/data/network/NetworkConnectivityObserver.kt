@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team31
+package no.uio.ifi.in2000.team31.data.network
 
 import android.content.Context
 import android.net.ConnectivityManager

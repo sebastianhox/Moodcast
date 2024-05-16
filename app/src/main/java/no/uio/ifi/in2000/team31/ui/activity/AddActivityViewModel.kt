@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.container.MoodApplication
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
 import no.uio.ifi.in2000.team31.ui.mood.Mood

@@ -1,8 +1,6 @@
 package no.uio.ifi.in2000.team31.ui.home
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -79,12 +77,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.container.MoodApplication
 import no.uio.ifi.in2000.team31.R
-import no.uio.ifi.in2000.team31.Status
-import no.uio.ifi.in2000.team31.cache.CachePolicy
-import no.uio.ifi.in2000.team31.getWeatherStatus
-import no.uio.ifi.in2000.team31.getWindDirectionIcon
+import no.uio.ifi.in2000.team31.data.network.Status
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy
+import no.uio.ifi.in2000.team31.model.getWeatherStatus
+import no.uio.ifi.in2000.team31.model.getWindDirectionIcon
 import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -177,7 +175,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
 
     // Tegner bakgrunnsbildet først
-    Box (
+    Box(
         modifier = Modifier.pullRefresh(refreshState)
     ) {
         Scaffold(
@@ -238,7 +236,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
                 Column {
                     if (connectionState != Status.Available) {
-                        Column (
+                        Column(
                             modifier = Modifier.padding(top = 10.dp),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
@@ -258,10 +256,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
-                                    .padding(bottom= 12.dp)
+                                    .padding(bottom = 12.dp)
                             )
-                            val buttonColorPrim = if (darkModeOn) Color(0xFF002571) else Color(0xFFAAD3FF)
-                            val buttonColorSec = if (darkModeOn) Color.White else  Color.Black
+                            val buttonColorPrim =
+                                if (darkModeOn) Color(0xFF002571) else Color(0xFFAAD3FF)
+                            val buttonColorSec = if (darkModeOn) Color.White else Color.Black
                             Button(
                                 onClick = { refresh() },
                                 colors = ButtonDefaults.buttonColors(
@@ -291,7 +290,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(Alignment.CenterHorizontally)
-                                    .padding(bottom= 12.dp)
+                                    .padding(bottom = 12.dp)
                             )
                         }
                     }
@@ -421,125 +420,140 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     ) {
 
 
-                            // Temperature right now, in celcius
+                        // Temperature right now, in celcius
                         Box(
                             modifier = Modifier
                                 .width(360.dp)
                                 .align(Alignment.CenterHorizontally)
                         ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.TopEnd
                                 ) {
+                                    Text(
+                                        text = searchUiState.selectedPlace?.placeName
+                                            ?: "Min posisjon",
+                                        fontSize = 30.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.align(Alignment.Center),
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+
+                                    var dynamicTopPadding = 0
+                                    var dynamicLPadding = 0
+                                    var alertIconsCount = 0
+                                    val alertIconsLimit = 3
+
 
                                     Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.TopEnd
-                                    ) {
-                                        Text(
-                                            text = searchUiState.selectedPlace?.placeName
-                                                ?: "Min posisjon",
-                                            fontSize = 30.sp,
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier.align(Alignment.Center),
-                                            fontWeight = FontWeight.Bold
-                                        )
-
-
-                                        var dynamicTopPadding = 0
-                                        var dynamicLPadding = 0
-                                        var alertIconsCount = 0
-                                        val alertIconsLimit = 3
-
-
-                                        Box(
-                                            modifier = Modifier
-                                                .clickable {
-                                                    if (weatherData.alertIconData.isNotEmpty()) {
-                                                        navController.navigate(AppRoutes.ALERT) {
-                                                            // fikser backstack
-                                                            popUpTo(navController.graph.startDestinationId) {
-                                                                saveState = true
-                                                            }
-
-                                                            //unngår flere instanser
-                                                            launchSingleTop = true
-                                                            restoreState = true
+                                        modifier = Modifier
+                                            .clickable {
+                                                if (weatherData.alertIconData.isNotEmpty()) {
+                                                    navController.navigate(AppRoutes.ALERT) {
+                                                        // fikser backstack
+                                                        popUpTo(navController.graph.startDestinationId) {
+                                                            saveState = true
                                                         }
+
+                                                        //unngår flere instanser
+                                                        launchSingleTop = true
+                                                        restoreState = true
                                                     }
                                                 }
-                                        ) {
-                                            weatherData.alertIconData.forEach { alertIconData ->
-                                                if (alertIconsCount < alertIconsLimit) {
-                                                    Image(
-                                                        painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
-                                                        contentDescription = alertIconData.first + alertIconData.second,
-                                                        modifier = Modifier
-                                                            .align(Alignment.Center)
-                                                            .padding(
-                                                                top = dynamicTopPadding.dp,
-                                                                end = dynamicLPadding.dp
-                                                            )
-                                                    )
-                                                }
+                                            }
+                                    ) {
+                                        weatherData.alertIconData.forEach { alertIconData ->
+                                            if (alertIconsCount < alertIconsLimit) {
+                                                Image(
+                                                    painter = painterResource(id = AlertIconModel.eventIconMap[alertIconData.first + alertIconData.second]!!),
+                                                    contentDescription = alertIconData.first + alertIconData.second,
+                                                    modifier = Modifier
+                                                        .align(Alignment.Center)
+                                                        .padding(
+                                                            top = dynamicTopPadding.dp,
+                                                            end = dynamicLPadding.dp
+                                                        )
+                                                )
+                                            }
 
-                                                alertIconsCount += 1
-                                                dynamicTopPadding += 7
-                                                dynamicLPadding += 7
-                                            }
-                                        }
-                                    }
-                                    Image(
-                                        painter = painterResource(
-                                            id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode]
-                                                ?: R.drawable.svg
-                                        ),
-                                        contentDescription = "weather icon",
-                                        modifier = Modifier.size(80.dp),
-                                        alignment = Alignment.Center
-                                    )
-                                    Box(modifier = Modifier.fillMaxWidth()) {
-                                        val infoMessage = if (connectionState == Status.Available) "Henter data..." else "En feil oppsto "
-                                        Text(
-                                            text = temperature?.let { "${it.roundToInt()}" + symbol }
-                                                ?: infoMessage,
-                                            fontSize = 50.sp,
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier.align(Alignment.Center)
-                                        )
-                                    }
-                                    if (connectionState == Status.Available) {
-
-                                        Row(
-                                            //modifier = Modifier.weight(1f),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(IntrinsicSize.Min)
-                                                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Column {
-                                                val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
-                                                Text(text = "${windSpeed.toString()} m/s")
-                                                Row() {
-                                                    Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
-                                                    //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
-                                                    Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
-
-                                                }
-                                            }
-                                            Column {
-                                                Text(text = "$rain mm.")
-                                                Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Precipation")
-                                            }
-                                            Column{
-                                                Text(text = "${humidity.toString()} %")
-                                                Icon(imageVector = Icons.Filled.Water, contentDescription = "Humidity")
-                                            }
+                                            alertIconsCount += 1
+                                            dynamicTopPadding += 7
+                                            dynamicLPadding += 7
                                         }
                                     }
                                 }
+                                Image(
+                                    painter = painterResource(
+                                        id = WeatherIconMapper.symbolCodeMap[weatherData.weatherData?.instant?.first()?.symbolCode]
+                                            ?: R.drawable.svg
+                                    ),
+                                    contentDescription = "weather icon",
+                                    modifier = Modifier.size(80.dp),
+                                    alignment = Alignment.Center
+                                )
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    val infoMessage =
+                                        if (connectionState == Status.Available) "Henter data..." else "En feil oppsto "
+                                    Text(
+                                        text = temperature?.let { "${it.roundToInt()}" + symbol }
+                                            ?: infoMessage,
+                                        fontSize = 50.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                                if (connectionState == Status.Available) {
+
+                                    Row(
+                                        //modifier = Modifier.weight(1f),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(IntrinsicSize.Min)
+                                            .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column {
+                                            val colorFilter =
+                                                if (!darkModeOn) ColorFilter.tint(Color.Black) else null
+                                            Text(text = "${windSpeed.toString()} m/s")
+                                            Row {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Air,
+                                                    contentDescription = "Wind"
+                                                )
+                                                //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
+                                                Image(
+                                                    painter = painterResource(arrowIcon),
+                                                    contentDescription = "Arrow pointing to wind direction",
+                                                    colorFilter = colorFilter
+                                                )
+
+                                            }
+                                        }
+                                        Column {
+                                            Text(text = "$rain mm.")
+                                            Icon(
+                                                imageVector = Icons.Default.WaterDrop,
+                                                contentDescription = "Precipation"
+                                            )
+                                        }
+                                        Column {
+                                            Text(text = "${humidity.toString()} %")
+                                            Icon(
+                                                imageVector = Icons.Filled.Water,
+                                                contentDescription = "Humidity"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
 
 
@@ -572,40 +586,40 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 )
                             }
 
-                        LazyRow(
-                            modifier = Modifier
-                                .padding(15.dp)
-                                .fillMaxHeight(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            items(tempAndTimeList) { hourlyData ->
-                                val hour = hourlyData.first
-                                var temp = hourlyData.second
-                                val symbolCode = hourlyData.third
+                            LazyRow(
+                                modifier = Modifier
+                                    .padding(15.dp)
+                                    .fillMaxHeight(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                items(tempAndTimeList) { hourlyData ->
+                                    val hour = hourlyData.first
+                                    var temp = hourlyData.second
+                                    val symbolCode = hourlyData.third
 
-                                if (isFahrenheit) {
-                                    temp = celsiusToFahrenheit(temp?.roundToInt())?.toDouble()
+                                    if (isFahrenheit) {
+                                        temp = celsiusToFahrenheit(temp?.roundToInt())?.toDouble()
+                                    }
+                                    TimeAndTempCards(
+                                        hour,
+                                        temp,
+                                        symbolCode
+                                    )
                                 }
-                                TimeAndTempCards(
-                                    hour,
-                                    temp,
-                                    symbolCode
-                                )
                             }
                         }
-                    }
-                    //Langtidsvarsel
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 30.dp)
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .background(
-                                backgroundColor,
-                                shape = RoundedCornerShape(size = 15.dp)
-                            )
+                        //Langtidsvarsel
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(horizontal = 30.dp)
+                                .fillMaxWidth()
+                                .height(300.dp)
+                                .background(
+                                    backgroundColor,
+                                    shape = RoundedCornerShape(size = 15.dp)
+                                )
 
                         ) {
                             Column(
@@ -621,32 +635,34 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                            // Check if long-term forecast data is available
-                            if (weatherData.longTermForecast != null) {
-                                // Create a vertical scrollable column for forecast rows
-                                Column(
-                                    modifier = Modifier.verticalScroll(rememberScrollState())
-                                ) {
-                                    // Loop over the long-term forecast data to display each row
-                                    Log.d("test", weatherData.longTermForecast.toString())
-                                    weatherData.longTermForecast!!.entries.drop(1)
-                                        .forEachIndexed { index, (day, forecastData) ->
-                                            // Displays the forecast row
-                                            Log.d("test", forecastData.first.toString())
-                                            //day: String, symbolCode: String?, minTemp: Double, maxTemp: Double
-                                            val symbolCode = forecastData.first
-                                            var minTemp = forecastData.second
-                                            var maxTemp = forecastData.third
-                                            if (isFahrenheit) {
-                                                minTemp = celsiusToFahrenheit(minTemp.roundToInt())?.toDouble()!!
-                                                maxTemp = celsiusToFahrenheit(maxTemp.roundToInt())?.toDouble()!!
-                                            }
-                                            LongTermForecastRow(
-                                                day,
-                                                symbolCode,
-                                                minTemp,
-                                                maxTemp
-                                            )
+                                // Check if long-term forecast data is available
+                                if (weatherData.longTermForecast != null) {
+                                    // Create a vertical scrollable column for forecast rows
+                                    Column(
+                                        modifier = Modifier.verticalScroll(rememberScrollState())
+                                    ) {
+                                        // Loop over the long-term forecast data to display each row
+                                        Log.d("test", weatherData.longTermForecast.toString())
+                                        weatherData.longTermForecast!!.entries.drop(1)
+                                            .forEachIndexed { index, (day, forecastData) ->
+                                                // Displays the forecast row
+                                                Log.d("test", forecastData.first.toString())
+                                                //day: String, symbolCode: String?, minTemp: Double, maxTemp: Double
+                                                val symbolCode = forecastData.first
+                                                var minTemp = forecastData.second
+                                                var maxTemp = forecastData.third
+                                                if (isFahrenheit) {
+                                                    minTemp =
+                                                        celsiusToFahrenheit(minTemp.roundToInt())?.toDouble()!!
+                                                    maxTemp =
+                                                        celsiusToFahrenheit(maxTemp.roundToInt())?.toDouble()!!
+                                                }
+                                                LongTermForecastRow(
+                                                    day,
+                                                    symbolCode,
+                                                    minTemp,
+                                                    maxTemp
+                                                )
 
                                                 // Adds a horizontal divider between rows
                                                 if (index < weatherData.longTermForecast!!.size - 1) {
@@ -827,7 +843,7 @@ fun CustomSnackBar(
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
     modifier: Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Snackbar(
         containerColor = containerColor,

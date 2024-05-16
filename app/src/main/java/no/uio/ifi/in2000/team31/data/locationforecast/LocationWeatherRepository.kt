@@ -1,26 +1,23 @@
 package no.uio.ifi.in2000.team31.data.locationforecast
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
-import no.uio.ifi.in2000.team31.cache.CachePolicy
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.ALWAYS
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.NEVER
-import no.uio.ifi.in2000.team31.cache.CachePolicy.Type.REFRESH
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy.Type.ALWAYS
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy.Type.NEVER
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy.Type.REFRESH
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
-import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class LocationWeatherRepository(private val weatherDataSource : LocationWeatherDataSource) {
+class LocationWeatherRepository(private val weatherDataSource: LocationWeatherDataSource) {
     private lateinit var cachedData: WeatherDataModel
     suspend fun fetchInfo(lat: Double?, lon: Double?, cachePolicy: CachePolicy): WeatherDataModel {
         return when (cachePolicy.type) {
             NEVER -> fetch(lat, lon)
             ALWAYS -> if (::cachedData.isInitialized) cachedData else fetch(lat, lon)
             REFRESH -> fetchAndCache(lat, lon)
-            else -> fetch(lat,lon)
+            else -> fetch(lat, lon)
         }
     }
 
@@ -29,25 +26,24 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
         return weatherDataSource.fetchData(lat, lon)
     }
 
-    private suspend fun fetchAndCache(lat:Double?, lon:Double?): WeatherDataModel {
+    private suspend fun fetchAndCache(lat: Double?, lon: Double?): WeatherDataModel {
         cachedData = fetch(lat, lon)
         return cachedData
     }
 
-//    suspend fun getSymbolCodeNow(lat: Double?, lon: Double?): String? {
-//        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
-//        return weatherData.instant.first().symbolCode
-//    }
+    //Returns a list of 24 triples where each triple contains data for a single hour
+    suspend fun get24HoursForecast(
+        lat: Double?,
+        lon: Double?,
+    ): List<Triple<String?, Double?, String?>> {
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun get24HoursForecast(lat: Double?, lon: Double?): List<Triple<String?, Double?, String?>> {
+        val weatherData = fetchInfo(lat, lon, CachePolicy(ALWAYS))
+        val temperaturesForNextHours =
+            mutableListOf<Triple<String?, Double?, String?>>() // hourly forecast
 
-        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
-        val temperaturesForNextHours = mutableListOf<Triple<String?,Double?,String?>>() // hourly forecast
+        weatherData.instant.subList(1, 26).forEach { hourlyData ->
 
-        weatherData.instant.subList(1,26).forEach{hourlyData ->
-
-            val utcHour = hourlyData.time?.substring(11,16)
+            val utcHour = hourlyData.time?.substring(11, 16)
             val utcTime = LocalTime.parse(utcHour)
             val targetOffsetTime = utcTime.plusHours(2)
             val localHour = targetOffsetTime.format(DateTimeFormatter.ofPattern("HH:mm"))
@@ -55,19 +51,23 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
             val temperature = hourlyData.airTemperature
             val symbolCode = hourlyData.symbolCode
 
-            temperaturesForNextHours.add(Triple(localHour.substring(0,2),temperature,symbolCode))
+            temperaturesForNextHours.add(Triple(localHour.substring(0, 2), temperature, symbolCode))
         }
 
         return temperaturesForNextHours
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getNext7Days(lat: Double?, lon: Double?): Map<String, Triple<String?, Double, Double>> {
+    //Returns a map with dates as keys and a triple containing the minimum and maximum temperature, as well as the symbol code, for that date
+    suspend fun getNext9Days(
+        lat: Double?,
+        lon: Double?,
+    ): Map<String, Triple<String?, Double, Double>> {
 
-        val weatherData = fetchInfo(lat, lon, CachePolicy(CachePolicy.Type.ALWAYS))
+        val weatherData = fetchInfo(lat, lon, CachePolicy(ALWAYS))
 
 
-        val longTermForecast = mutableMapOf<String, Triple<String?, Double, Double>>() // long term forecast
+        val longTermForecast =
+            mutableMapOf<String, Triple<String?, Double, Double>>() // long term forecast
 
         val startIndeks = 1 // Startindeks for neste dag
         val endIndeks = weatherData.instant.size
@@ -79,7 +79,8 @@ class LocationWeatherRepository(private val weatherDataSource : LocationWeatherD
             Double.MIN_VALUE // Variabel for å holde maksimumstemperaturen for den nåværende dagen
         var minTemp =
             Double.MAX_VALUE
-        var symbolCode: String? = null// Variabel for å holde minimumstemperaturen for den nåværende dagen
+        var symbolCode: String? =
+            null// Variabel for å holde minimumstemperaturen for den nåværende dagen
 
         var currentDateIndex =
             startIndeks // Variabel for å holde indeksen til den nåværende datoen i listen

@@ -3,22 +3,21 @@ package no.uio.ifi.in2000.team31
 
 
 
-import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import no.uio.ifi.in2000.team31.ui.mood.Mood
-import org.junit.Assert
+import no.uio.ifi.in2000.team31.container.AppContainer
+import no.uio.ifi.in2000.team31.container.MoodApplication
+import no.uio.ifi.in2000.team31.data.network.NetworkConnectivityObserver
+import no.uio.ifi.in2000.team31.ui.shared.MoodUIState
+import no.uio.ifi.in2000.team31.ui.shared.SharedViewModel
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description

@@ -7,27 +7,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,14 +52,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MoodApplication
-import no.uio.ifi.in2000.team31.Status
+import no.uio.ifi.in2000.team31.container.MoodApplication
+import no.uio.ifi.in2000.team31.data.network.Status
 import no.uio.ifi.in2000.team31.data.activity.Activity
-import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
-import no.uio.ifi.in2000.team31.populateDatabase
+import no.uio.ifi.in2000.team31.model.populateDatabase
+import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
 enum class WeatherStatus {
@@ -76,9 +69,8 @@ enum class WeatherStatus {
 
 @Composable
 fun ActivityScreen(
-    navigateToAddActivity: () -> Unit,
     navController: NavController,
-    viewModel: ActivityScreenViewModel = viewModel()
+    viewModel: ActivityViewModel = viewModel()
 ) {
 
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
@@ -106,7 +98,7 @@ fun ActivityScreen(
         floatingActionButton = {
             val color = if (isDarkMode) Color(0xFF002591) else Color(0xFFAAD3FF)
             FloatingActionButton(
-                onClick = navigateToAddActivity,
+                onClick = { navController.navigate(AppRoutes.ADD_ACTIVITY) },
                 backgroundColor = color
                 ) {
                 Icon(
@@ -239,7 +231,7 @@ fun MoodCastTopBar() {
 @Composable
 fun ActivityCardList (
     activityList: List<Activity>,
-    viewModel: ActivityScreenViewModel,
+    viewModel: ActivityViewModel,
     onActivityClick: (Activity) -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -257,9 +249,7 @@ fun ActivityCardList (
                 ActivityCard(
                     activity,
                     onDeleteClick = {activityToDelete ->
-                        scope.launch {
-                            viewModel.activityRepository.deleteActivity(activityToDelete)
-                        }
+                            viewModel.deleteActivity(activityToDelete)
                     },
                     onClick = onActivityClick
                 )
@@ -326,80 +316,5 @@ fun ActivityCard(
                 }
             }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepository, onBackClick: () -> Unit) {
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(
-                    "MoodCast",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 31.dp)
-                )},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp)
-                    .shadow(4.dp, RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp)),
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        val activityFlow: Flow<Activity?> = activityRepository.getItemStream(activityId)
-        val activity by activityFlow.collectAsState(initial = null)
-
-        if (activity == null) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            // Display activity details
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                AsyncImage(
-                    model = activity!!.imagePath,
-                    contentDescription = "Activity Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-                Text(
-                    text = activity!!.name,
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = activity!!.info,
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-
     }
 }

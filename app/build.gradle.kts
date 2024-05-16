@@ -74,9 +74,9 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation ("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
+    implementation (libs.accompanist.permissions)
     testImplementation(libs.junit)
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation(libs.junit.jupiter)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -98,32 +98,32 @@ dependencies {
     implementation(libs.androidx.material)
     implementation(libs.androidx.material.icons.extended)
 
-    implementation("androidx.compose.material:material-icons-core:1.6.7")
-    implementation("androidx.compose.material:material-icons-extended:1.6.7")
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended.v167)
 
 
     // For Preferences DataStore
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation(libs.androidx.datastore.preferences)
 
     // For Proto DataStore
-    implementation("androidx.datastore:datastore-core:1.1.1")
+    implementation(libs.androidx.datastore.core)
 
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation(libs.androidx.core.splashscreen)
 
     val room_version = "2.5.0"
 
-    implementation("androidx.room:room-runtime:$room_version")
-    ksp("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
-    implementation("androidx.activity:activity-compose:1.7.0")
-    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
-    implementation("androidx.activity:activity-ktx:1.9.0")
-    implementation("androidx.fragment:fragment-ktx:1.7.0")
+    implementation(libs.androidx.activity.compose.v170)
+    implementation(libs.accompanist.permissions.v0280)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.fragment.ktx.v171)
 
-    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation(libs.coil.compose)
 
     implementation("com.google.code.gson:gson:2.10.1")
 

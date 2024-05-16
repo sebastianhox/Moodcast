@@ -23,5 +23,5 @@ interface ActivityDao {
     fun getAllActivities(): Flow<List<Activity>>
 
     @Query("SELECT * from activities WHERE id = :id")
-    fun getActivity(id: Int): Flow<Activity>
+    fun getActivity(id: Int?): Flow<Activity>
 }

@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MoodApplication
-import no.uio.ifi.in2000.team31.cache.CachePolicy
+import no.uio.ifi.in2000.team31.container.MoodApplication
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy
 
 data class WeatherAlertUIState(
     val features: List<Feature>? = listOf()
@@ -26,7 +26,9 @@ class AlertViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _weatherAlertUIState.update { currentState ->
                 currentState.copy(
-                    features = alertRepository.getDangerZonesOf(point(37.4220936, -122.083922), CachePolicy(CachePolicy.Type.ALWAYS))
+                    features = alertRepository.getDangerZonesOf(point(37.4220936, -122.083922), CachePolicy(
+                        CachePolicy.Type.ALWAYS)
+                    )
                 )
             }
         }
