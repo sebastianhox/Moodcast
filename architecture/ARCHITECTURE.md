@@ -197,6 +197,8 @@ ikke cacher dataen. Dette kan være hensiktsmessig hvis vi vil sikre oppdatert d
 å øke belastningen på nettverket. Slike kodesnutter er viktig for færre API-kall og bedring av
 appens ytelse.
 
+Referanseliste er i rapport
+
 <div style="text-align: center;">
     <figure style="display: inline-block; margin: 10px;">
         <img src="datalayer.png" alt="mappestruktur for data-laget" width="200" height="">
