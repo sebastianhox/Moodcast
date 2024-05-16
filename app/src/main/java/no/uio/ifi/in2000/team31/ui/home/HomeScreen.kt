@@ -520,33 +520,36 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                             modifier = Modifier.align(Alignment.Center)
                                         )
                                     }
-                                    Row(
-                                        //modifier = Modifier.weight(1f),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(IntrinsicSize.Min)
-                                            .padding(top = 8.dp, start = 16.dp, end = 16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column {
-                                            Text(text = "${windSpeed.toString()} m/s")
-                                            Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
-                                        }
-                                        Column {
-                                            Text(text = windDirection.toString())
-                                            // If sjekk for å sette riktig farge, siden det brukes Image og ikke Icon
-                                            val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
-                                            //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
-                                            Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
-                                        }
-                                        Column {
-                                            Text(text = "$rain mm.")
-                                            Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Precipation")
-                                        }
-                                        Column{
-                                            Text(text = "${humidity.toString()} %")
-                                            Icon(imageVector = Icons.Filled.Water, contentDescription = "Humidity")
+                                    if (connectionState == Status.Available) {
+
+                                        Row(
+                                            //modifier = Modifier.weight(1f),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(IntrinsicSize.Min)
+                                                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column {
+                                                Text(text = "${windSpeed.toString()} m/s")
+                                                Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
+                                            }
+                                            Column {
+                                                Text(text = windDirection.toString())
+                                                // If sjekk for å sette riktig farge, siden det brukes Image og ikke Icon
+                                                val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
+                                                //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
+                                                Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
+                                            }
+                                            Column {
+                                                Text(text = "$rain mm.")
+                                                Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Precipation")
+                                            }
+                                            Column{
+                                                Text(text = "${humidity.toString()} %")
+                                                Icon(imageVector = Icons.Filled.Water, contentDescription = "Humidity")
+                                            }
                                         }
                                     }
                                 }
