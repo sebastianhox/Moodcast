@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,16 +25,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Water
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -58,8 +62,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -73,7 +77,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
@@ -88,12 +91,27 @@ import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.Clock
 import java.time.LocalDate
-import java.util.logging.Handler
 import kotlin.math.roundToInt
 
 
 // har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
 
+fun getWindDirectionIcon(degrees: Int?): Int {
+    return if (degrees != null) {
+        when (degrees.toDouble()) {
+            in 22.5..67.5 -> R.drawable.baseline_south_west_24   // 45
+            in 67.5..112.5 -> R.drawable.baseline_west_24        // 90
+            in 112.5..157.5 -> R.drawable.baseline_north_west_24 // 135
+            in 157.5..202.5 -> R.drawable.baseline_north_24      // 180
+            in 202.5..247.5 -> R.drawable.baseline_north_east_24 // 225
+            in 247.5..292.5 -> R.drawable.baseline_east_24       // 270
+            in 292.5..337.5 -> R.drawable.baseline_south_east_24 // 315
+            else -> R.drawable.baseline_south_24                       // 0
+        }
+    } else {
+        R.drawable.baseline_wind_power_24 // Bare som en default for at det skal se bra ut
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -129,6 +147,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
         if (darkModeOn) Color(0xFF002571).copy(alpha = 0.50f) else Color(0xFFAAD3FF).copy(alpha = 0.45f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     val humidity = weatherData.weatherData?.instant?.get(0)?.relativeHumidity
+    val windSpeed = weatherData.weatherData?.instant?.get(0)?.windSpeed
+    val windDirection = weatherData.weatherData?.instant?.get(0)?.windFromDirection
+    var rain = weatherData.weatherData?.instant?.get(0)?.precipitationAmount
+    val arrowIcon = getWindDirectionIcon(windDirection?.roundToInt())
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
         Log.d("temp", "Temp is $temperature before convertion")
@@ -451,6 +473,35 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                             modifier = Modifier.align(Alignment.Center)
                                         )
                                     }
+                                    Row(
+                                        //modifier = Modifier.weight(1f),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(IntrinsicSize.Min)
+                                            .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column {
+                                            Text(text = "${windSpeed.toString()} m/s")
+                                            Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
+                                        }
+                                        Column {
+                                            Text(text = windDirection.toString())
+                                            // If sjekk for å sette riktig farge, siden det brukes Image og ikke Icon
+                                            val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
+                                            //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
+                                            Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
+                                        }
+                                        Column {
+                                            Text(text = "$rain mm.")
+                                            Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Precipation")
+                                        }
+                                        Column{
+                                            Text(text = "${humidity.toString()} %")
+                                            Icon(imageVector = Icons.Filled.Water, contentDescription = "Humidity")
+                                        }
+                                    }
                                 }
                             } else {
                                 Column (
@@ -473,7 +524,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .align(Alignment.CenterHorizontally)
-                                            .padding(bottom= 12.dp)
+                                            .padding(bottom = 12.dp)
                                     )
                                     val buttonColorPrim = if (darkModeOn) Color(0xFF002571) else Color(0xFFAAD3FF)
                                     val buttonColorSec = if (darkModeOn) Color.White else  Color.Black
@@ -505,7 +556,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .align(Alignment.CenterHorizontally)
-                                            .padding(bottom= 12.dp)
+                                            .padding(bottom = 12.dp)
                                     )
                                 }
 
