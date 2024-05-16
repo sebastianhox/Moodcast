@@ -520,15 +520,14 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text(text = "${windSpeed.toString()} m/s")
-                                                Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
-                                            }
-                                            Column {
-                                                Text(text = windDirection.toString())
-                                                // If sjekk for å sette riktig farge, siden det brukes Image og ikke Icon
                                                 val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
-                                                //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
-                                                Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
+                                                Text(text = "${windSpeed.toString()} m/s")
+                                                Row() {
+                                                    Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
+                                                    //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
+                                                    Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
+
+                                                }
                                             }
                                             Column {
                                                 Text(text = "$rain mm.")
@@ -693,7 +692,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LongTermForecastRow(
     day: String,
@@ -760,7 +758,6 @@ fun LongTermForecastRow(
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeAndTempCards(
     hour: String?,
