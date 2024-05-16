@@ -100,7 +100,7 @@ fun AddActivityScreen(
                     IconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Tilbake"
                         )
                 }
                 }
@@ -152,7 +152,7 @@ fun AddActivityScreen(
                     .padding(30.dp)
             ) {
                 Text(
-                    text = "Save",
+                    text = "Lagre",
                     fontWeight = FontWeight.Bold,
                     fontSize = MaterialTheme.typography.titleMedium.fontSize
                 )
@@ -215,7 +215,7 @@ fun SelectMoods(
     Column (
         modifier = modifier
     ) {
-        Text("Suitable moods:")
+        Text("Passende humør:")
 
         Spacer(modifier = Modifier.size(10.dp))
 
@@ -261,7 +261,7 @@ fun ActivityInputForm(
         OutlinedTextField(
             value = activityDetails.name,
             onValueChange = { onValueChange(activityDetails.copy(name = it)) },
-            label = { Text("Activity name") },
+            label = { Text("Navn på akitvitet") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(5.dp),
@@ -271,7 +271,7 @@ fun ActivityInputForm(
         OutlinedTextField(
             value = activityDetails.info,
             onValueChange = { onValueChange(activityDetails.copy(info = it)) },
-            label = { Text("Activity info") },
+            label = { Text("Informasjon") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(5.dp),
@@ -326,16 +326,16 @@ fun SelectPhotoFromGallery(
                 val request = PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 pickMedia.launch(request)
             }) {
-                Text("Pick an Image")
+                Text("Velg et bilde")
             }
             Text(text = imageFileName ?: "")   
         } else {
             Button(onClick = { 
                 permissionState.launchPermissionRequest()
             }) {
-                Text("Request permission")
+                Text("Be om tillatelse")
             }
-            Text("No access")
+            Text("Ingen tilgang")
         }
     }
 }
@@ -344,7 +344,7 @@ fun getFilenameFromUri(context: Context, uri: Uri): String {
         val nameIndex = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)
         cursor.moveToFirst()
         cursor.getString(nameIndex)
-    } ?: "Unknown"
+    } ?: "Ukjent"
 }
 
 private fun copyImageToStorage(context: Context, imageUri: Uri): String? {
@@ -385,7 +385,7 @@ fun MoodChip(
             {
                 Icon(
                     imageVector = Icons.Filled.Done,
-                    contentDescription = "Done icon",
+                    contentDescription = "Ferdig ikon",
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }

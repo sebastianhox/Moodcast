@@ -56,12 +56,12 @@ import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import kotlin.math.roundToInt
 
 enum class Mood {
-    HAPPY,
-    SAD,
-    ENERGETIC,
-    CALM,
-    STRESSED,
-    ANGRY
+    GLAD,
+    TRIST,
+    ENERGISK,
+    ROLIG,
+    STRESSET,
+    SINT
 }
 
 @Composable
@@ -200,12 +200,12 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 )
 
                 // Humørknapper
-                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState, sharedViewModel, Mood.HAPPY)
-                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGETIC)
-                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.CALM)
-                MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.SAD)
-                MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSED)
-                MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.ANGRY)
+                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState, sharedViewModel, Mood.GLAD)
+                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGISK)
+                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.ROLIG)
+                MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.TRIST)
+                MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSET)
+                MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.SINT)
 
             }
         }
@@ -245,7 +245,6 @@ fun MoodButton(
 @Composable
 fun CustomSnackBar(
     message: String,
-    isRtl: Boolean = false,
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
     navController: NavController

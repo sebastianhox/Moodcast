@@ -1,8 +1,6 @@
 package no.uio.ifi.in2000.team31.ui.home
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -520,11 +518,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
+                                                val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else ColorFilter.tint(Color.White)
                                                 Text(text = "${windSpeed.toString()} m/s")
-                                                Row() {
+                                                Row {
                                                     Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
-                                                    //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
                                                     Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
 
                                                 }
