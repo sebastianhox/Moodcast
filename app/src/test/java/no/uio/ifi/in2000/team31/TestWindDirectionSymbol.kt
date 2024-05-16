@@ -1,6 +1,6 @@
 package no.uio.ifi.in2000.team31
 
-import org.junit.Assert
+import no.uio.ifi.in2000.team31.model.getWindDirectionIcon
 import org.junit.Assert.assertEquals
 import org.junit.Test
 class TestWindDirectionSymbol {

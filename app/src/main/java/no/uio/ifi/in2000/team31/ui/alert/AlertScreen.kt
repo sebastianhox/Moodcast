@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,7 +35,6 @@ data class Alert(
     val instruction: String?
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = viewModel()) {
     alertViewModel.startAlertUpdates()
@@ -52,7 +52,7 @@ fun AlertScreen(navController: NavController, alertViewModel: AlertViewModel = v
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (features != null) {
-                    itemsIndexed(features) { _, feature ->
+                    items(features) {feature ->
                         val dataMap = mutableMapOf<String, String?>()
                         feature.properties.forEach { entry ->
                             if (entry.value !is kotlinx.serialization.json.JsonArray) {
@@ -90,8 +90,6 @@ fun AlertTopAppBar(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
         },
-        navigationIcon = {
-        },
         actions = {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Filled.Close, contentDescription = "close")
@@ -106,22 +104,16 @@ fun AlertTopAppBar(navController: NavController) {
 
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun formatDate(dateString: String?): String {
     return if (dateString != null) {
-        try {
-            val formatter = DateTimeFormatter.ofPattern("dd/MM-yyyy HH:mm")
-            val date = ZonedDateTime.parse(dateString)
-            date.format(formatter)
-        } catch (e: Exception) {
-            "Ukjent dato"
-        }
+        val formatter = DateTimeFormatter.ofPattern("dd/MM-yyyy HH:mm")
+        val date = ZonedDateTime.parse(dateString)
+        date.format(formatter)
     } else {
         "Ukjent"
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlertCard(alert: Alert) {
     Card(
@@ -151,7 +143,6 @@ fun AlertCard(alert: Alert) {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                // Tittel
                 Text(
                     text = "${alert.title?.split(",")?.firstOrNull()}",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
@@ -160,7 +151,6 @@ fun AlertCard(alert: Alert) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Område
                 Text(
                     text = "${alert.area}",
                     fontWeight = FontWeight.SemiBold,
@@ -170,18 +160,18 @@ fun AlertCard(alert: Alert) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Gjelder til (vises kun hvis farevarselet faktisk har et final tidspunkt)
+                // Shows only when there is an end date
                 if (formatDate(alert.endDate) != "Ukjent") {
                     Text(
                         text = "Gjelder til ${formatDate(alert.endDate)}",
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         color = Color.Black
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Instruksjoner
+                // Instructions
                 Text(
                     text = alert.instruction.toString(),
                     fontWeight = FontWeight.Medium,

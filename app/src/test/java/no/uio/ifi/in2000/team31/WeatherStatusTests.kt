@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team31
 
+import no.uio.ifi.in2000.team31.model.getWeatherStatus
 import no.uio.ifi.in2000.team31.ui.activity.WeatherStatus
 import org.junit.Assert.assertEquals
 import org.junit.Test

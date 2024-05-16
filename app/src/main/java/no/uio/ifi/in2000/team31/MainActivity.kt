@@ -12,34 +12,28 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavHostController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import no.uio.ifi.in2000.team31.cache.CachePolicy
+import no.uio.ifi.in2000.team31.data.cachePolicy.CachePolicy
+import no.uio.ifi.in2000.team31.container.AppContainer
+import no.uio.ifi.in2000.team31.container.MoodApplication
+import no.uio.ifi.in2000.team31.data.network.NetworkConnectivityObserver
 import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.navigation.AppNavigation
 import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
+import no.uio.ifi.in2000.team31.ui.shared.SharedViewModel
 import no.uio.ifi.in2000.team31.ui.theme.Team31Theme
 import java.lang.ref.WeakReference
 
@@ -70,7 +64,8 @@ class MainActivity : ComponentActivity() {
         sharedViewModel = appContainer.sharedViewModel
         settingsViewModel = appContainer.settingsViewModel
 
-        mInstanceActivity = WeakReference(this) // set the instance in order to call functions from other classes
+        mInstanceActivity =
+            WeakReference(this) // set the instance in order to call functions from other classes
 
         setContent {
             val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
@@ -81,7 +76,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation(homeViewModel = homeViewModel, activityRepository = appContainer.activityRepository)
+                    AppNavigation(
+                        homeViewModel = homeViewModel
+                    )
 
                 }
 
@@ -99,15 +96,8 @@ class MainActivity : ComponentActivity() {
 //
 //    }
     @SuppressLint("MissingPermission")
-    @RequiresApi(Build.VERSION_CODES.O)
-   fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
-
-
-
-
+    fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
         Log.d("location", "Start location permission request / updates")
-
-        val locationOn = settingsViewModel.locationOn.value
 
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
@@ -163,7 +153,6 @@ class MainActivity : ComponentActivity() {
         Log.d("location", "End location updates")
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
@@ -171,12 +160,10 @@ class MainActivity : ComponentActivity() {
             when {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                     settingsViewModel.onLocationSwitchChange(true)
-//                    requestLocationAndStartUpdates()
                 }
 
                 permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                     settingsViewModel.onLocationSwitchChange(true)
-//                    requestLocationAndStartUpdates()
                 }
 
                 else -> {
@@ -195,63 +182,19 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    fun checkPermissions(): Boolean {
+
+    private fun checkPermissions(): Boolean {
         return (
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-            &&
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+                        &&
+                        ContextCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
 
-            ) != PackageManager.PERMISSION_GRANTED
-        )
+                        ) != PackageManager.PERMISSION_GRANTED
+                )
     }
 }
-
-@Composable
-fun SplashScreen(navController: NavHostController) {
-    LaunchedEffect(key1 = true) {
-
-        // todo: implement logic to await successful cache response
-        // in the meantime: short delay
-        delay(4000)
-        navController.navigate("home") {
-            popUpTo("splash") { inclusive = true }
-        }
-    }
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.splashscreen_happy_bluesky),
-                contentDescription = "Splash Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-    }
-}
-
-
-//@RequiresApi(Build.VERSION_CODES.O)
-//@Composable
-//fun SetupNavGraph(navController: NavHostController, homeViewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
-//    NavHost(
-//        navController = navController,
-//        startDestination = "splash"
-//    ) {
-//        composable(route = "splash") {
-//            SplashScreen(navController = navController)
-//        }
-//        composable(route = "home") {
-//            AppNavigation(homeViewModel = homeViewModel)
-//        }
-//    }
-//}

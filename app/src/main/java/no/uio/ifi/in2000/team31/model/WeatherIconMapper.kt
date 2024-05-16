@@ -2,8 +2,9 @@ package no.uio.ifi.in2000.team31.model
 
 import no.uio.ifi.in2000.team31.R
 
+//Maps symbol_code with the respective weather icon
 object WeatherIconMapper {
-    val symbolCodeMap : Map<String,Int> = mutableMapOf(
+    val symbolCodeMap: Map<String, Int> = mutableMapOf(
         Pair("clearsky_day", R.drawable._01d),
         Pair("clearsky_night", R.drawable._01n),
         Pair("clearsky_polartwilight", R.drawable._01m),

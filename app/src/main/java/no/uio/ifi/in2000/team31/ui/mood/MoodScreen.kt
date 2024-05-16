@@ -44,10 +44,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.container.MoodApplication
 import no.uio.ifi.in2000.team31.R
-import no.uio.ifi.in2000.team31.SharedViewModel
-import no.uio.ifi.in2000.team31.Status
+import no.uio.ifi.in2000.team31.ui.shared.SharedViewModel
+import no.uio.ifi.in2000.team31.data.network.Status
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -76,6 +76,7 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
     val settingsViewModel = appContainer.settingsViewModel
 
     moodViewModel.manuallyUpdate()
+
     var temperature = weatherData.temperature
     var symbol = "°C"
 
@@ -94,34 +95,29 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
         topBar = {
             MoodCastTopBar()
         },
-        bottomBar = {
-            if (navController.currentDestination?.route != AppRoutes.ALERT) {
-                BottomNavigationBar(navController)
-            }
-        },
-        // adds snackbarhost (toast outlawed)
-            snackbarHost = {
-                SnackbarHost(
-                    hostState = snackbarState,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                ) {snackbarData ->
-                    if (isDarkMode) {
-                        CustomSnackBar(
-                            snackbarData.visuals.message,
-                            navController = navController,
-                            contentColor = Color(0xFFAAD3FF),
-                            containerColor = Color(0xFF002571))
-                    } else {
-                        CustomSnackBar(
-                            snackbarData.visuals.message,
-                            navController = navController,
-                            contentColor = Color(0xFF002571),
-                            containerColor = Color(0xFFAAD3FF)
-                        )
-                    }
-
+        bottomBar = { BottomNavigationBar(navController) },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarState,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            ) { snackbarData ->
+                if (isDarkMode) {
+                    CustomSnackBar(
+                        snackbarData.visuals.message,
+                        navController = navController,
+                        contentColor = Color(0xFFAAD3FF),
+                        containerColor = Color(0xFF002571)
+                    )
+                } else {
+                    CustomSnackBar(
+                        snackbarData.visuals.message,
+                        navController = navController,
+                        contentColor = Color(0xFF002571),
+                        containerColor = Color(0xFFAAD3FF)
+                    )
                 }
             }
+        }
     )
     { innerPadding ->
         Column(
@@ -154,13 +150,16 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                     horizontalArrangement = Arrangement.Center
                 ) {
                     if (connectionState == Status.Available) {
-                    Image(
-                        painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable.svg), // placeholder icon, hard coded
-                        contentDescription = "Værikon",
-                        modifier = Modifier.size(42.dp),
+                        Image(
+                            painter = painterResource(
+                                id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow]
+                                    ?: R.drawable.svg
+                            ),
+                            contentDescription = "Værikon",
+                            modifier = Modifier.size(42.dp),
 
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                            )
+                        Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
                             text = "${temperature?.roundToInt()}" + symbol,
@@ -180,7 +179,6 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                     }
                 }
             }
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -199,13 +197,60 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
 
                 )
 
-                // Humørknapper
-                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState, sharedViewModel, Mood.GLAD)
-                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGISK)
-                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.ROLIG)
-                MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.TRIST)
-                MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSET)
-                MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.SINT)
+                MoodButton(
+                    "😊 Glad",
+                    Color(0xFFFFCC00),
+                    Color.White,
+                    scope,
+                    snackbarState,
+                    sharedViewModel,
+                    Mood.HAPPY
+                )
+                MoodButton(
+                    "⚡ Energisk",
+                    Color(0xFFFF9500),
+                    Color.White,
+                    scope,
+                    snackbarState,
+                    sharedViewModel,
+                    Mood.ENERGETIC
+                )
+                MoodButton(
+                    "🍃 Rolig",
+                    Color(0xFF8282DA),
+                    Color.White,
+                    scope,
+                    snackbarState,
+                    sharedViewModel,
+                    Mood.CALM
+                )
+                MoodButton(
+                    "😢 Trist",
+                    Color(0xFF3d9BFF),
+                    Color.White,
+                    scope,
+                    snackbarState,
+                    sharedViewModel,
+                    Mood.SAD
+                )
+                MoodButton(
+                    "😰 Stresset",
+                    Color(0xFF4CAF50),
+                    Color.White,
+                    scope,
+                    snackbarState,
+                    sharedViewModel,
+                    Mood.STRESSED
+                )
+                MoodButton(
+                    "😠 Sint",
+                    Color(0xFFAD0909),
+                    Color.White,
+                    scope,
+                    snackbarState,
+                    sharedViewModel,
+                    Mood.ANGRY
+                )
 
             }
         }
@@ -220,7 +265,7 @@ fun MoodButton(
     scope: CoroutineScope,
     snackbarState: SnackbarHostState,
     sharedViewModel: SharedViewModel,
-    mood: Mood
+    mood: Mood,
 ) {
     Button(
         modifier = Modifier
@@ -247,59 +292,59 @@ fun CustomSnackBar(
     message: String,
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
-    navController: NavController
+    navController: NavController,
 ) {
     Snackbar(
         containerColor = containerColor,
         contentColor = contentColor,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
         ) {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 10.dp)
             ) {
-                Column(
+                Text(
+                    message,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
                     modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(message,
-                        modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center)
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(bottom = 10.dp),
-                        onClick = {
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 10.dp),
+                    onClick = {
+                        navController.navigate(AppRoutes.ACTIVITY) {
+                            if (navController.currentDestination?.route != AppRoutes.ACTIVITY) {
                                 navController.navigate(AppRoutes.ACTIVITY) {
-                                    if (navController.currentDestination?.route != AppRoutes.ACTIVITY) {
-                                        navController.navigate(AppRoutes.ACTIVITY) {
-                                            // fikser backstack
-                                            popUpTo(navController.graph.startDestinationId) {
-                                                saveState = true
-                                            }
-
-                                            //unngår flere instanser
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
                                     }
+
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                            },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = contentColor
-                        )
-                    ) {
-                        Text(
-                            text = "Til aktiviteter",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.End
-                        )
-                    }
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = contentColor
+                    )
+                ) {
+                    Text(
+                        text = "Til aktiviteter",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.End
+                    )
                 }
             }
-            
+        }
+
     }
 }
 
