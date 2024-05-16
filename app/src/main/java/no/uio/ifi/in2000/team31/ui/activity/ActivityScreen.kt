@@ -56,15 +56,14 @@ import kotlinx.coroutines.flow.firstOrNull
 import no.uio.ifi.in2000.team31.container.MoodApplication
 import no.uio.ifi.in2000.team31.data.network.Status
 import no.uio.ifi.in2000.team31.data.activity.Activity
-import no.uio.ifi.in2000.team31.model.populateDatabase
-import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
+import no.uio.ifi.in2000.team31.populateDatabase
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
 enum class WeatherStatus {
-    SUNNY,
-    RAINY,
-    SNOWY,
-    CLOUDY
+    SOL,
+    REGN,
+    SNO,
+    SKYER
 }
 
 @Composable
@@ -103,7 +102,7 @@ fun ActivityScreen(
                 ) {
                 Icon(
                     Icons.Filled.Add,
-                    "add activity")
+                    "Legg til aktivitet")
             }
         }
     ) { innerPadding ->
@@ -112,10 +111,10 @@ fun ActivityScreen(
         LaunchedEffect(key1 = Unit) {
             viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
                 if (existingActivity.isEmpty()) {
-                    Log.d("populus", "IS EMPTY")
+                    Log.d("CheckPopulateDB", "IS EMPTY")
                     populateDatabase(context, viewModel)
                 } else {
-                    Log.d("populus", "NOT EMPTY")
+                    Log.d("CheckPopulateDB", "NOT EMPTY")
                 }
             }
         }
@@ -176,17 +175,17 @@ fun ActivityScreen(
 @Composable
 fun HeroText(status: WeatherStatus?, modifier: Modifier) {
     val text = when (status) {
-        WeatherStatus.SUNNY -> "Sola skinner!"
-        WeatherStatus.RAINY -> "Regn, regn, regn!"
-        WeatherStatus.SNOWY -> "Snø, snø, snø!"
-        WeatherStatus.CLOUDY -> "Overskyet..."
+        WeatherStatus.SOL -> "Klar himmel!"
+        WeatherStatus.REGN -> "Regn, regn, regn!"
+        WeatherStatus.SNO -> "Snø, snø, snø!"
+        WeatherStatus.SKYER -> "Overskyet..."
         null -> "Mangler værstatus"
     }
     val description = when (status) {
-        WeatherStatus.SUNNY -> "Ta en tur ut i det fine været, nyt en piknik i parken eller utforsk byen på sykkel for en perfekt dag!"
-        WeatherStatus.RAINY -> "Det er en flott dag for innendørsaktiviteter. Hva med å besøke et museum eller se en god film?"
-        WeatherStatus.SNOWY -> "Kle deg varmt og nyt vinterlandskapet. Hva med å bygge en snømann?"
-        WeatherStatus.CLOUDY -> "En perfekt dag for litt rolig tid. Kanskje lese en bok eller nyte en kaffe på en koselig kafé?"
+        WeatherStatus.SOL -> "Ta en tur ut i det fine været, nyt en piknik i parken eller utforsk byen på sykkel for en perfekt dag!"
+        WeatherStatus.REGN -> "Det er en flott dag for innendørsaktiviteter. Hva med å besøke et museum eller se en god film?"
+        WeatherStatus.SNO -> "Kle deg varmt og nyt vinterlandskapet. Hva med å bygge en snømann?"
+        WeatherStatus.SKYER -> "En perfekt dag for litt rolig tid. Kanskje lese en bok eller nyte en kaffe på en koselig kafé?"
         null -> "Noe har gått galt..."
     }
     Column(
@@ -300,19 +299,19 @@ fun ActivityCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete?") },
-            text = { Text("Sure?") },
+            title = { Text("Slette aktivitet?") },
+            text = { Text("Er du sikker?") },
             confirmButton = {
                             Button(onClick = {
                                 onDeleteClick(activity)
                                 showDeleteDialog = false
                             }) {
-                                Text("Delete")
+                                Text("Slett")
                             }
             },
             dismissButton = {
                 Button(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text("Avbryt")
                 }
             }
         )

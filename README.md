@@ -4,23 +4,18 @@ Clone repository med git clone git@github.uio.no:IN2000-V24/team-31.git på egen
 
 
 Teamet:
-
 Emil
-
 Åsmund
-
 Avrin
-
 Sebastian
-
 Alexander
-
 Marius
 
 # Instruks
 
-Ikke last opp til main uten at det er avtalt, med unntak av endring i README.
+Last ned zip fil og kan kjøres på Android enhet, eller i emulator i Android Studio.
+Fungerer på API 26 og oppover, testet tilogmed API 34.
 
-Test branchen kan brukes til å teste før vi legger inn på main, senere legger vi til flere brancher
 
-Lag din egen branch under eget navn/brukernavn for eget bruk
+
+Alle bildene er hentet fra Unsplash

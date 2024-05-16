@@ -56,12 +56,12 @@ import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import kotlin.math.roundToInt
 
 enum class Mood {
-    HAPPY,
-    SAD,
-    ENERGETIC,
-    CALM,
-    STRESSED,
-    ANGRY
+    GLAD,
+    TRIST,
+    ENERGISK,
+    ROLIG,
+    STRESSET,
+    SINT
 }
 
 @Composable
@@ -290,7 +290,6 @@ fun MoodButton(
 @Composable
 fun CustomSnackBar(
     message: String,
-    isRtl: Boolean = false,
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
     navController: NavController,

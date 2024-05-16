@@ -510,30 +510,21 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                 }
                                 if (connectionState == Status.Available) {
 
-                                    Row(
-                                        //modifier = Modifier.weight(1f),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(IntrinsicSize.Min)
-                                            .padding(top = 8.dp, start = 16.dp, end = 16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column {
-                                            val colorFilter =
-                                                if (!darkModeOn) ColorFilter.tint(Color.Black) else null
-                                            Text(text = "${windSpeed.toString()} m/s")
-                                            Row {
-                                                Icon(
-                                                    imageVector = Icons.Filled.Air,
-                                                    contentDescription = "Wind"
-                                                )
-                                                //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
-                                                Image(
-                                                    painter = painterResource(arrowIcon),
-                                                    contentDescription = "Arrow pointing to wind direction",
-                                                    colorFilter = colorFilter
-                                                )
+                                        Row(
+                                            //modifier = Modifier.weight(1f),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(IntrinsicSize.Min)
+                                                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column {
+                                                val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else ColorFilter.tint(Color.White)
+                                                Text(text = "${windSpeed.toString()} m/s")
+                                                Row {
+                                                    Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
+                                                    Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
 
                                             }
                                         }
