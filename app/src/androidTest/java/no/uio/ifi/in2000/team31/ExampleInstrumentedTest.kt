@@ -22,3 +22,4 @@ class ExampleInstrumentedTest {
         assertEquals("no.uio.ifi.in2000.team31", appContext.packageName)
     }
 }
+

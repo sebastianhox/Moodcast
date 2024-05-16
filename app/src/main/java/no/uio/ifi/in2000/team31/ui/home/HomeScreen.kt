@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,16 +25,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Water
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -58,8 +62,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -73,7 +77,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
@@ -81,6 +84,7 @@ import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.getWeatherStatus
+import no.uio.ifi.in2000.team31.getWindDirectionIcon
 import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -88,7 +92,6 @@ import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import java.time.Clock
 import java.time.LocalDate
-import java.util.logging.Handler
 import kotlin.math.roundToInt
 
 
@@ -96,7 +99,6 @@ import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
@@ -129,6 +131,14 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
         if (darkModeOn) Color(0xFF002571).copy(alpha = 0.50f) else Color(0xFFAAD3FF).copy(alpha = 0.6f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     val humidity = weatherData.weatherData?.instant?.get(0)?.relativeHumidity
+    val windSpeed = weatherData.weatherData?.instant?.get(0)?.windSpeed
+    val windDirection = weatherData.weatherData?.instant?.get(0)?.windFromDirection
+    var rain = weatherData.weatherData?.instant?.get(0)?.precipitationAmount
+    if (rain == null) {
+        rain = 0.0
+    }
+
+    val arrowIcon = getWindDirectionIcon(windDirection?.roundToInt())
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
         Log.d("temp", "Temp is $temperature before convertion")
@@ -498,6 +508,37 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                             modifier = Modifier.align(Alignment.Center)
                                         )
                                     }
+                                    if (connectionState == Status.Available) {
+
+                                        Row(
+                                            //modifier = Modifier.weight(1f),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(IntrinsicSize.Min)
+                                                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column {
+                                                val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
+                                                Text(text = "${windSpeed.toString()} m/s")
+                                                Row() {
+                                                    Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
+                                                    //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
+                                                    Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
+
+                                                }
+                                            }
+                                            Column {
+                                                Text(text = "$rain mm.")
+                                                Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Precipation")
+                                            }
+                                            Column{
+                                                Text(text = "${humidity.toString()} %")
+                                                Icon(imageVector = Icons.Filled.Water, contentDescription = "Humidity")
+                                            }
+                                        }
+                                    }
                                 }
                         }
 
@@ -651,7 +692,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LongTermForecastRow(
     day: String,
@@ -718,7 +758,6 @@ fun LongTermForecastRow(
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeAndTempCards(
     hour: String?,
