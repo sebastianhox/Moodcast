@@ -69,8 +69,8 @@ class SharedViewModel : ViewModel() {
             _locationUIState.update { currentState ->
                 Log.d("refreshstuff", "lat: $lat, lon: $lon")
                 currentState.copy(
-                    lat = lat,
-                    lon = lon
+                    lat = lat ?: currentState.lat,
+                    lon = lon ?: currentState.lon
                 )
             }
         }

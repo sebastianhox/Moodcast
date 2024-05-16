@@ -96,7 +96,6 @@ class MainActivity : ComponentActivity() {
     fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
         Log.d("location", "Start location permission request / updates")
 
-        val locationOn = settingsViewModel.locationOn.value
 
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {

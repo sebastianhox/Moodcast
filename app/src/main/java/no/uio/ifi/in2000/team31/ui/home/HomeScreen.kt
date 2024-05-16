@@ -29,7 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Water
@@ -55,8 +54,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,8 +92,8 @@ import kotlin.math.roundToInt
 
 // har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
 fun getWindDirectionIcon(degrees: Int?): Int {
-    if (degrees != null) {
-        return when ((degrees + 22.5) % 360) {
+    return if (degrees != null) {
+        when ((degrees + 22.5) % 360) {
             in 0.0..45.0 -> R.drawable.north_24px
             in 45.0..90.0 -> R.drawable.north_east_24px
             in 90.0..135.0 -> R.drawable.east_24px
@@ -105,7 +104,7 @@ fun getWindDirectionIcon(degrees: Int?): Int {
             else -> R.drawable.north_west_24px
         }
     } else {
-        return R.drawable.north_east_24px // Bare som en default for at det skal se bra ut
+        R.drawable.north_east_24px // Bare som en default for at det skal se bra ut
     }
 }
 
@@ -134,7 +133,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val tempAndTimeList = weatherData.tempAndTimeData
 
     val scrollState = rememberScrollState()
-    val outerScroll = rememberScrollState()
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val backgroundColor =
@@ -142,7 +140,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     val humidity = weatherData.weatherData?.instant?.get(0)?.relativeHumidity
-    val timeValue = weatherData.weatherData?.instant?.get(0)?.time
     val windSpeed = weatherData.weatherData?.instant?.get(0)?.windSpeed
     val windDirection = weatherData.weatherData?.instant?.get(0)?.windFromDirection
     var rain = weatherData.weatherData?.instant?.get(0)?.precipitationAmount
@@ -441,20 +438,22 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Column() {
+                                        Column {
                                             Text(text = "${windSpeed.toString()} m/s")
                                             Icon(imageVector = Icons.Filled.Air, contentDescription = "Wind")
                                         }
-                                        Column() {
+                                        Column {
                                             Text(text = windDirection.toString())
+                                            // If sjekk for å sette riktig farge, siden det brukes Image og ikke Icon
+                                            val colorFilter = if (!darkModeOn) ColorFilter.tint(Color.Black) else null
                                             //Icon(imageVector = Icons.Filled.ArrowOutward, contentDescription = "Wind Direction")
-                                            Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = ColorFilter.tint(Color.Black))
+                                            Image(painter = painterResource(arrowIcon), contentDescription = "Arrow pointing to wind direction", colorFilter = colorFilter)
                                         }
-                                        Column() {
-                                            Text(text = "${rain.toString()} mm.")
+                                        Column {
+                                            Text(text = "$rain mm.")
                                             Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Precipation")
                                         }
-                                        Column() {
+                                        Column{
                                             Text(text = "${humidity.toString()} %")
                                             Icon(imageVector = Icons.Filled.Water, contentDescription = "Humidity")
                                         }
