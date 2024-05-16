@@ -25,8 +25,8 @@ class TestWindDirectionSymbol {
 
     @Test
     fun getWindDirectionIcon_returnsCorrectIcon_forBorderlineValues() {
-        assertEquals(R.drawable.baseline_south_24, getWindDirectionIcon(22)) // lower bound of SW
-        assertEquals(R.drawable.baseline_south_west_24, getWindDirectionIcon(67)) // upper bound of SW
+        assertEquals(R.drawable.baseline_south_24, getWindDirectionIcon(22))
+        assertEquals(R.drawable.baseline_south_west_24, getWindDirectionIcon(67))
 
     }
 

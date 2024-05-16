@@ -11,6 +11,18 @@ import java.io.File
 import java.io.IOException
 
 
+fun getWeatherStatus(symbolCode: String?): WeatherStatus {
+    return when {
+        symbolCode?.startsWith("clearsky") == true -> WeatherStatus.SUNNY
+        symbolCode?.startsWith("fair") == true -> WeatherStatus.SUNNY
+        symbolCode?.startsWith("partlycloudy") == true -> WeatherStatus.CLOUDY
+        symbolCode?.startsWith("cloudy") == true -> WeatherStatus.CLOUDY
+        symbolCode?.contains("rain") == true -> WeatherStatus.RAINY
+        symbolCode?.contains("sleet") == true -> WeatherStatus.RAINY
+        else -> WeatherStatus.CLOUDY // Default to cloudy if not matched
+    }
+}
+
 fun getWindDirectionIcon(degrees: Int?): Int {
     return if (degrees != null) {
         when (degrees.toDouble()) {
