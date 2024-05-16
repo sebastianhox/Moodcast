@@ -23,7 +23,6 @@ import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
 import no.uio.ifi.in2000.team31.ui.mood.MoodScreen
 import no.uio.ifi.in2000.team31.ui.settings.SettingsScreen
 
-@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AppNavigation(homeViewModel: HomeViewModel, activityRepository: ActivityRepository) {

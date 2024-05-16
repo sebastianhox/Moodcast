@@ -3,19 +3,16 @@ package no.uio.ifi.in2000.team31.ui.mood
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,7 +25,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -39,11 +35,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -58,17 +52,16 @@ import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
-import no.uio.ifi.in2000.team31.ui.settings.SettingsViewModel
 import no.uio.ifi.in2000.team31.ui.settings.celsiusToFahrenheit
 import kotlin.math.roundToInt
 
 enum class Mood {
-    HAPPY,
-    SAD,
-    ENERGETIC,
-    CALM,
-    STRESSED,
-    ANGRY
+    GLAD,
+    TRIST,
+    ENERGISK,
+    ROLIG,
+    STRESSET,
+    SINT
 }
 
 @Composable
@@ -207,12 +200,12 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                 )
 
                 // Humørknapper
-                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState, sharedViewModel, Mood.HAPPY)
-                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGETIC)
-                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.CALM)
-                MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.SAD)
-                MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSED)
-                MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.ANGRY)
+                MoodButton("😊 Glad", Color(0xFFFFCC00), Color.White, scope, snackbarState, sharedViewModel, Mood.GLAD)
+                MoodButton("⚡ Energisk", Color(0xFFFF9500), Color.White, scope, snackbarState, sharedViewModel, Mood.ENERGISK)
+                MoodButton("🍃 Rolig", Color(0xFF8282DA), Color.White, scope, snackbarState, sharedViewModel, Mood.ROLIG)
+                MoodButton("😢 Trist", Color(	0xFF3d9BFF), Color.White, scope, snackbarState, sharedViewModel, Mood.TRIST)
+                MoodButton("😰 Stresset", Color(0xFF4CAF50), Color.White, scope, snackbarState, sharedViewModel, Mood.STRESSET)
+                MoodButton("😠 Sint", Color(0xFFAD0909), Color.White, scope, snackbarState, sharedViewModel, Mood.SINT)
 
             }
         }
@@ -252,7 +245,6 @@ fun MoodButton(
 @Composable
 fun CustomSnackBar(
     message: String,
-    isRtl: Boolean = false,
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black,
     navController: NavController

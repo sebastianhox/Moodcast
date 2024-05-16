@@ -13,13 +13,13 @@ import java.io.IOException
 
 fun getWeatherStatus(symbolCode: String?): WeatherStatus {
     return when {
-        symbolCode?.startsWith("clearsky") == true -> WeatherStatus.SUNNY
-        symbolCode?.startsWith("fair") == true -> WeatherStatus.SUNNY
-        symbolCode?.startsWith("partlycloudy") == true -> WeatherStatus.CLOUDY
-        symbolCode?.startsWith("cloudy") == true -> WeatherStatus.CLOUDY
-        symbolCode?.contains("rain") == true -> WeatherStatus.RAINY
-        symbolCode?.contains("sleet") == true -> WeatherStatus.RAINY
-        else -> WeatherStatus.CLOUDY // Default to cloudy if not matched
+        symbolCode?.startsWith("clearsky") == true -> WeatherStatus.SOL
+        symbolCode?.startsWith("fair") == true -> WeatherStatus.SOL
+        symbolCode?.startsWith("partlycloudy") == true -> WeatherStatus.SKYER
+        symbolCode?.startsWith("cloudy") == true -> WeatherStatus.SKYER
+        symbolCode?.contains("rain") == true -> WeatherStatus.REGN
+        symbolCode?.contains("sleet") == true -> WeatherStatus.REGN
+        else -> WeatherStatus.SKYER // Default to cloudy if not matched
     }
 }
 
@@ -58,6 +58,9 @@ fun copyImageFromAssetsToStorage(context: Context, imageName: String): String? {
         return null
     }
 }
+
+
+// Fyller inn activities i databasen
 fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
     var imagePath = copyImageFromAssetsToStorage(context, "running.jpg")
     if (imagePath != null) {
@@ -65,13 +68,13 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
             name = "Løpetur",
             info = "Løp en tur, godt for kropp og sinn!",
             imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.ENERGETIC, Mood.HAPPY),
-            suitableWeathers = listOf(WeatherStatus.CLOUDY, WeatherStatus.SUNNY)
+            suitableMoods = listOf(Mood.ENERGISK, Mood.GLAD),
+            suitableWeathers = listOf(WeatherStatus.SKYER, WeatherStatus.SOL)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
     } else {
-        Log.e("populus", "Failed to copy image for preloading")
+        Log.e("ImageLoading", "Failed to copy image for preloading")
     }
     imagePath = copyImageFromAssetsToStorage(context, "cycling.jpg")
     if (imagePath != null) {
@@ -79,12 +82,115 @@ fun populateDatabase(context: Context, viewModel: ActivityScreenViewModel) {
             name = "Sykling",
             info = "Ta en sykkeltur utendørs!",
             imagePath = imagePath.toString(),
-            suitableMoods = listOf(Mood.HAPPY, Mood.ENERGETIC),
-            suitableWeathers = listOf(WeatherStatus.CLOUDY, WeatherStatus.SUNNY)
+            suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK),
+            suitableWeathers = listOf(WeatherStatus.SKYER, WeatherStatus.SOL)
         )
         val activity = activityDetails.toActivity()
         viewModel.preloadActivity(activity)
     } else {
-        Log.e("populus", "Failed to copy image for preloading")
+        Log.e("ImageLoading", "Failed to copy image for preloading")
     }
+
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Se solnedgange på stranda",
+        info = "Alene, eller med noen du er glad i",
+        imageName = "beach.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Brettspill",
+        info = "Perfekt innendørs aktivitet",
+        imageName = "boardgame.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Utforsk nærområdet",
+        info = "Eller et annet sted. Det er alltid nye områder å utforske. Gjerne ta med venner, eller alene om det er det du foretrekker.",
+        imageName = "explore.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Les en god bok",
+        info = "Dette kan du gjøre både inne og ute, avhengig av vær. Hva med å lese en gammel favoritt, en ulest klassiker eller noe helt annet?",
+        imageName = "read.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET, Mood.SINT),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER, WeatherStatus.SNO, WeatherStatus.REGN)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Skolearbeid",
+        info = "Enten det er til skolen eller universitetet, eller om det er noe du driver med på fritiden?",
+        imageName = "study.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Besøk familien",
+        info = "Det er fint å tilbringe tid med de en er glad i.",
+        imageName = "family.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Shopping",
+        info = "Gå innom en lokal butikk, eller innom kjøpesenteret",
+        imageName = "shopping.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET, Mood.SINT),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Ta en kopp te",
+        info = "Alene, eller med noen du er glad i",
+        imageName = "tea.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET),
+        suitableWeathers = listOf(WeatherStatus.SNO, WeatherStatus.REGN, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Spill fotball",
+        info = "Både gøy, sosialt og bra for helsa!",
+        imageName = "tea.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.STRESSET, Mood.SINT),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+    addActivity(
+        context = context,
+        viewModel = viewModel,
+        name = "Møt noen venner",
+        info = "Gå ut og gjør noe? Se en film sammen?",
+        imageName = "friends.jpg",
+        suitableMoods = listOf(Mood.GLAD, Mood.ENERGISK, Mood.ROLIG, Mood.TRIST, Mood.STRESSET),
+        suitableWeathers = listOf(WeatherStatus.SOL, WeatherStatus.SKYER)
+    )
+}
+
+fun addActivity(context: Context, viewModel: ActivityScreenViewModel, name: String, info: String, imageName: String, suitableMoods: List<Mood>, suitableWeathers: List<WeatherStatus>) {
+    val imageString = copyImageFromAssetsToStorage(context, imageName)
+    val activityDetails = ActivityDetails(
+        name = name,
+        info = info,
+        imagePath = imageString,
+        suitableMoods = suitableMoods,
+        suitableWeathers = suitableWeathers
+    )
+    viewModel.preloadActivity(activityDetails.toActivity())
 }

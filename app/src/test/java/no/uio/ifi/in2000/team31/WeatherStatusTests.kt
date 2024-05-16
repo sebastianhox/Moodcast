@@ -7,31 +7,31 @@ import org.junit.Test
 class WeatherStatusTests {
     @Test
     fun testSunnyWeather() {
-        assertEquals(WeatherStatus.SUNNY, getWeatherStatus("clearsky_day"))
-        assertEquals(WeatherStatus.SUNNY, getWeatherStatus("clearsky_night"))
-        assertEquals(WeatherStatus.SUNNY, getWeatherStatus("fair_day"))
-        assertEquals(WeatherStatus.SUNNY, getWeatherStatus("fair_night"))
+        assertEquals(WeatherStatus.SOL, getWeatherStatus("clearsky_day"))
+        assertEquals(WeatherStatus.SOL, getWeatherStatus("clearsky_night"))
+        assertEquals(WeatherStatus.SOL, getWeatherStatus("fair_day"))
+        assertEquals(WeatherStatus.SOL, getWeatherStatus("fair_night"))
     }
 
     @Test
     fun testCloudyWeather() {
-        assertEquals(WeatherStatus.CLOUDY, getWeatherStatus("partlycloudy_day"))
-        assertEquals(WeatherStatus.CLOUDY, getWeatherStatus("partlycloudy_night"))
-        assertEquals(WeatherStatus.CLOUDY, getWeatherStatus("cloudy"))
+        assertEquals(WeatherStatus.SKYER, getWeatherStatus("partlycloudy_day"))
+        assertEquals(WeatherStatus.SKYER, getWeatherStatus("partlycloudy_night"))
+        assertEquals(WeatherStatus.SKYER, getWeatherStatus("cloudy"))
     }
 
     @Test
     fun testRainyWeather() {
-        assertEquals(WeatherStatus.RAINY, getWeatherStatus("lightrain"))
-        assertEquals(WeatherStatus.RAINY, getWeatherStatus("rain"))
-        assertEquals(WeatherStatus.RAINY, getWeatherStatus("heavyrain"))
-        assertEquals(WeatherStatus.RAINY, getWeatherStatus("lightsleet"))
-        assertEquals(WeatherStatus.RAINY, getWeatherStatus("sleet"))
+        assertEquals(WeatherStatus.REGN, getWeatherStatus("lightrain"))
+        assertEquals(WeatherStatus.REGN, getWeatherStatus("rain"))
+        assertEquals(WeatherStatus.REGN, getWeatherStatus("heavyrain"))
+        assertEquals(WeatherStatus.REGN, getWeatherStatus("lightsleet"))
+        assertEquals(WeatherStatus.REGN, getWeatherStatus("sleet"))
     }
 
     @Test
     fun testNullAndUnknownWeather() {
-        assertEquals(WeatherStatus.CLOUDY, getWeatherStatus(null)) // Null input
-        assertEquals(WeatherStatus.CLOUDY, getWeatherStatus("fog"))  // Unknown symbol
+        assertEquals(WeatherStatus.SKYER, getWeatherStatus(null)) // Null input
+        assertEquals(WeatherStatus.SKYER, getWeatherStatus("fog"))  // Unknown symbol
     }
 }

@@ -7,27 +7,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,21 +52,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.data.activity.Activity
-import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
 import no.uio.ifi.in2000.team31.populateDatabase
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
 enum class WeatherStatus {
-    SUNNY,
-    RAINY,
-    SNOWY,
-    CLOUDY
+    SOL,
+    REGN,
+    SNO,
+    SKYER
 }
 
 @Composable
@@ -111,7 +104,7 @@ fun ActivityScreen(
                 ) {
                 Icon(
                     Icons.Filled.Add,
-                    "add activity")
+                    "Legg til aktivitet")
             }
         }
     ) { innerPadding ->
@@ -120,10 +113,10 @@ fun ActivityScreen(
         LaunchedEffect(key1 = Unit) {
             viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
                 if (existingActivity.isEmpty()) {
-                    Log.d("populus", "IS EMPTY")
+                    Log.d("CheckPopulateDB", "IS EMPTY")
                     populateDatabase(context, viewModel)
                 } else {
-                    Log.d("populus", "NOT EMPTY")
+                    Log.d("CheckPopulateDB", "NOT EMPTY")
                 }
             }
         }
@@ -184,17 +177,17 @@ fun ActivityScreen(
 @Composable
 fun HeroText(status: WeatherStatus?, modifier: Modifier) {
     val text = when (status) {
-        WeatherStatus.SUNNY -> "Sola skinner!"
-        WeatherStatus.RAINY -> "Regn, regn, regn!"
-        WeatherStatus.SNOWY -> "Snø, snø, snø!"
-        WeatherStatus.CLOUDY -> "Overskyet..."
+        WeatherStatus.SOL -> "Klar himmel!"
+        WeatherStatus.REGN -> "Regn, regn, regn!"
+        WeatherStatus.SNO -> "Snø, snø, snø!"
+        WeatherStatus.SKYER -> "Overskyet..."
         null -> "Mangler værstatus"
     }
     val description = when (status) {
-        WeatherStatus.SUNNY -> "Ta en tur ut i det fine været, nyt en piknik i parken eller utforsk byen på sykkel for en perfekt dag!"
-        WeatherStatus.RAINY -> "Det er en flott dag for innendørsaktiviteter. Hva med å besøke et museum eller se en god film?"
-        WeatherStatus.SNOWY -> "Kle deg varmt og nyt vinterlandskapet. Hva med å bygge en snømann?"
-        WeatherStatus.CLOUDY -> "En perfekt dag for litt rolig tid. Kanskje lese en bok eller nyte en kaffe på en koselig kafé?"
+        WeatherStatus.SOL -> "Ta en tur ut i det fine været, nyt en piknik i parken eller utforsk byen på sykkel for en perfekt dag!"
+        WeatherStatus.REGN -> "Det er en flott dag for innendørsaktiviteter. Hva med å besøke et museum eller se en god film?"
+        WeatherStatus.SNO -> "Kle deg varmt og nyt vinterlandskapet. Hva med å bygge en snømann?"
+        WeatherStatus.SKYER -> "En perfekt dag for litt rolig tid. Kanskje lese en bok eller nyte en kaffe på en koselig kafé?"
         null -> "Noe har gått galt..."
     }
     Column(
@@ -310,96 +303,21 @@ fun ActivityCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete?") },
-            text = { Text("Sure?") },
+            title = { Text("Slette aktivitet?") },
+            text = { Text("Er du sikker?") },
             confirmButton = {
                             Button(onClick = {
                                 onDeleteClick(activity)
                                 showDeleteDialog = false
                             }) {
-                                Text("Delete")
+                                Text("Slett")
                             }
             },
             dismissButton = {
                 Button(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text("Avbryt")
                 }
             }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepository, onBackClick: () -> Unit) {
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(
-                    "MoodCast",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 31.dp)
-                )},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp)
-                    .shadow(4.dp, RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp)),
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        val activityFlow: Flow<Activity?> = activityRepository.getItemStream(activityId)
-        val activity by activityFlow.collectAsState(initial = null)
-
-        if (activity == null) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            // Display activity details
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                AsyncImage(
-                    model = activity!!.imagePath,
-                    contentDescription = "Activity Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-                Text(
-                    text = activity!!.name,
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = activity!!.info,
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-
     }
 }
