@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.model.WeatherDataModel
@@ -32,16 +33,15 @@ data class WeatherDataUIState(
     val weatherData: WeatherDataModel? = null,
     val tempAndTimeData: List<Triple<String?, Double?, String?>> = listOf(),
     val longTermForecast: Map<String, Triple<String?, Double, Double>>? = null,
-    val alertIconData: List<Pair<String?,String?>> = listOf()
+    val alertIconData: List<Pair<String?, String?>> = listOf(),
 )
 
 data class SearchUiState(
     val currentQuery: String = "",
     val places: List<GeonameData> = emptyList(),
     val selectedPlace: GeonameData? = null,
-    val isSearching: Boolean = false
+    val isSearching: Boolean = false,
 )
-
 
 
 @OptIn(FlowPreview::class)
@@ -53,6 +53,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = appContainer.locWeatherRepository
     private val alertRepository = appContainer.alertRepository
     private val geonameRepository = appContainer.geonameRepository
+    private val sharedViewModel = appContainer.sharedViewModel
+
 
     private val _weatherDataUIState = MutableStateFlow(WeatherDataUIState())
     val weatherDataUIState: StateFlow<WeatherDataUIState> = _weatherDataUIState.asStateFlow()
@@ -87,10 +89,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     init {
         _searchText
             .debounce(300) // gets the latest; no need for delays!
-            .filter { currentQuery -> (currentQuery.length > 1)} // make sure there's enough initial text to search for
+            .filter { currentQuery -> (currentQuery.length > 1) } // make sure there's enough initial text to search for
             .distinctUntilChanged() // to avoid duplicate network calls
             .onEach { currentQuery -> // just gets the prefix: 'ph', 'pho', 'phoe'
-                val encQuery = URLEncoder.encode(currentQuery,"UTF-8")
+                val encQuery = URLEncoder.encode(currentQuery, "UTF-8")
                 getCityNames(encQuery)
             }
             .flowOn(Dispatchers.IO)
@@ -103,6 +105,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             _searchText.value = ""
         }
     }
+
     fun onPlaceNameSearch(currentQuery: String) {
         _searchText.value = currentQuery
     }
@@ -121,59 +124,54 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun clearSearch() {
         _places.value = emptyList()
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun fetchWeatherData(lat: Double?, lon: Double?, cachePolicy: CachePolicy) {
-        if (initializeCalled) {
-            viewModelScope.launch {
-                _weatherDataUIState.update { currentState ->
-                    currentState.copy(
-                        weatherData = repository.fetchInfo(
-                            lat,
-                            lon,
-                            cachePolicy
-                        ),
-                        tempAndTimeData = repository.get24HoursForecast(lat, lon),
-                        longTermForecast = repository.getNext7Days(lat, lon),
-                        alertIconData = alertRepository.getAlertIcons(
-                            lat,
-                            lon,
-                            cachePolicy
-                        )
-                    )
-                }
-            }
-
-        } else {
-            if (cachePolicy != CachePolicy(CachePolicy.Type.NEVER)) {
-                initializeCalled = true
-            }// get data from remote source when initialized
-            viewModelScope.launch {
-                try {
-
-                    _weatherDataUIState.update { currentState ->
-                        currentState.copy(
-                            weatherData = repository.fetchInfo(
-                                lat,
-                                lon,
-                                CachePolicy(CachePolicy.Type.REFRESH)
-                            ),
-                            tempAndTimeData = repository.get24HoursForecast(lat, lon),
-                            longTermForecast = repository.getNext7Days(lat, lon),
-                            alertIconData = alertRepository.getAlertIcons(
-                                lat,
-                                lon,
-                                CachePolicy(CachePolicy.Type.REFRESH)
+        viewModelScope.launch {
+            sharedViewModel.connectionStatus.collect {status ->
+                if (status == Status.Available) {
+                    if (initializeCalled) {
+                        _weatherDataUIState.update { currentState ->
+                            currentState.copy(
+                                weatherData = repository.fetchInfo(
+                                    lat,
+                                    lon,
+                                    cachePolicy
+                                ),
+                                tempAndTimeData = repository.get24HoursForecast(lat, lon),
+                                longTermForecast = repository.getNext7Days(lat, lon),
+                                alertIconData = alertRepository.getAlertIcons(
+                                    lat,
+                                    lon,
+                                    cachePolicy
+                                )
                             )
-                        )
+                        }
+                    } else {
+                        if (cachePolicy != CachePolicy(CachePolicy.Type.NEVER)) {
+                            initializeCalled = true
+                        }// get data from remote source when initialized
+                        _weatherDataUIState.update { currentState ->
+                            currentState.copy(
+                                weatherData = repository.fetchInfo(
+                                    lat,
+                                    lon,
+                                    CachePolicy(CachePolicy.Type.REFRESH)
+                                ),
+                                tempAndTimeData = repository.get24HoursForecast(lat, lon),
+                                longTermForecast = repository.getNext7Days(lat, lon),
+                                alertIconData = alertRepository.getAlertIcons(
+                                    lat,
+                                    lon,
+                                    CachePolicy(CachePolicy.Type.REFRESH)
+                                )
+                            )
+                        }
                     }
-
-                } catch (e: Exception) {
-                    Log.e("testing", "Error fetching weather data", e)
                 }
             }
         }
     }
-
 
 
     @RequiresApi(Build.VERSION_CODES.O)

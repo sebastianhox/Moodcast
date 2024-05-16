@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -33,6 +34,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.model.GeonameData
 import no.uio.ifi.in2000.team31.ui.home.HomeViewModel
@@ -47,6 +49,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var appContainer: AppContainer
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var settingsViewModel: SettingsViewModel
+    private lateinit var connectivityObserver: NetworkConnectivityObserver
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -66,6 +69,7 @@ class MainActivity : ComponentActivity() {
         appContainer = (application as MoodApplication).appContainer
         sharedViewModel = appContainer.sharedViewModel
         settingsViewModel = appContainer.settingsViewModel
+
         mInstanceActivity = WeakReference(this) // set the instance in order to call functions from other classes
 
         setContent {
@@ -96,7 +100,11 @@ class MainActivity : ComponentActivity() {
 //    }
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.O)
-    fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
+   fun requestLocationAndStartUpdates(cachePolicy: CachePolicy = CachePolicy(CachePolicy.Type.NEVER)) {
+
+
+
+
         Log.d("location", "Start location permission request / updates")
 
         val locationOn = settingsViewModel.locationOn.value

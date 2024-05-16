@@ -68,6 +68,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
+import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.data.activity.Activity
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
 import no.uio.ifi.in2000.team31.data.activity.populateDatabase
@@ -94,10 +95,13 @@ fun ActivityScreen(
     val sharedViewModel = appContainer.sharedViewModel
     val settingsViewModel = appContainer.settingsViewModel
 
+
     val isDarkMode by settingsViewModel.isDarkTheme.collectAsState()
     val userMood by sharedViewModel.moodUIState.collectAsState()
     val currentWeatherStatus by sharedViewModel.weatherUIState.collectAsState()
-
+    val connectionState by sharedViewModel.connectionStatus.collectAsState(
+        initial = Status.Unavailable
+    )
     val activityScreenUiState by viewModel.activityScreenUiState.collectAsState()
 //    var scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Log.d("moodfix", "UserMood is $userMood")
@@ -121,71 +125,69 @@ fun ActivityScreen(
             }
         }
     ) { innerPadding ->
-        ActivityScreenBody(
-            activityList = activityScreenUiState.activitiesList,
-            contentPadding = innerPadding,
-            viewModel = viewModel,
-            userMood = userMood.selectedMood,
-            currentWeather = currentWeatherStatus.currentWeatherStatus,
-            navController = navController
-        )
-    }
-}
+        val context = LocalContext.current
 
-@Composable
-fun ActivityScreenBody(
-    activityList: List<Activity>,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    viewModel: ActivityScreenViewModel,
-    userMood: Mood?,
-    currentWeather: WeatherStatus?,
-    navController: NavController
-) {
-    val context = LocalContext.current
-
-    LaunchedEffect(key1 = Unit) {
-        viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
-            if (existingActivity.isEmpty()) {
-                Log.d("populus", "IS EMPTY")
-                populateDatabase(context, viewModel)
+        LaunchedEffect(key1 = Unit) {
+            viewModel.activityRepository.getAllActivitiesStream().firstOrNull()?.let { existingActivity ->
+                if (existingActivity.isEmpty()) {
+                    Log.d("populus", "IS EMPTY")
+                    populateDatabase(context, viewModel)
+                } else {
+                    Log.d("populus", "NOT EMPTY")
+                }
+            }
+        }
+        Column(
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            if (userMood.selectedMood != null) {
+                //Text("Aktiviteter for humør: ${userMood.name}")
+                Log.d("moodScreen", "Weatherstatus ${userMood.selectedMood?.name}")
             } else {
-                Log.d("populus", "NOT EMPTY")
+                //Text("Alle aktiviteter")
+                Log.d("moodScreen", "No mood found")
             }
-        }
-    }
-    Column(
-        modifier = Modifier.padding(contentPadding)
-    ) {
-        if (userMood != null) {
-            //Text("Aktiviteter for humør: ${userMood.name}")
-            Log.d("moodScreen", "Weatherstatus ${userMood.name}")
-        } else {
-            //Text("Alle aktiviteter")
-            Log.d("moodScreen", "No mood found")
-        }
-        if (currentWeather != null) {
-            //Text("Værstatus: $currentWeather")
-            Log.d("moodScreen", "Weatherstatus $currentWeather")
-        } else {
-            Text("Værstatus ikke funnet. Si ifra så fikser vi denne bugen?")
-            Log.d("moodScreen", "No weatherstatus found")
-        }
-
-        HeroText(status = currentWeather, modifier = Modifier.padding(12.dp) )
-
-        val filteredList = activityList.filter { activity ->
-            val matchesMood = userMood == null || activity.suitableMoods.contains(userMood)
-            val matchesWeather = currentWeather == null || activity.suitableWeathers.contains(currentWeather)
-            matchesMood && matchesWeather
-        }
-
-        ActivityCardList(
-            activityList = filteredList,
-            viewModel = viewModel,
-            onActivityClick = { activity ->
-                navController.navigate("activityDetails/${activity.id}")
+            if (currentWeatherStatus.currentWeatherStatus != null) {
+                //Text("Værstatus: $currentWeather")
+                Log.d("moodScreen", "Weatherstatus ${currentWeatherStatus.currentWeatherStatus}")
+            } else {
+                Text("Værstatus ikke funnet. Si ifra så fikser vi denne bugen?")
+                Log.d("moodScreen", "No weatherstatus found")
             }
-        )
+
+            if (connectionState == Status.Available) {
+                HeroText(
+                    status = currentWeatherStatus.currentWeatherStatus,
+                    modifier = Modifier.padding(12.dp)
+                )
+            } else {
+                val colorPrim = if (isDarkMode) Color(0xFF002571) else Color(0xFFAAD3FF)
+                Text(
+                    text = "Klarte ikke å hente data om værforhold\nSjekk din internett tilgang",
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(colorPrim)
+                        .padding(20.dp)
+
+                )
+            }
+
+            val filteredList = activityScreenUiState.activitiesList.filter { activity ->
+                val matchesMood = userMood.selectedMood == null || activity.suitableMoods.contains(userMood.selectedMood)
+                val matchesWeather =
+                    currentWeatherStatus.currentWeatherStatus == null || activity.suitableWeathers.contains(currentWeatherStatus.currentWeatherStatus)
+                matchesMood && matchesWeather
+            }
+            ActivityCardList(
+                activityList = filteredList,
+                viewModel = viewModel,
+                onActivityClick = { activity ->
+                    navController.navigate("activityDetails/${activity.id}")
+                }
+            )
+        }
     }
 }
 

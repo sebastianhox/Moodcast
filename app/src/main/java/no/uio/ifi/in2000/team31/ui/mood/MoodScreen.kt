@@ -2,17 +2,20 @@ package no.uio.ifi.in2000.team31.ui.mood
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +53,7 @@ import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team31.MoodApplication
 import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.SharedViewModel
+import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.activity.MoodCastTopBar
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -81,6 +86,10 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
     var temperature = weatherData.temperature
     var symbol = "°C"
 
+    val connectionState by sharedViewModel.connectionStatus.collectAsState(
+        initial = Status.Unavailable
+    )
+    val isDarkMode by settingsViewModel.isDarkTheme.collectAsState()
     val isFahrenheit by settingsViewModel.isFahrenheit.collectAsState()
     if (isFahrenheit) {
         temperature = celsiusToFahrenheit(temperature?.roundToInt())?.toDouble()
@@ -100,12 +109,23 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
         // adds snackbarhost (toast outlawed)
             snackbarHost = {
                 SnackbarHost(
-                    hostState = snackbarState
+                    hostState = snackbarState,
+                    modifier = Modifier.padding(horizontal = 4.dp)
                 ) {snackbarData ->
-                    CustomSnackBar(
-                        snackbarData.visuals.message,
-                        navController = navController
-                    )
+                    if (isDarkMode) {
+                        CustomSnackBar(
+                            snackbarData.visuals.message,
+                            navController = navController,
+                            contentColor = Color(0xFFAAD3FF),
+                            containerColor = Color(0xFF002571))
+                    } else {
+                        CustomSnackBar(
+                            snackbarData.visuals.message,
+                            navController = navController,
+                            contentColor = Color(0xFF002571),
+                            containerColor = Color(0xFFAAD3FF)
+                        )
+                    }
 
                 }
             }
@@ -140,6 +160,7 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
+                    if (connectionState == Status.Available) {
                     Image(
                         painter = painterResource(id = WeatherIconMapper.symbolCodeMap[weatherData.symbolCodeNow] ?: R.drawable.svg), // placeholder icon, hard coded
                         contentDescription = "Værikon",
@@ -147,10 +168,23 @@ fun MoodScreen(navController: NavController, moodViewModel: MoodViewModel = view
 
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${temperature?.roundToInt()}" + symbol,
-                        fontSize = 24.sp,
-                    )
+
+                        Text(
+                            text = "${temperature?.roundToInt()}" + symbol,
+                            fontSize = 24.sp,
+                        )
+                    } else {
+                        val colorPrim = if (isDarkMode) Color(0xFF002571) else Color(0xFFAAD3FF)
+                        Text(
+                            text = "Værdata ikke tilgjengelig\nMangler internett tilgang",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(colorPrim)
+                                .padding(20.dp)
+
+                        )
+                    }
                 }
             }
 
@@ -225,18 +259,28 @@ fun CustomSnackBar(
 ) {
     Snackbar(
         containerColor = containerColor,
-        contentColor = contentColor) {
-        CompositionLocalProvider(
-            LocalLayoutDirection provides
-                    if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
+        contentColor = contentColor,
         ) {
-            Row {
-                Text(message)
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+            ) {
+                Column(
                     modifier = Modifier
-                        .clickable {
-                        navController.navigate(AppRoutes.ACTIVITY) {
+                        .fillMaxWidth()
+                ) {
+                    Text(message,
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(bottom = 10.dp),
+                        onClick = {
+                                navController.navigate(AppRoutes.ACTIVITY) {
                                     if (navController.currentDestination?.route != AppRoutes.ACTIVITY) {
                                         navController.navigate(AppRoutes.ACTIVITY) {
                                             // fikser backstack
@@ -250,13 +294,19 @@ fun CustomSnackBar(
                                         }
                                     }
                                 }
-                        },
-                    text = "Til aktiviteter",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                            },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = contentColor
+                        )
+                    ) {
+                        Text(
+                            text = "Til aktiviteter",
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                }
             }
-
-        }
             
     }
 }
