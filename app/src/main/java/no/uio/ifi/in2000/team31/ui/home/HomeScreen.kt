@@ -90,21 +90,21 @@ import java.time.LocalDate
 import kotlin.math.roundToInt
 
 
-// har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
+
 fun getWindDirectionIcon(degrees: Int?): Int {
     return if (degrees != null) {
-        when ((degrees + 22.5) % 360) {
-            in 0.0..45.0 -> R.drawable.north_24px
-            in 45.0..90.0 -> R.drawable.north_east_24px
-            in 90.0..135.0 -> R.drawable.east_24px
-            in 135.0..180.0 -> R.drawable.south_east_24px
-            in 180.0..225.0 -> R.drawable.south_24px
-            in 225.0..270.0 -> R.drawable.south_west_24px
-            in 270.0..315.0 -> R.drawable.west_24px
-            else -> R.drawable.north_west_24px
+        when (degrees.toDouble()) {
+            in 22.5..67.5 -> R.drawable.south_west_24px   // 45
+            in 67.5..112.5 -> R.drawable.west_24px        // 90
+            in 112.5..157.5 -> R.drawable.north_west_24px // 135
+            in 157.5..202.5 -> R.drawable.north_24px      // 180
+            in 202.5..247.5 -> R.drawable.north_east_24px // 225
+            in 247.5..292.5 -> R.drawable.east_24px       // 270
+            in 292.5..337.5 -> R.drawable.south_east_24px // 315
+            else -> R.drawable.south_24px                       // 0
         }
     } else {
-        R.drawable.north_east_24px // Bare som en default for at det skal se bra ut
+        R.drawable.baseline_360_24 // Bare som en default for at det skal se bra ut
     }
 }
 
