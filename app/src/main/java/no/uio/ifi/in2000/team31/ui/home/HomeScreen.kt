@@ -126,7 +126,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val snackbarState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val backgroundColor =
-        if (darkModeOn) Color(0xFF002571).copy(alpha = 0.50f) else Color(0xFFAAD3FF).copy(alpha = 0.45f)
+        if (darkModeOn) Color(0xFF002571).copy(alpha = 0.50f) else Color(0xFFAAD3FF).copy(alpha = 0.6f)
     var temperature = weatherData.weatherData?.instant?.get(0)?.airTemperature
     val humidity = weatherData.weatherData?.instant?.get(0)?.relativeHumidity
     var symbol = "°C"
@@ -219,7 +219,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
                     )
                 } else {
                     Image(
-                        painter = painterResource(id = R.drawable.wallpaper_lightmode),
+                        painter = painterResource(id = R.drawable.light_theme_bg),
                         contentDescription = "Background Image",
                         modifier = Modifier.matchParentSize(),
                         contentScale = ContentScale.FillBounds

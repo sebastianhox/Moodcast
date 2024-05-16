@@ -87,8 +87,7 @@ fun AlertTopAppBar(navController: NavController) {
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                modifier = Modifier.fillMaxWidth()
             )
         },
         navigationIcon = {
