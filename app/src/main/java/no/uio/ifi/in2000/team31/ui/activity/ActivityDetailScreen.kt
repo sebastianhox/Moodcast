@@ -47,7 +47,7 @@ fun ActivityDetailsScreen(activityId: Int, activityRepository: ActivityRepositor
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(end = 31.dp)
+                        .padding(end = 32.dp)
                 )},
                 modifier = Modifier
                     .fillMaxWidth()
