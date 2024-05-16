@@ -184,7 +184,7 @@ fun ActivityScreen(
 @Composable
 fun HeroText(status: WeatherStatus?, modifier: Modifier) {
     val text = when (status) {
-        WeatherStatus.SUNNY -> "Solfylt og glad?"
+        WeatherStatus.SUNNY -> "Sola skinner!"
         WeatherStatus.RAINY -> "Regn, regn, regn!"
         WeatherStatus.SNOWY -> "Snø, snø, snø!"
         WeatherStatus.CLOUDY -> "Overskyet..."
