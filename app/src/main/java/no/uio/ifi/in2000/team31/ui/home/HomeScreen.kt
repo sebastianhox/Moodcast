@@ -84,6 +84,7 @@ import no.uio.ifi.in2000.team31.R
 import no.uio.ifi.in2000.team31.Status
 import no.uio.ifi.in2000.team31.cache.CachePolicy
 import no.uio.ifi.in2000.team31.getWeatherStatus
+import no.uio.ifi.in2000.team31.getWindDirectionIcon
 import no.uio.ifi.in2000.team31.model.AlertIconModel
 import no.uio.ifi.in2000.team31.model.WeatherIconMapper
 import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
@@ -96,25 +97,8 @@ import kotlin.math.roundToInt
 
 // har ikke fått været (ikoner osv) til å gjenspeiles i faktisk værmelding - må fikses -å
 
-fun getWindDirectionIcon(degrees: Int?): Int {
-    return if (degrees != null) {
-        when (degrees.toDouble()) {
-            in 22.5..67.5 -> R.drawable.baseline_south_west_24   // 45
-            in 67.5..112.5 -> R.drawable.baseline_west_24        // 90
-            in 112.5..157.5 -> R.drawable.baseline_north_west_24 // 135
-            in 157.5..202.5 -> R.drawable.baseline_north_24      // 180
-            in 202.5..247.5 -> R.drawable.baseline_north_east_24 // 225
-            in 247.5..292.5 -> R.drawable.baseline_east_24       // 270
-            in 292.5..337.5 -> R.drawable.baseline_south_east_24 // 315
-            else -> R.drawable.baseline_south_24                       // 0
-        }
-    } else {
-        R.drawable.baseline_wind_power_24 // Bare som en default for at det skal se bra ut
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
 
@@ -150,6 +134,10 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel) {
     val windSpeed = weatherData.weatherData?.instant?.get(0)?.windSpeed
     val windDirection = weatherData.weatherData?.instant?.get(0)?.windFromDirection
     var rain = weatherData.weatherData?.instant?.get(0)?.precipitationAmount
+    if (rain == null) {
+        rain = 0.0
+    }
+
     val arrowIcon = getWindDirectionIcon(windDirection?.roundToInt())
     var symbol = "°C"
     if (isFahrenheit && temperature != null) { // Funker ikke enda
