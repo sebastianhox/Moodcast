@@ -56,7 +56,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import no.uio.ifi.in2000.team31.container.MoodApplication
 import no.uio.ifi.in2000.team31.data.network.Status
 import no.uio.ifi.in2000.team31.data.activity.Activity
-import no.uio.ifi.in2000.team31.populateDatabase
+import no.uio.ifi.in2000.team31.model.populateDatabase
+import no.uio.ifi.in2000.team31.ui.navigation.AppRoutes
 import no.uio.ifi.in2000.team31.ui.navigation.BottomNavigationBar
 
 enum class WeatherStatus {
