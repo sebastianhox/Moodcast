@@ -95,9 +95,9 @@ fun AddActivityScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Tilbake"
+                            contentDescription = "Back"
                         )
-                }
+                    }
                 }
             )
         }
@@ -110,6 +110,7 @@ fun AddActivityScreen(
                 .verticalScroll(scrollState)
         ) {
             ActivityInputForm(
+                isDarkMode.value,
                 activityDetails = activityUiState.activityDetails,
                 onValueChange = viewModel::updateUiState,
                 modifier = Modifier
@@ -147,7 +148,7 @@ fun AddActivityScreen(
                     .padding(30.dp)
             ) {
                 Text(
-                    text = "Lagre",
+                    text = "Save",
                     fontWeight = FontWeight.Bold,
                     fontSize = MaterialTheme.typography.titleMedium.fontSize
                 )
@@ -210,7 +211,7 @@ fun SelectMoods(
     Column (
         modifier = modifier
     ) {
-        Text("Suitable moods:")
+        Text("Passende humør:")
 
         Spacer(modifier = Modifier.size(10.dp))
 
@@ -245,6 +246,7 @@ fun SelectMoods(
 
 @Composable
 fun ActivityInputForm(
+    isDarkMode: Boolean,
     activityDetails: ActivityDetails,
     onValueChange: (ActivityDetails) -> Unit,
     enabled: Boolean = true,
@@ -256,7 +258,7 @@ fun ActivityInputForm(
         OutlinedTextField(
             value = activityDetails.name,
             onValueChange = { onValueChange(activityDetails.copy(name = it)) },
-            label = { Text("Navn på akitvitet") },
+            label = { Text("Activity name") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(5.dp),
@@ -266,7 +268,7 @@ fun ActivityInputForm(
         OutlinedTextField(
             value = activityDetails.info,
             onValueChange = { onValueChange(activityDetails.copy(info = it)) },
-            label = { Text("Informasjon") },
+            label = { Text("Activity info") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(5.dp),
@@ -300,9 +302,9 @@ fun SelectPhotoFromGallery(
     } else {
         Manifest.permission.READ_EXTERNAL_STORAGE
     }
-    
+
     val permissionState = rememberPermissionState(permission = permissionToRequest)
-    
+
     val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { imageUri ->
             val newFilePath = copyImageToStorage(context, imageUri)
@@ -317,6 +319,9 @@ fun SelectPhotoFromGallery(
     Column (
         modifier = modifier
     ) {
+        val request = PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+        val colorPrim = if (darkMode) Color(0xFF002591) else Color(0xFFAAD3FF)
+        val colorSec = if (darkMode) Color.White else Color.Black
         if (permissionState.status.isGranted) {
             Button(
                 onClick = {
@@ -329,9 +334,9 @@ fun SelectPhotoFromGallery(
 
 
             ) {
-                Text("Velg et bilde")
+                Text("Pick an Image")
             }
-            Text(text = imageFileName ?: "")   
+            Text(text = imageFileName ?: "")
         } else {
             Button(
                 onClick = {
@@ -342,9 +347,8 @@ fun SelectPhotoFromGallery(
                     contentColor = colorSec
                 )
             ) {
-                Text("Velg et bilde")
+                Text("Pick an image")
             }
-            Text("No access")
         }
     }
 }
@@ -353,7 +357,7 @@ fun getFilenameFromUri(context: Context, uri: Uri): String {
         val nameIndex = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)
         cursor.moveToFirst()
         cursor.getString(nameIndex)
-    } ?: "Ukjent"
+    } ?: "Unknown"
 }
 
 private fun copyImageToStorage(context: Context, imageUri: Uri): String? {
@@ -385,7 +389,7 @@ fun MoodChip(
         onClick = {
             selected = !selected
             onClick()
-                  },
+        },
         label = label,
         modifier = Modifier
             .padding(horizontal = 5.dp),
@@ -394,7 +398,7 @@ fun MoodChip(
             {
                 Icon(
                     imageVector = Icons.Filled.Done,
-                    contentDescription = "Ferdig ikon",
+                    contentDescription = "Done icon",
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             }
@@ -404,4 +408,3 @@ fun MoodChip(
 
     )
 }
-

@@ -181,7 +181,7 @@ fun populateDatabase(context: Context, viewModel: ActivityViewModel) {
     )
 }
 
-fun addActivity(context: Context, viewModel: ActivityScreenViewModel, name: String, info: String, imageName: String, suitableMoods: List<Mood>, suitableWeathers: List<WeatherStatus>) {
+fun addActivity(context: Context, viewModel: ActivityViewModel, name: String, info: String, imageName: String, suitableMoods: List<Mood>, suitableWeathers: List<WeatherStatus>) {
     val imageString = copyImageFromAssetsToStorage(context, imageName)
     val activityDetails = ActivityDetails(
         name = name,
