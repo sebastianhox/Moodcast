@@ -4,10 +4,15 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import no.uio.ifi.in2000.team31.container.MoodApplication
 import no.uio.ifi.in2000.team31.data.activity.ActivityRepository
+import no.uio.ifi.in2000.team31.ui.activity.ActivityDetailsScreen
 import no.uio.ifi.in2000.team31.ui.activity.ActivityScreen
 import no.uio.ifi.in2000.team31.ui.activity.AddActivityScreen
 import no.uio.ifi.in2000.team31.ui.alert.AlertScreen
@@ -21,6 +26,8 @@ import no.uio.ifi.in2000.team31.ui.settings.SettingsScreen
 fun AppNavigation(homeViewModel: HomeViewModel) {
 
     val navController = rememberNavController()
+    val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
+    val activityRepository = appContainer.activityRepository
 
     NavHost(navController = navController, startDestination = AppRoutes.HOME) {
         composable(
@@ -234,6 +241,14 @@ fun AppNavigation(homeViewModel: HomeViewModel) {
         ) {
 
             AddActivityScreen(navController)
+        }
+
+        composable(
+            route = "activityDetails/{activityId}",
+            arguments = listOf(navArgument("activityId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val activityId = backStackEntry.arguments?.getInt("activityId") ?: return@composable
+            ActivityDetailsScreen(activityId = activityId, activityRepository = activityRepository, onBackClick = { navController.popBackStack() })
         }
     }
 }

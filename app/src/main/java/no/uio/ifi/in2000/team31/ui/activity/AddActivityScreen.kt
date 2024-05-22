@@ -72,7 +72,7 @@ fun AddActivityScreen(
     val appContainer = (LocalContext.current.applicationContext as MoodApplication).appContainer
     val settingsViewModel= appContainer.settingsViewModel
 
-    val isDarkMode = settingsViewModel.isDarkTheme.collectAsState()
+    val isDarkMode by settingsViewModel.isDarkTheme.collectAsState()
 
     val activityUiState = viewModel.activityUiState
     Scaffold(
@@ -110,7 +110,7 @@ fun AddActivityScreen(
                 .verticalScroll(scrollState)
         ) {
             ActivityInputForm(
-                isDarkMode.value,
+                isDarkMode,
                 activityDetails = activityUiState.activityDetails,
                 onValueChange = viewModel::updateUiState,
                 modifier = Modifier
@@ -135,6 +135,8 @@ fun AddActivityScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
+            val colorPrim = if (isDarkMode) Color(0xFF002591) else Color(0xFFAAD3FF)
+            val colorSec = if (isDarkMode) Color.White else Color.Black
             Button(
                 onClick = {
                     coroutineScope.launch {
@@ -145,12 +147,17 @@ fun AddActivityScreen(
                 enabled = activityUiState.isEntryValid,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(30.dp)
+                    .padding(30.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorPrim,
+                    contentColor = colorSec
+                )
             ) {
                 Text(
-                    text = "Save",
+                    text = "Lagre",
                     fontWeight = FontWeight.Bold,
                     fontSize = MaterialTheme.typography.titleMedium.fontSize
+
                 )
             }
         }
@@ -334,7 +341,7 @@ fun SelectPhotoFromGallery(
 
 
             ) {
-                Text("Pick an Image")
+                Text("Velg bilde")
             }
             Text(text = imageFileName ?: "")
         } else {
