@@ -120,8 +120,7 @@ fun AlertCard(alert: Alert) {
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = 16.dp)
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(6.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+            .shadow(4.dp, RoundedCornerShape(6.dp))
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Box(
@@ -145,8 +144,7 @@ fun AlertCard(alert: Alert) {
             ) {
                 Text(
                     text = "${alert.title?.split(",")?.firstOrNull()}",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = Color.Black
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -155,7 +153,6 @@ fun AlertCard(alert: Alert) {
                     text = "${alert.area}",
                     fontWeight = FontWeight.SemiBold,
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -164,8 +161,7 @@ fun AlertCard(alert: Alert) {
                 if (formatDate(alert.endDate) != "Ukjent") {
                     Text(
                         text = "Gjelder til ${formatDate(alert.endDate)}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.Black
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
 
@@ -175,8 +171,7 @@ fun AlertCard(alert: Alert) {
                 Text(
                     text = alert.instruction.toString(),
                     fontWeight = FontWeight.Medium,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }
