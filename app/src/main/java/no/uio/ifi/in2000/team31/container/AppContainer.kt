@@ -33,7 +33,6 @@ class AppContainer(private val context: Context) {
 
     val settingsViewModel by lazy { SettingsViewModel(context.applicationContext as Application) }
     val sharedViewModel by lazy { SharedViewModel(context.applicationContext as Application) }
-    val activityViewModel by lazy { ActivityViewModel(context.applicationContext as Application) }
 
     val connectivityObserver by lazy { NetworkConnectivityObserver(context.applicationContext) }
 }
