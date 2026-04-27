@@ -1,38 +1,39 @@
-# team-31
+# Moodcast — Weather-Aware Activity Planner
 
-Teamet:
-Emil
-Åsmund
-Avrin
-Sebastian
-Alexander
-Marius
+An Android app that helps teenagers and young adults plan outdoor activities based on real-time weather conditions and forecasts. Built as a group project for the course **IN2000 — Software Engineering with Project Work** at the University of Oslo, spring 2024.
 
-# Instruks
-Last ned zip fil og kan kjøres på Android enhet, eller i emulator i Android Studio.
-Fungerer på API 26 og oppover, testet tilogmed API 34.
+## What it does
 
-MoodCast er en app som både viser deg været, og kommer med forslag til aktiviteter som kan gjøres.
-Været vises med lufttemperaturen ved siste API-kall, vind med vind-retning, nedbørsmengde og luftfuktighet.
+Moodcast pulls live weather data from the Norwegian Meteorological Institute and surfaces activity suggestions tailored to current conditions and upcoming forecasts. Instead of just showing temperature and precipitation, the app interprets the weather and answers a more useful question: *what should I actually do outside today?*
 
-Det vises en varseltrekant hvis det ligger farevarsel for dette området.
+Key features:
+- Live weather data and forecasts from MET Norway's public API
+- Activity recommendations driven by weather-based business logic (e.g. surfing when wind and waves align, hiking on dry days, indoor alternatives during severe weather alerts)
+- Severe weather warnings integrated from MET's alert feed
+- Clean, engaging UI built with Jetpack Compose, designed for a younger audience
 
-Brukeren kan selv velge å søke etter andre områder i verden, og se værmeldingen for disse områdene.
-For å igjen se sin egen posisjon, trykkes det på søkefeltet og velger "Min posisjon".
+## Tech stack
 
-Det er også en time-for-time varsling for det neste døgnet, hvor brukeren kan se lufttemperatur og et vær-ikon.
-Det finnes også langtidsvarsel, hvor det står lavest og høyest temperatur for hver dag.
+- **Language:** Kotlin
+- **UI:** Jetpack Compose
+- **Architecture:** MVVM with Kotlin Coroutines and Flow
+- **Networking:** Retrofit + Moshi for API integration
+- **APIs:** [MET Norway Locationforecast](https://api.met.no/) and [MetAlerts](https://api.met.no/weatherapi/metalerts/)
+- **Tooling:** Android Studio, Git, GitHub
 
-Brukeren kan selv legge til aktiviteter. Brukeren kan velge humør, og appen vil vise aktitiveter som passer både vær og humør.
-Appen spør om tilgang til lokasjon fra brukerens enhet, samt tilgang til bilder hvis brukeren ønsker å laste opp bilder til egne aktiviteter.
-Innstillinger er lagret i DataStore Preferences, mens aktiviteter og relevante humør og værforhold er lagret i Room, som brukes SQLite.
+## My role
 
-Appen fungerer på ulike skjermstørrelser, og både i vannrett og loddrett posisjon, men hovedsakelig desgnet rundt en loddrett mobilskjerm.
-Brukeren kan selv manuelt velge mellom Dark Mode og Light Mode, og velge å bruke Fahrenheit fremfor Celsius.
+I worked as a developer in a team of six informatics students. My main contributions were:
 
-Vi har brukt SpatialK for å tenge polygoner i geoJSON, for å finne relevant farevarsel.
-Av API-er som er brukt er det det LocationForecast og WeatherAlerts fra MET, og GeoNames.
+- Building UI components in Jetpack Compose, including the activity recommendation views
+- Integrating the MET Norway API for both forecast data and severe weather alerts
+- Writing the rule-based logic that maps weather conditions to relevant activity suggestions
+- Participating in user testing and iterating on the UX based on feedback
+- Code reviews, pair programming, and architectural discussions with the team
 
+## Project context
 
+This was a semester-long agile project where the group acted as a small product team. We worked in iterations, held regular retrospectives, and delivered a working prototype as our final submission. The course emphasized real-world software engineering practice — requirements gathering, version control, code review, and user testing — alongside the actual development work.
 
-Alle bildene er hentet fra Unsplash
+## Acknowledgments
+Built together with five fellow informatics students at the University of Oslo. Weather data and alerts provided by the Norwegian Meteorological Institute under their open data license.
