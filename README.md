@@ -35,5 +35,9 @@ I worked as a developer in a team of six informatics students. My main contribut
 
 This was a semester-long agile project where the group acted as a small product team. We worked in iterations, held regular retrospectives, and delivered a working prototype as our final submission. The course emphasized real-world software engineering practice — requirements gathering, version control, code review, and user testing — alongside the actual development work.
 
+## Screenshots
+
+<img width="1586" height="574" alt="image" src="https://github.com/user-attachments/assets/25583aab-1634-4b61-a15c-267fe4028060" />
+
 ## Acknowledgments
 Built together with five fellow informatics students at the University of Oslo. Weather data and alerts provided by the Norwegian Meteorological Institute under their open data license.
